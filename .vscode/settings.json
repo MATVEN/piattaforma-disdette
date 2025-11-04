@@ -1,0 +1,13 @@
+{
+  "deno.enable": true,
+  "deno.enablePaths": ["supabase/functions"],
+  "deno.unstable": true,
+  "deno.lint": true,
+
+  "[typescript]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  },
+
+  // Next.js: usa TS standard
+  "typescript.tsdk": "node_modules/typescript/lib"
+}

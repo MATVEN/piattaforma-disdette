@@ -1,10 +1,8 @@
-import { createClient } from '@supabase/supabase-js'
+// src/lib/supabaseClient.ts
 
-// Recupera le variabili d'ambiente che abbiamo appena impostato
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+import { createBrowserClient } from '@supabase/ssr'
 
-// Crea ed esporta il client Supabase
-// Questo 'supabase' è l'oggetto che useremo per tutto:
-// per il login, per le query al db, ecc.
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
