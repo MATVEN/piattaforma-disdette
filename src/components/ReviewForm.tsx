@@ -123,9 +123,9 @@ export default function ReviewForm() {
 
       setSuccess('Dati confermati e salvati con successo!')
       
-      // Reindirizziamo l'utente alla dashboard (o dove vuoi tu) dopo 2 secondi
+      // Reindirizziamo l'utente alla dashboard
       setTimeout(() => {
-        router.push('/') // Reindirizza alla Home
+        router.push('/dashboard')
       }, 2000)
 
     } catch (err: unknown) {

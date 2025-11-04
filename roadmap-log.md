@@ -59,3 +59,16 @@ Backend:
   - Implements a safe 'setAll' cookie adapter to allow for token refreshes.
   - On success, the API updates the 'extracted_data' record with user-supplied data and sets the 'status' to 'CONFIRMED'.
   - Enforces RLS by matching 'user_id' during the 'update' query.
+
+- **User Dashboard (C7):**
+Backend:
+  - Creates the new API route 'GET /api/get-my-disdette'.
+  - The API securely authenticates the user (ANON_KEY + cookieAdapter) and respects RLS.
+  - Fetches all records from 'extracted_data' matching the 'user_id' and orders them by creation date.
+
+Frontend:
+  - Updates 'ReviewForm' (C6) to redirect to '/dashboard' on success.
+  - Creates the new '/dashboard' page (Server Component) with a 'Suspense' boundary and a link to start a new submission.
+  - Creates the 'DashboardList' (Client Component) to fetch and display the list of submissions from the new API.
+  - Adds a 'StatusBadge' component to show the state ('PENDING_REVIEW' or 'CONFIRMED').
+  - Makes each item in the list a 'Link' pointing back to the review page.
