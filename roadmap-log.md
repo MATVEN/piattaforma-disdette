@@ -44,3 +44,18 @@ Frontend:
 - **Dev Ops:**
  - Redeploys the process-document Edge Function with C5 logic (DB write).
  - Configures CORS on the Edge Function to allow http://localhost:3000 (resolving 405/500 errors).
+
+- **Data Confirmation and Update (C6)**
+Frontend:
+  - Converts 'ReviewForm' (C5) into a controlled component using 'useState'.
+  - Removes 'readOnly' and 'disabled' attributes from the form.
+  - Adds 'handleFormChange' to update form state as the user types.
+  - Implements 'handleSubmit' to manage submission state ('isSubmitting', 'error', 'success').
+  - Redirects user to homepage upon successful submission.
+
+Backend:
+  - Creates the new API route '/api/confirm-data' (PATCH).
+  - The new endpoint uses 'createServerClient' (ANON_KEY) to securely authenticate the user from cookies.
+  - Implements a safe 'setAll' cookie adapter to allow for token refreshes.
+  - On success, the API updates the 'extracted_data' record with user-supplied data and sets the 'status' to 'CONFIRMED'.
+  - Enforces RLS by matching 'user_id' during the 'update' query.
