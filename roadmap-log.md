@@ -72,3 +72,5 @@ Frontend:
   - Creates the 'DashboardList' (Client Component) to fetch and display the list of submissions from the new API.
   - Adds a 'StatusBadge' component to show the state ('PENDING_REVIEW' or 'CONFIRMED').
   - Makes each item in the list a 'Link' pointing back to the review page.
+
+Outcome: Dashboard fully functional with dynamic data fetch and navigation to review page.
