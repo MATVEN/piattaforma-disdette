@@ -1,3 +1,5 @@
+
+
 - **Authentication (C1):**
   - Implements /login and /register pages using Supabase Auth.
   - Creates AuthContext (`AuthProvider`) to manage global user state.
@@ -85,3 +87,25 @@
     - (Fase 2 - Generazione PDF): Imports `pdf-lib` and dynamically generates the PDF disdetta letter populated with user and contract data.
     - (Fase 3 - Invio): **(Test Mode)** SMTP/PEC logic is implemented but commented out.
     - Updates the disdetta status to `SENT` upon successful PDF generation.
+
+- **Profile Enforcement (C9):**
+  - **AuthContext (C1.5):**
+    - Updates `AuthContext` to fetch the user's `profiles` data on login.
+    - Exposes a new boolean `isProfileComplete` (true only if `nome`, `cognome`, `indirizzo_residenza` are not null).
+    - Fixes TypeScript warning (`user is possibly null`).
+
+  - **ProfileRequired (Wrapper):**
+    - Creates new `<ProfileRequired>` client component.
+    - Uses `useAuth()` to check `isProfileComplete`.
+    - Redirects users with incomplete profiles to `/profileUser`.
+  
+  - **Routing:**
+    - Removes `/dashboard` from the wrapper to keep it accessible to all logged users.
+    - Protects `/new-disdetta/layout.tsx` with the wrapper, enforcing profile completion *only when starting a new disdetta*.
+
+  - **Profile Page (Bug Fixes & RLS):**
+    - Fixes bug where `/profileUser` page crashed when profile row didn't exist (using `.maybeSingle()`).
+    - Fixes bug preventing profile save (using `.upsert()`).
+    - Adds RLS policies for `UPDATE`/`DELETE` on all storage buckets to allow overwrites (`upsert: true`).
+    - Fixes issue where inputs were cleared after saving (adds `.select().single()` to the `upsert`).
+    - Adds redirect from `/profileUser` back to `/dashboard` after successful save.

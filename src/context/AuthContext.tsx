@@ -1,56 +1,124 @@
-// src/context/AuthContext.tsx
-"use client"
+'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
-import { Session, User } from '@supabase/supabase-js'
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { supabase } from '@/lib/supabaseClient'
+import type { User } from '@supabase/supabase-js'
 
-// 1. Aggiungi isLoading al tipo
-interface AuthContextType {
-  session: Session | null
-  user: User | null
-  isLoading: boolean // <-- AGGIUNTO
+// --- 1. DEFINIAMO I TIPI ---
+type Profile = {
+  nome: string | null
+  cognome: string | null
+  indirizzo_residenza: string | null
+  telefono: string | null
+  documento_identita_path: string | null
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+type AuthContextType = {
+  user: User | null
+  profile: Profile | null
+  isAuthLoading: boolean
+  isProfileLoading: boolean
+  isProfileComplete: boolean
+}
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null)
+// --- 2. CREIAMO IL CONTEXT ---
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  profile: null,
+  isAuthLoading: true,
+  isProfileLoading: true,
+  isProfileComplete: false,
+})
+
+// --- 3. CREIAMO IL PROVIDER ---
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true) // <-- AGGIUNTO (inizia true)
+  const [isAuthLoading, setIsAuthLoading] = useState(true)
 
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [isProfileLoading, setIsProfileLoading] = useState(true)
+  const [isProfileComplete, setIsProfileComplete] = useState(false)
+
+  // --- EFFECT 1: GESTIONE AUTENTICAZIONE ---
   useEffect(() => {
-
-    // Controlla la sessione all'avvio
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setIsLoading(false) // <-- AGGIUNTO (finito caricamento)
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user)
+      setIsAuthLoading(false)
     })
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session)
-        setUser(session?.user ?? null)
-        setIsLoading(false) // <-- AGGIUNTO (finito anche qui)
-      }
-    )
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      setIsAuthLoading(false)
+    })
 
-    return () => {
-      authListener?.subscription.unsubscribe()
-    }
+    return () => subscription.unsubscribe()
   }, [])
 
+  // --- EFFECT 2: GESTIONE PROFILO (CORRETTO C9) ---
+  useEffect(() => {
+    
+    // Definiamo la funzione di fetch *all'interno* dell'effect
+    async function fetchProfile(user: User) { // <-- 1. Accetta 'user' come parametro
+      setIsProfileLoading(true)
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('nome, cognome, indirizzo_residenza, telefono, documento_identita_path')
+          .eq('user_id', user.id) // <-- 2. ERRORE SPARITO (user è garantito)
+          .maybeSingle()
+
+        if (error) throw error
+
+        if (data) {
+          setProfile(data)
+          if (data.nome && data.cognome && data.indirizzo_residenza) {
+            setIsProfileComplete(true)
+          } else {
+            setIsProfileComplete(false)
+          }
+        } else {
+          setProfile(null)
+          setIsProfileComplete(false)
+        }
+      } catch (error: unknown) {
+        console.error("Errore caricamento profilo:", error)
+        setProfile(null)
+        setIsProfileComplete(false)
+      } finally {
+        setIsProfileLoading(false)
+      }
+    }
+
+    // --- 3. CONTROLLO LOGICO ---
+    if (user) {
+      // Se l'utente è loggato, carica il profilo
+      fetchProfile(user)
+    } else {
+      // Se l'utente fa logout, resetta tutto
+      setProfile(null)
+      setIsProfileComplete(false)
+      setIsProfileLoading(false)
+    }
+  }, [user]) // Dipende sempre da 'user'
+
+  // --- 4. ESPONIAMO I VALORI ---
   const value = {
-    session,
     user,
-    isLoading, // <-- AGGIUNTO
+    profile,
+    isAuthLoading,
+    isProfileLoading,
+    isProfileComplete,
   }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={value}>
+      {!isAuthLoading && !isProfileLoading ? children : null}
+    </AuthContext.Provider>
+  )
 }
 
-export function useAuth() {
+// --- 5. CREIAMO L'HOOK ---
+export const useAuth = () => {
   const context = useContext(AuthContext)
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider')

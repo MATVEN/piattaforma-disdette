@@ -3,7 +3,7 @@
 import { useState, useEffect, type FormEvent } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuth } from '@/context/AuthContext'
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation' // <-- ASSICURATI CHE CI SIA
 
 type Profile = {
   nome: string | null
@@ -14,14 +14,14 @@ type Profile = {
 }
 
 export default function ProfilePage() {
-  const { user, isLoading: isAuthLoading } = useAuth()
-  const router = useRouter()
+  const { user, isAuthLoading } = useAuth()
+  const router = useRouter() // <-- INIZIALIZZA IL ROUTER
 
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  // ... (tutti gli altri stati sono invariati) ...
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-
   const [profileData, setProfileData] = useState<Profile>({
     nome: null,
     cognome: null,
@@ -29,16 +29,17 @@ export default function ProfilePage() {
     telefono: null,
     documento_identita_path: null,
   })
-  
   const [idDocumentFile, setIdDocumentFile] = useState<File | null>(null)
 
+
+  // --- useEffect per Auth (invariato) ---
   useEffect(() => {
     if (!isAuthLoading && !user) {
       router.push('/login')
     }
   }, [user, isAuthLoading, router])
 
-  // --- 2. Caricamento Dati Profilo ---
+  // --- useEffect per Caricamento Dati (invariato) ---
   useEffect(() => {
     if (user) {
       async function fetchProfile() {
@@ -47,23 +48,16 @@ export default function ProfilePage() {
         try {
           const { data, error } = await supabase
             .from('profiles')
-            .select('*')
-            .maybeSingle()
+            .select('nome, cognome, indirizzo_residenza, telefono, documento_identita_path')
+            .maybeSingle() 
 
           if (error) throw error
-          
-          // Se i dati esistono (utente vecchio con profilo), popola il form
           if (data) {
             setProfileData(data)
           }
-          // Se data è null (nuovo utente), il form resta vuoto, senza errori.
-          
-        } catch (error: unknown) { // Ora questo prenderà solo errori REALI
-          if (error instanceof Error) {
-            setError(error.message)
-          } else {
-            setError('Errore sconosciuto nel caricamento del profilo.')
-          }
+        } catch (error: unknown) {
+          if (error instanceof Error) setError(error.message)
+          else setError('Errore sconosciuto nel caricamento del profilo.')
         } finally {
           setLoading(false)
         }
@@ -72,6 +66,7 @@ export default function ProfilePage() {
     }
   }, [user])
 
+  // --- Gestori Modifiche (invariati) ---
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setProfileData((prev) => ({
@@ -87,7 +82,7 @@ export default function ProfilePage() {
     }
   }
 
-  // --- 4. Gestore Invio Modulo ---
+  // --- Gestore Invio Modulo (MODIFICATO) ---
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (!user) {
@@ -96,29 +91,25 @@ export default function ProfilePage() {
     }
 
     setIsSubmitting(true)
-    setError(null) // Resettiamo gli errori prima di iniziare
+    setError(null)
     setSuccess(null)
 
     try {
       let filePath: string | null = profileData.documento_identita_path
 
-      // --- A. Upload Documento (invariato) ---
+      // A. Upload Documento (invariato)
       if (idDocumentFile) {
         const newFilePath = `${user.id}/${idDocumentFile.name}`
         const { error: uploadError } = await supabase.storage
           .from('documenti-identita')
-          .upload(newFilePath, idDocumentFile, {
-            upsert: true,
-          })
+          .upload(newFilePath, idDocumentFile, { upsert: true })
         if (uploadError) throw uploadError
         filePath = newFilePath
       }
 
-      // --- B. Aggiornamento Dati Tabella 'profiles' ---
-      
-      // Prepariamo i dati per l'UPSERT.
+      // B. Aggiornamento Dati 'profiles' (invariato)
       const profileUpdate = {
-        user_id: user.id, // <-- Chiave Primaria
+        user_id: user.id,
         nome: profileData.nome,
         cognome: profileData.cognome,
         indirizzo_residenza: profileData.indirizzo_residenza,
@@ -127,47 +118,55 @@ export default function ProfilePage() {
         updated_at: new Date().toISOString(),
       }
 
-      // Eseguiamo l'UPSERT (che ora funzionerà grazie alla RLS SQL)
-      const { error: upsertError } = await supabase
+      const { data: upsertedData, error: upsertError } = await supabase
         .from('profiles')
         .upsert(profileUpdate)
+        .select()
+        .single()
 
       if (upsertError) throw upsertError
 
-      setSuccess('Profilo aggiornato con successo!')
-      if(filePath) {
-        setProfileData(prev => ({...prev, documento_identita_path: filePath}))
+      setSuccess('Profilo aggiornato con successo! Reindirizzamento...')
+      
+      if (upsertedData) {
+        setProfileData(upsertedData)
       }
       setIdDocumentFile(null)
 
+      // --- INIZIO NUOVA MODIFICA ---
+      // Reindirizza l'utente alla dashboard dopo 2 secondi
+      setTimeout(() => {
+        router.push('/dashboard')
+      }, 2000) // 2 secondi per leggere il messaggio di successo
+      // --- FINE NUOVA MODIFICA ---
+
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        setError(error.message)
-      } else {
-        setError('Errore sconosciuto durante il salvataggio del profilo.')
-      }
+      if (error instanceof Error) setError(error.message)
+      else setError('Errore sconosciuto durante il salvataggio del profilo.')
     } finally {
-      setIsSubmitting(false)
+      // Non reimpostiamo isSubmitting a false se il reindirizzamento
+      // sta per avvenire, ma lo facciamo se c'è un errore.
+      if (error) {
+        setIsSubmitting(false)
+      }
     }
   }
 
-  // --- 5. RENDER (invariato) ---
-  if (isAuthLoading || !user) {
+  // --- RENDER (invariato) ---
+  if (isAuthLoading || !user || loading) {
     return <div className="p-8 text-center">Caricamento...</div>
-  }
-  
-  if (loading) {
-     return <div className="p-8 text-center">Caricamento profilo...</div>
   }
 
   return (
     <div className="mx-auto max-w-2xl p-8">
-      <h1 className="mb-6 text-3xl font-bold">Il mio Profilo</h1>
-       <p className="mb-4 text-gray-600">
+      {/* ... resto del JSX ... */}
+       <h1 className="mb-6 text-3xl font-bold">Il mio Profilo</h1>
+      <p className="mb-4 text-gray-600">
         Completa i tuoi dati anagrafici per poter procedere con le disdette.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border bg-white p-6 shadow-sm">
+        {/* ... tutti gli input (nome, cognome, etc.) sono invariati ... */}
         {/* Nome */}
         <div>
           <label htmlFor="nome" className="block text-sm font-medium text-gray-700">Nome</label>
@@ -178,7 +177,6 @@ export default function ProfilePage() {
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
         </div>
-
         {/* Cognome */}
         <div>
           <label htmlFor="cognome" className="block text-sm font-medium text-gray-700">Cognome</label>
@@ -189,7 +187,6 @@ export default function ProfilePage() {
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
         </div>
-
         {/* Indirizzo Residenza */}
         <div>
           <label htmlFor="indirizzo_residenza" className="block text-sm font-medium text-gray-700">Indirizzo di Residenza</label>
@@ -200,7 +197,6 @@ export default function ProfilePage() {
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
         </div>
-
         {/* Telefono */}
         <div>
           <label htmlFor="telefono" className="block text-sm font-medium text-gray-700">Telefono</label>
@@ -211,7 +207,6 @@ export default function ProfilePage() {
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
         </div>
-        
         {/* Documento Identità */}
         <div>
           <label htmlFor="documento" className="block text-sm font-medium text-gray-700">Documento di Identità</label>
@@ -231,7 +226,6 @@ export default function ProfilePage() {
              </p>
           )}
         </div>
-
         {/* Pulsante Salva */}
         <div>
           <button

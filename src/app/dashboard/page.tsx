@@ -1,15 +1,20 @@
+// src/app/dashboard/page.tsx
+// (SENZA IL WRAPPER 'ProfileRequired')
+
 import { Suspense } from 'react'
 import Link from 'next/link'
 import DashboardList from '@/components/DashboardList'
+// Rimuoviamo: import ProfileRequired from '@/components/ProfileRequired'
 
-// Questa è la pagina server component
+// La pagina server component
 export default function DashboardPage() {
   return (
+    // Rimuoviamo il wrapper da qui
     <div className="container mx-auto max-w-4xl px-4 py-12">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Le mie Disdette</h1>
         <Link 
-          href="/new-disdetta" // Assumendo che C2 sia in questa route
+          href="/new-disdetta"
           className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
         >
           + Avvia Nuova Disdetta
@@ -20,16 +25,15 @@ export default function DashboardPage() {
         Qui puoi vedere lo stato di tutte le disdette che hai caricato.
       </p>
 
-      {/* Usiamo Suspense per mostrare uno scheletro 
-          mentre il componente client carica i dati */}
       <Suspense fallback={<DashboardLoadingSkeleton />}>
         <DashboardList />
       </Suspense>
     </div>
+    // Rimuoviamo il wrapper da qui
   )
 }
 
-// Un semplice componente "scheletro" per il caricamento
+// Lo scheletro di caricamento
 function DashboardLoadingSkeleton() {
   return (
     <div className="animate-pulse space-y-4">

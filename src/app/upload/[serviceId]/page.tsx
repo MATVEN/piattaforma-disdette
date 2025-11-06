@@ -9,7 +9,7 @@ import { useRouter, useParams } from 'next/navigation'
 type UploadStep = 'bolletta' | 'delega' | 'sending'
 
 export default function UploadPage() {
-  const { user, isLoading: isAuthLoading } = useAuth()
+  const { user, isAuthLoading } = useAuth()
   const router = useRouter()
   const params = useParams()
   const serviceId = params.serviceId as string
