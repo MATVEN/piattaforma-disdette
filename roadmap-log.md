@@ -83,7 +83,7 @@
     - Invokes the `send-pec-disdetta` Edge Function.
   - **Backend (Edge Function):**
     - Creates the new `send-pec-disdetta` Edge Function.
-    - (Fase 1 - Recupero): Uses SERVICE_ROLE_KEY to fetch `extracted_data`, `profiles` data, and the `documento_delega` file.
+    - (Fase 1 - Recupero): Uses SERVICE_ROLE_KEY to fetch 'extracted_data' and 'profiles' data, and downloads the 'documento_delega' file from Storage.
     - (Fase 2 - Generazione PDF): Imports `pdf-lib` and dynamically generates the PDF disdetta letter populated with user and contract data.
     - (Fase 3 - Invio): **(Test Mode)** SMTP/PEC logic is implemented but commented out.
     - Updates the disdetta status to `SENT` upon successful PDF generation.
@@ -109,3 +109,16 @@
     - Adds RLS policies for `UPDATE`/`DELETE` on all storage buckets to allow overwrites (`upsert: true`).
     - Fixes issue where inputs were cleared after saving (adds `.select().single()` to the `upsert`).
     - Adds redirect from `/profileUser` back to `/dashboard` after successful save.
+
+- **Implements Google Social Login (C10)**
+  - **Backend (Supabase Config):**
+    - Configured Google as an OAuth provider in the Supabase dashboard (requires Client ID and Secret from Google Cloud Console).
+
+  - **Frontend (Login Page):**
+    - Adds a "Accedi con Google" button to the '/login/page.tsx'.
+    - Implements the 'handleLoginWithGoogle' function using 'supabase.auth.signInWithOAuth'.
+
+  - **Database (SQL Trigger):**
+    - Replaces the old 'handle_new_user' trigger with an upgraded version.
+    - The new trigger checks 'raw_user_meta_data' for the 'full_name' provided by Google.
+    - Automatically parses 'full_name' into 'nome' and 'cognome' and pre-populates these fields in the 'profiles' table upon a new social login.

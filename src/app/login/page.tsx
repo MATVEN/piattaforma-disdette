@@ -1,9 +1,7 @@
-// Indica a Next.js che questo è un "Client Component"
 "use client"
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-// Importiamo 'useRouter' per poter reindirizzare l'utente dopo il login
 import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
@@ -12,16 +10,34 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   
-  const router = useRouter() // Inizializziamo il router
+  const router = useRouter()
 
-  // Funzione chiamata quando l'utente invia il modulo
+  // --- FUNZIONE LOGIN CON GOOGLE (NOVITÀ C10) ---
+  // Aggiunta rispettando la tua logica di 'loading' e 'error'
+  const handleLoginWithGoogle = async () => {
+    setLoading(true) // <-- Usa il tuo 'loading'
+    setError('')
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      // (Supabase gestirà il redirect automaticamente
+      // in base a quanto configurato nel Task 1)
+    })
+    
+    // Nota: con OAuth, c'è un reindirizzamento.
+    // Il 'loading' non tornerà a 'false' se il redirect ha successo.
+    if (error) {
+      setError(error.message)
+      setLoading(false)
+    }
+  }
+
+  // --- LA TUA FUNZIONE DI LOGIN (Invariata) ---
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     
     setLoading(true)
     setError('')
 
-    // Usiamo la funzione signInWithPassword di Supabase
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
       password: password,
@@ -30,15 +46,13 @@ export default function LoginPage() {
     setLoading(false)
 
     if (error) {
-      // Se c'è un errore (es. password errata), lo mostriamo
       setError(error.message)
     } else if (data.user) {
-      // Se il login ha successo, reindirizziamo l'utente!
-      // Per ora, lo mandiamo alla homepage '/'.
       router.push('/')
     }
   }
 
+  // --- IL TUO JSX (con aggiunte C10) ---
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
@@ -46,6 +60,27 @@ export default function LoginPage() {
           Accedi al tuo Account
         </h1>
         
+        {/* --- PULSANTE GOOGLE (NOVITÀ C10) --- */}
+        <button
+          onClick={handleLoginWithGoogle}
+          disabled={loading} // <-- Collegato al tuo 'loading'
+          className="mb-4 flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-50"
+        >
+          {/* Aggiungi qui un'icona di Google se vuoi */}
+          Accedi con Google
+        </button>
+
+        {/* --- DIVISORE (NOVITÀ C10) --- */}
+        <div className="relative mb-4">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="bg-white px-2 text-gray-500">Oppure continua con</span>
+          </div>
+        </div>
+        
+        {/* --- IL TUO FORM (Invariato) --- */}
         <form onSubmit={handleLogin} className="space-y-6">
           {/* Campo Email */}
           <div>

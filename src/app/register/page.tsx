@@ -12,20 +12,38 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   
-  // Stati per feedback all'utente
+  // Stati per feedback all'utente (invariati)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
 
-  // Funzione chiamata quando l'utente invia il modulo
+  // --- FUNZIONE REGISTRAZIONE CON GOOGLE (NOVITÀ C10) ---
+  const handleLoginWithGoogle = async () => {
+    setLoading(true)
+    setMessage('')
+    setError('')
+    
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+    })
+
+    // Se il reindirizzamento a Google fallisce, mostriamo un errore
+    if (error) {
+      setError(error.message)
+      setLoading(false)
+    }
+    // Se ha successo, l'utente viene reindirizzato a Google,
+    // quindi non è necessario reimpostare 'loading' a false.
+  }
+
+  // --- Funzione di registrazione standard (invariata) ---
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault() // Previene il ricaricamento della pagina
+    e.preventDefault() 
     
     setLoading(true)
     setMessage('')
     setError('')
 
-    // Usiamo la funzione signUp di Supabase
     const { data, error } = await supabase.auth.signUp({
       email: email,
       password: password,
@@ -34,22 +52,41 @@ export default function RegisterPage() {
     setLoading(false)
 
     if (error) {
-      // Se c'è un errore, lo mostriamo
       setError(error.message)
     } else if (data.user) {
-      // Se la registrazione ha successo
-      // Nota: Supabase invia un'email di conferma di default
       setMessage('Registrazione avvenuta! Controlla la tua email per il link di conferma.')
     }
   }
 
+  // --- JSX (Aggiornato con C10) ---
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
         <h1 className="mb-6 text-center text-3xl font-bold text-gray-800">
           Crea il tuo Account
         </h1>
+
+        {/* --- PULSANTE GOOGLE (NOVITÀ C10) --- */}
+        <button
+          onClick={handleLoginWithGoogle}
+          disabled={loading}
+          className="mb-4 flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-50"
+        >
+          {/* Aggiungi qui un'icona di Google se vuoi */}
+          Registrati con Google
+        </button>
+
+        {/* --- DIVISORE (NOVITÀ C10) --- */}
+        <div className="relative mb-4">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="bg-white px-2 text-gray-500">Oppure registrati con l&aposemail</span>
+          </div>
+        </div>
         
+        {/* --- Form Email/Password (invariato) --- */}
         <form onSubmit={handleRegister} className="space-y-6">
           {/* Campo Email */}
           <div>
@@ -104,7 +141,7 @@ export default function RegisterPage() {
           </div>
         </form>
 
-        {/* Messaggi di feedback */}
+        {/* Messaggi di feedback (invariati) */}
         {message && (
           <p className="mt-4 text-center text-sm text-green-600">
             {message}
