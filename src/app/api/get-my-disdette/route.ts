@@ -9,7 +9,7 @@ import {
 
 export const dynamic = 'force-dynamic'
 
-// Definiamo il tipo per l'oggetto cookie (come prima)
+// Definiamo il tipo per l'oggetto cookie
 type CookieStoreType = Awaited<ReturnType<typeof nextCookies>>
 
 const createCookieAdapter = (cookieStore: CookieStoreType) => {
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
   const cookieStore = await nextCookies()
   const cookieAdapter = createCookieAdapter(cookieStore)
 
-  // 1. Client e Autenticazione (Come C6)
+  // 1. Client e Autenticazione
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -51,18 +51,19 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // 2. Query al Database (La vera modifica)
+  // 2. Query al Database
   try {
     
-    // Selezioniamo TUTTI i record dell'utente, ordinati dal più nuovo
+    // --- MODIFICA CHIAVE (da select('*')) ---
     const { data, error } = await supabase
       .from('extracted_data')
-      .select('*') // Prendi tutte le colonne
-      .eq('user_id', user.id) // SOLO quelle di questo utente (RLS fa già questo, ma è una sicurezza in più)
-      .order('created_at', { ascending: false }) // Ordina: le più nuove prima
+      .select('id, created_at, file_path, status') // Seleziona solo i campi per la dashboard
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+    // --- FINE MODIFICA ---
 
     if (error) {
-      throw error // Lancia l'errore se la query fallisce
+      throw error
     }
 
     // 3. Successo
@@ -73,7 +74,7 @@ export async function GET(request: NextRequest) {
     if (error instanceof Error) {
       errorMessage = error.message
     }
-    console.error('Errore in get-my-disdette (route.ts):', errorMessage)
+    console.error('Errore in get-my-disdetta (route.ts):', errorMessage)
     return NextResponse.json(
       { error: errorMessage },
       { status: 500 }

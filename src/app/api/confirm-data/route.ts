@@ -2,111 +2,118 @@
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { cookies as nextCookies } from 'next/headers'
-import {
-  createServerClient,
-  type CookieOptions,
-} from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { parseConfirmData } from '@/domain/schemas'
+import { z } from 'zod'
 
-// Definiamo il tipo per l'oggetto cookie (come abbiamo fatto per l'API GET)
+type BasicCookie = { name: string; value: string }
 type CookieStoreType = Awaited<ReturnType<typeof nextCookies>>
 
-const createCookieAdapter = (cookieStore: CookieStoreType) => {
-  return {
-    getAll() {
-      return cookieStore.getAll().map((c: { name: string; value: string }) => ({
-        name: c.name,
-        value: c.value,
-      }))
-    },
-    setAll(cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) {
-      try {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          cookieStore.set(name, value, options)
-        })
-      } catch (error) {
-        // Ignora errori (es. cookie read-only)
-      }
-    },
-  }
+const createCookieAdapter = (cookieStore: CookieStoreType) => ({
+  getAll() {
+    const all = cookieStore.getAll()
+    return all.map((c: BasicCookie) => ({ name: c.name, value: c.value }))
+  },
+  setAll(cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) {
+    try {
+      cookiesToSet.forEach(({ name, value, options }) => {
+        cookieStore.set(name, value, options)
+      })
+    } catch (error) { /* Ignora errori read-only */ }
+  },
+})
+
+type UpdateRow = {
+  supplier_tax_id?: string | null
+  receiver_tax_id?: string | null
+  supplier_iban?: string | null
+  status?: 'CONFIRMED'
 }
 
-// Questa volta gestiamo le richieste PATCH (o POST, ma PATCH è più corretto per "aggiorna")
 export async function PATCH(request: NextRequest) {
-  
   const cookieStore = await nextCookies()
-  const cookieAdapter = createCookieAdapter(cookieStore)
-
-  // 1. Client e Autenticazione (Come C5)
-  // Usiamo la ANON KEY per permettere al client di identificare
-  // l'utente tramite i cookie e rinfrescare il token se necessario.
+  
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: cookieAdapter }
+    { cookies: createCookieAdapter(cookieStore) }
   )
 
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-
   if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
   }
 
-  // 2. Lettura del corpo (Body) della richiesta
-  // Questi sono i dati che il ReviewForm ha inviato
-  let body: {
-    id: number;
-    supplier_tax_id: string;
-    receiver_tax_id: string;
-    supplier_iban: string;
-  };
+  let body: ReturnType<typeof parseConfirmData>
+  let parsedId: number | null = null // Variabile per il logging degli errori
 
   try {
-    body = await request.json()
-  } catch (error) {
-    return NextResponse.json({ error: 'JSON Body non valido' }, { status: 400 })
+    body = parseConfirmData(await request.json(), /* strict */ false)
+    parsedId = body.id // Salviamo l'ID per il logging
+  } catch (e: unknown) {
+    if (e instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: 'Payload non valido', details: e.format() },
+        { status: 400 }
+      )
+    }
+    const message = e instanceof Error ? e.message : 'Body non valido'
+    return NextResponse.json({ success: false, error: message }, { status: 400 })
   }
 
   const { id, supplier_tax_id, receiver_tax_id, supplier_iban } = body
 
-  if (!id) {
-    return NextResponse.json({ error: 'ID del record mancante' }, { status: 400 })
+  // Logica "Smart Update" (invariata)
+  const updatePayload: UpdateRow = {}
+  const setIfPresent = <K extends keyof UpdateRow>(key: K, value: unknown) => {
+    if (value === undefined) return
+    if (value === null) { updatePayload[key] = null as UpdateRow[K]; return }
+    if (typeof value === 'string') { updatePayload[key] = value as UpdateRow[K] }
   }
+  setIfPresent('supplier_tax_id', supplier_tax_id)
+  setIfPresent('receiver_tax_id', receiver_tax_id)
+  setIfPresent('supplier_iban',   supplier_iban)
 
-  // 3. Aggiornamento sicuro dei dati (Query)
+  if (Object.keys(updatePayload).length === 0) {
+    return NextResponse.json(
+      { success: false, error: 'Nessun campo fornito per l’aggiornamento' },
+      { status: 400 }
+    )
+  }
+  updatePayload.status = 'CONFIRMED'
+
   try {
     const { data, error } = await supabase
       .from('extracted_data')
-      .update({
-        supplier_tax_id: supplier_tax_id,
-        receiver_tax_id: receiver_tax_id,
-        supplier_iban: supplier_iban,
-        status: 'CONFIRMED' // --- Aggiorniamo lo stato! ---
-      })
-      .eq('id', id) // Aggiorna solo questo record
-      .eq('user_id', user.id) // E SOLO se l'utente è il proprietario (Sicurezza RLS!)
-      .select() // Restituisce i dati aggiornati
-      .single() // Ci aspettiamo un solo risultato
+      .update(updatePayload)
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .select('id, supplier_tax_id, receiver_tax_id, supplier_iban, status, updated_at')
+      .single()
 
     if (error) {
-      // Se 'PGRST116', la RLS ha bloccato l'update (l'utente non è proprietario)
-      if (error.code === 'PGRST116') {
-         return NextResponse.json({ error: 'Record non trovato o accesso negato' }, { status: 404 })
-      }
       throw error
     }
 
-    // 4. Successo
-    return NextResponse.json(data, { status: 200 })
+    return NextResponse.json({ success: true, data }, { status: 200 })
 
   } catch (error: unknown) {
-    let errorMessage = 'Errore sconosciuto'
-    if (error instanceof Error) {
+    // --- BLOCCO CATCH ---
+    let errorMessage = 'Errore sconosciuto durante l\'aggiornamento del database.'
+    
+    // Controlliamo se è un oggetto errore di Supabase (PostgrestError)
+    if (typeof error === 'object' && error !== null && 'message' in error) {
+      errorMessage = (error as { message: string }).message
+    } else if (error instanceof Error) {
       errorMessage = error.message
     }
-    console.error('Errore in confirm-data (route.ts):', errorMessage)
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    )
+
+    console.error('[confirm-data][PATCH] ERRORE DATABASE:', errorMessage, {
+      id: parsedId,
+      userId: user.id,
+      errorObject: JSON.stringify(error) // Logga l'intero oggetto errore
+    });
+
+    return NextResponse.json({ success: false, error: errorMessage }, { status: 500 })
   }
 }

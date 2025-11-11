@@ -1,10 +1,8 @@
 // src/app/dashboard/page.tsx
-// (SENZA IL WRAPPER 'ProfileRequired')
 
 import { Suspense } from 'react'
 import Link from 'next/link'
 import DashboardList from '@/components/DashboardList'
-// Rimuoviamo: import ProfileRequired from '@/components/ProfileRequired'
 
 // La pagina server component
 export default function DashboardPage() {

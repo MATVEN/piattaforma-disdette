@@ -3,7 +3,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 
-// Tipi
+// Tipi (invariati)
 interface ExtractedData {
   id: number
   file_path: string
@@ -16,6 +16,11 @@ interface FormData {
   supplier_tax_id: string
   receiver_tax_id: string
   supplier_iban: string
+}
+// Tipo per la risposta della nostra API C6
+type ConfirmApiResponse = {
+  success: boolean;
+  data: ExtractedData;
 }
 
 export default function ReviewForm() {
@@ -34,7 +39,7 @@ export default function ReviewForm() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
-  // --- Caricamento Dati ---
+  // --- Caricamento Dati (Invariato) ---
   useEffect(() => {
     async function fetchData() {
       if (!filePath) {
@@ -70,7 +75,7 @@ export default function ReviewForm() {
     fetchData()
   }, [filePath])
 
-  // --- Gestore Modifiche ---
+  // --- Gestore Modifiche (Invariato) ---
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prevData) => ({
@@ -79,7 +84,7 @@ export default function ReviewForm() {
     }))
   }
 
-  // --- GESTORE INVIO ---
+  // --- GESTORE INVIO (CORRETTO) ---
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -93,7 +98,7 @@ export default function ReviewForm() {
     }
 
     try {
-      // --- FASE 1: Conferma Dati ---
+      // --- FASE 1: Conferma Dati (Logica C6) ---
       setSuccess('Salvataggio e conferma dati...')
       const confirmResponse = await fetch('/api/confirm-data', {
         method: 'PATCH',
@@ -111,17 +116,27 @@ export default function ReviewForm() {
         throw new Error(errData.error || 'Errore durante il salvataggio dei dati.')
       }
       
-      const confirmedData: ExtractedData = await confirmResponse.json()
+      // --- INIZIO CORREZIONE ---
+      // Leggiamo la risposta come tipo corretto
+      const responseData: ConfirmApiResponse = await confirmResponse.json();
+      
+      // Controlliamo il successo (come da tua API)
+      if (!responseData.success || !responseData.data) {
+        throw new Error("L'API ha restituito un errore imprevisto durante la conferma.")
+      }
+      
+      const confirmedData: ExtractedData = responseData.data;
+      // --- FINE CORREZIONE ---
+
       setSuccess('Dati confermati! Avvio invio PEC...')
 
-      // --- FASE 2: Innesco Invio PEC ---
-      // Chiamiamo API "trigger"
+      // --- FASE 2: Innesco Invio PEC (Logica C8) ---
       const pecResponse = await fetch('/api/send-pec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          id: confirmedData.id, // Passiamo l'ID del record confermato
+          id: confirmedData.id, // Ora 'confirmedData.id' è corretto
         }),
       })
 
@@ -133,21 +148,21 @@ export default function ReviewForm() {
       setSuccess('Invio PEC avviato con successo! Sarai reindirizzato.')
       
       setTimeout(() => {
-        router.push('/dashboard') // Reindirizza alla Dashboard (C7)
+        router.push('/dashboard') 
       }, 2000)
 
     } catch (err: unknown) {
       if (err instanceof Error) setError(err.message)
       else setError('Si è verificato un errore sconosciuto.')
-    } finally {
-      if (error) {
-        setIsSubmitting(false)
-      }
+      
+      // Assicurati di sbloccare il pulsante in caso di errore
+      setIsSubmitting(false) 
     }
   }
 
-  // --- Gestione Stati UI ---
+  // --- Gestione Stati UI (invariato) ---
   if (loading) return <div>Caricamento dati...</div>
+  // ... (resto del JSX invariato) ...
   if (error && !data) {
     return (
       <div className="rounded-md border border-red-300 bg-red-50 p-4 text-red-700">
@@ -157,10 +172,9 @@ export default function ReviewForm() {
     )
   }
 
-  // --- Modulo di Revisione ---
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* (Campi input: P.IVA, POD, IBAN */}
+      {/* Nome */}
       <div>
         <label htmlFor="supplier_tax_id" className="block text-sm font-medium text-gray-700">
           P.IVA Fornitore (supplier_tax_id)
@@ -172,6 +186,7 @@ export default function ReviewForm() {
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
         />
       </div>
+      {/* Cognome */}
       <div>
         <label htmlFor="receiver_tax_id" className="block text-sm font-medium text-gray-700">
           POD / PDR (receiver_tax_id)
@@ -183,6 +198,7 @@ export default function ReviewForm() {
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
         />
       </div>
+      {/* Indirizzo Residenza */}
       <div>
         <label htmlFor="supplier_iban" className="block text-sm font-medium text-gray-700">
           IBAN Fornitore (supplier_iban)
@@ -205,7 +221,6 @@ export default function ReviewForm() {
         </button>
       </div>
       
-      {/* Messaggi di feedback (ora gestiscono entrambi gli step) */}
       {success && (
         <p className="mt-4 rounded-md bg-green-100 p-3 text-center text-sm text-green-700">
           {success}

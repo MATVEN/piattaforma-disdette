@@ -1,5 +1,3 @@
-
-
 - **Authentication (C1):**
   - Implements /login and /register pages using Supabase Auth.
   - Creates AuthContext (`AuthProvider`) to manage global user state.
@@ -122,3 +120,11 @@
     - Replaces the old 'handle_new_user' trigger with an upgraded version.
     - The new trigger checks 'raw_user_meta_data' for the 'full_name' provided by Google.
     - Automatically parses 'full_name' into 'nome' and 'cognome' and pre-populates these fields in the 'profiles' table upon a new social login.
+
+- **C11 (Security & Validation Refactor):**
+ - **Middleware:** Replaces the client-side C9 (<ProfileRequired>) with a server-side 'src/middleware.ts' for robust route protection (auth + profile completion).
+ - * **Validation (Zod):** Introduces 'zod' and a central 'src/domain/schemas.ts' for type-safe validation (using the user's advanced refactored version).
+ - * **Edge Functions:** Hardens 'process-document' (v5) and 'send-pec-disdette' with Zod/type-guard validation, timeout/backoff logic, and PII-safe logging.
+ - * **API Routes:** Refactors all API routes ('/api/confirm-data', '/api/get-extracted-data', '/api/send-pec') to use Zod schemas.
+ - * **Bug Fix (SSR):** Fixes 500 crash across all API Routes by removing the 'NextResponse.next()' pattern and standardizing on the correct 'cookieStore' adapter for SSR auth token refreshes.
+ - * **Database:** Applies "least-privilege" select (no 'select(*)') to '/api/get-my-disdette'.
