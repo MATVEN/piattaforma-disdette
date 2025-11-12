@@ -48,7 +48,7 @@ export async function PATCH(request: NextRequest) {
   let parsedId: number | null = null // Variabile per il logging degli errori
 
   try {
-    body = parseConfirmData(await request.json(), /* strict */ false)
+    body = parseConfirmData(await request.json(), /* strict */ true)
     parsedId = body.id // Salviamo l'ID per il logging
   } catch (e: unknown) {
     if (e instanceof z.ZodError) {

@@ -128,3 +128,12 @@
  - * **API Routes:** Refactors all API routes ('/api/confirm-data', '/api/get-extracted-data', '/api/send-pec') to use Zod schemas.
  - * **Bug Fix (SSR):** Fixes 500 crash across all API Routes by removing the 'NextResponse.next()' pattern and standardizing on the correct 'cookieStore' adapter for SSR auth token refreshes.
  - * **Database:** Applies "least-privilege" select (no 'select(*)') to '/api/get-my-disdette'.
+
+- **Security Hardening (C11.5):**
+  - **Edge Function (`send-pec-disdetta`):**
+    - Implements "Dual Client Auth" pattern to verify user ownership (RLS) *before* using the `SERVICE_ROLE_KEY`.
+    - Implements "State Transition Check" (`.eq('status', 'CONFIRMED')`) to prevent duplicate disdetta sends.
+    - Implements "MIME & Size Whitelist" to validate delega and ID files before processing.
+  - **Frontend (`DashboardList`):**
+    - Updates the UI to support the "Invia Disdetta" button.
+    - Updates the `StatusBadge` component to render the new `TEST_SENT` and `FAILED` states.
