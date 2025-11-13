@@ -1,5 +1,5 @@
 // supabase/functions/send-pec-disdetta/index.ts
-// (C12 - Hardened: Dual-Client Auth, State-Check, MIME Validation)
+// (C12 - Hardened: Correzione 'already declared' - FINALE)
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
@@ -19,10 +19,7 @@ const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') ?? 'http://localhost:30
 const MAX_FILE_BYTES = Number(Deno.env.get("MAX_FILE_BYTES") ?? 10_000_000) // 10MB
 const ALLOWED_MIME = ["application/pdf", "image/png", "image/jpeg", "image/jpg", "image/tiff"]
 
-// --- Helper CORS (invariati) ---
-function resolveCorsOrigin(req: Request): string { /* ... */ }
-function corsHeaders(origin: string) { /* ... */ }
-// ... (corpo helper omesso per brevità)
+// --- Helper CORS (Definiti UNA SOLA VOLTA) ---
 function resolveCorsOrigin(req: Request): string {
   const reqOrigin = req.headers.get('Origin') ?? ''
   return ALLOWED_ORIGINS.includes(reqOrigin) ? reqOrigin : ALLOWED_ORIGINS[0] ?? '*'
@@ -36,7 +33,7 @@ function corsHeaders(origin: string) {
   }
 }
 
-// --- Helper Admin Client (invariato) ---
+// --- Helper Admin Client ---
 function getSupabaseAdmin() {
   const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
   const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
@@ -46,10 +43,8 @@ function getSupabaseAdmin() {
   return createClient(SUPABASE_URL, SERVICE_KEY)
 }
 
-// --- Type Guard (invariata) ---
+// --- Type Guard ---
 type RequestBody = { id: number }
-function isRequestBody(x: unknown): x is RequestBody { /* ... */ }
-// ... (corpo helper omesso per brevità)
 function isRequestBody(x: unknown): x is RequestBody {
   if (typeof x !== 'object' || x === null) return false
   const rec = x as Record<string, unknown>
@@ -58,8 +53,8 @@ function isRequestBody(x: unknown): x is RequestBody {
 
 console.log("Funzione 'send-pec-disdetta' (C12 - Hardened) avviata.")
 
-/// ==========================
-// 2) TIPI (Definizioni Corrette)
+// ==========================
+// 2) TIPI (Corretti)
 // ==========================
 interface ProfileData {
   nome: string | null
@@ -67,22 +62,18 @@ interface ProfileData {
   indirizzo_residenza: string | null
   documento_identita_path: string | null
 }
-
 interface DisdettaData {
   id: number
   user_id: string
   documento_delega_path: string | null
   receiver_tax_id: string | null
   supplier_tax_id: string | null
-  status: string 
+  status: string
 }
 
-
 // ==========================
-// 3) UTIL: WORD WRAP (invariato)
+// 3) UTIL: WORD WRAP
 // ==========================
-function wrapText(text: string, font: PDFFont, fontSize: number, maxWidth: number): string[] { /* ... */ }
-// ... (corpo helper omesso per brevità)
 function wrapText(
   text: string,
   font: PDFFont,
@@ -113,11 +104,8 @@ function wrapText(
               chunk = ch
             }
           }
-          if (chunk) {
-            line = chunk
-          } else {
-            line = ''
-          }
+          if (chunk) line = chunk
+          else line = ''
         } else {
           line = word
         }
@@ -129,10 +117,8 @@ function wrapText(
 }
 
 // ==========================
-// 4) HELPER: CREA PDF (invariato)
+// 4) HELPER: CREA PDF
 // ==========================
-async function creaPdfDisdetta(profile: ProfileData, disdetta: DisdettaData): Promise<Uint8Array> { /* ... */ }
-// ... (corpo helper omesso per brevità)
 async function creaPdfDisdetta(profile: ProfileData, disdetta: DisdettaData): Promise<Uint8Array> {
   console.log('Inizio creazione PDF...')
   const pdfDoc = await PDFDocument.create()
@@ -158,15 +144,12 @@ richiedo la disdetta del contratto:
 Distinti saluti,
 ${profile.nome || ''} ${profile.cognome || ''}
 `.trim()
-
   const marginX = 50
   const startY = height - 50
   const usableWidth = width - marginX * 2
   const lineHeight = fontSize * 1.5
-
   const lines = wrapText(testo, font, fontSize, usableWidth)
   let cursorY = startY
-
   for (const line of lines) {
     page.drawText(line, {
       x: marginX,
@@ -181,27 +164,33 @@ ${profile.nome || ''} ${profile.cognome || ''}
       cursorY = newPage.getSize().height - 50
     }
   }
-
   console.log('PDF creato con successo.')
   return await pdfDoc.save()
 }
 
 // ==========================
-// 5) HANDLER (Modificato C12)
+// 5) HANDLER (C12)
 // ==========================
 serve(async (req: Request) => {
   const origin = resolveCorsOrigin(req)
   const headers = corsHeaders(origin)
 
-  // CORS preflight (invariato)
-  if (req.method === 'OPTIONS') { /* ... */ }
-  if (req.method !== 'POST') { /* ... */ }
+  // CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers, status: 204 })
+  }
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Metodo non consentito' }), {
+      status: 405,
+      headers: { ...headers, 'Content-Type': 'application/json' },
+    })
+  }
 
   let disdettaId: number | null = null
   let userId: string | null = null
 
   try {
-    // --- Validazione body (invariata) ---
+    // --- Validazione body ---
     let body: unknown
     try {
       body = await req.json()
@@ -215,20 +204,16 @@ serve(async (req: Request) => {
     console.log(`[TEST] Richiesta ricevuta per ID: ${disdettaId}`)
 
     // --- 1. MODIFICA C12: DUAL CLIENT AUTH ---
-    // Creiamo un client "Utente" usando l'header Auth del chiamante
-    // Questo forza l'applicazione della RLS
     const supabaseUser = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!, // <-- Usa ANON key
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     )
 
-    // Verifichiamo la proprietà e lo stato usando RLS (o policy)
     const { data: disdettaData, error: disdettaError } = await supabaseUser
       .from('extracted_data')
-      .select('id, user_id, documento_delega_path, receiver_tax_id, supplier_tax_id, status') // Seleziona anche 'status'
+      .select('id, user_id, documento_delega_path, receiver_tax_id, supplier_tax_id, status')
       .eq('id', disdettaId)
-      // .eq('user_id', user.id) <-- Non serve, RLS lo fa già
       .single()
 
     if (disdettaError) throw new Error(`Disdetta non trovata o accesso negato: ${disdettaError.message}`)
@@ -239,21 +224,17 @@ serve(async (req: Request) => {
       throw new Error(`Impossibile inviare: lo stato è ${disdettaData.status} (atteso CONFIRMED)`)
     }
     
-    // Ora che sappiamo che l'utente è proprietario, salviamo l'ID utente
     userId = disdettaData.user_id
-    const typedDisdettaData: DisdettaData = disdettaData as DisdettaData
-
-    // --- Fine Dual Client Auth ---
+    const typedDisdettaData: DisdettaData = disdettaData
 
     // --- Creiamo il client Admin SOLO ORA ---
-    // (Necessario per leggere 'profiles' e file, che hanno RLS diverse)
     const supabaseAdmin = getSupabaseAdmin()
 
-    // 2) Recupera Profilo (invariato)
+    // 2) Recupera Profilo
     const { data: profileData, error: profileError } = await supabaseAdmin
       .from('profiles')
-      .select('nome, cognome, indirizzo_residenza, documento_identita_path') // rimosso 'user_id'
-      .eq('user_id', userId) // Usa l'ID utente verificato
+      .select('nome, cognome, indirizzo_residenza, documento_identita_path')
+      .eq('user_id', userId)
       .single()
     if (profileError) throw new Error(`Errore recupero profilo: ${profileError.message}`)
     if (!profileData) throw new Error('Profilo non trovato')
@@ -280,11 +261,11 @@ serve(async (req: Request) => {
     }
     console.log(`File validati. Delega=${delegaFile.size}B, ID=${idFile.size}B`)
 
-    // 6) Genera PDF (invariato)
+    // 6) Genera PDF
     const pdfBytes = await creaPdfDisdetta(typedProfileData, typedDisdettaData)
     console.log(`PDF generato (${pdfBytes.length} bytes).`)
 
-    // 7) Upload PDF (invariato)
+    // 7) Upload PDF
     const pdfPath = `disdette/${disdettaId}.pdf`
     const { error: upErr } = await supabaseAdmin
       .storage.from(PDF_BUCKET).upload(pdfPath, pdfBytes, { contentType: 'application/pdf', upsert: true })
@@ -298,7 +279,6 @@ serve(async (req: Request) => {
     // else { ... logica SMTP ... }
 
     // --- 9. MODIFICA C12: State Transition Check (Finale) ---
-    // Aggiorna lo stato SOLO SE è ancora 'CONFIRMED'
     const newStatus = TEST_MODE ? 'TEST_SENT' : 'SENT'
     const { error: updateError, count } = await supabaseAdmin
       .from('extracted_data')
@@ -309,12 +289,11 @@ serve(async (req: Request) => {
     if (updateError) throw new Error(`Errore aggiornamento stato: ${updateError.message}`)
     if (count === 0) {
       console.warn(`[send-pec-disdetta] Doppio invio bloccato per ID: ${disdettaId}`)
-      // Non trattarlo come un errore grave, l'invio è già partito
     }
     
     console.log(`Stato aggiornato a '${newStatus}'. Flusso C12 (Test) completato.`)
 
-    // 10) Risposta (invariata)
+    // 10) Risposta
     return new Response(JSON.stringify({
       success: true,
       message: TEST_MODE ? 'Invio SIMULATO con successo.' : 'Invio completato.',

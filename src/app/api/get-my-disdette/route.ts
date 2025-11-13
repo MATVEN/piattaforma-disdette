@@ -54,13 +54,11 @@ export async function GET(request: NextRequest) {
   // 2. Query al Database
   try {
     
-    // --- MODIFICA CHIAVE (da select('*')) ---
     const { data, error } = await supabase
       .from('extracted_data')
       .select('id, created_at, file_path, status') // Seleziona solo i campi per la dashboard
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
-    // --- FINE MODIFICA ---
 
     if (error) {
       throw error
@@ -74,7 +72,7 @@ export async function GET(request: NextRequest) {
     if (error instanceof Error) {
       errorMessage = error.message
     }
-    console.error('Errore in get-my-disdetta (route.ts):', errorMessage)
+    console.error('Errore in get-my-disdette (route.ts):', errorMessage)
     return NextResponse.json(
       { error: errorMessage },
       { status: 500 }

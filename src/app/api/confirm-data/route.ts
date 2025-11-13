@@ -45,14 +45,17 @@ export async function PATCH(request: NextRequest) {
   }
 
   let body: ReturnType<typeof parseConfirmData>
-  let parsedId: number | null = null // Variabile per il logging degli errori
+  let parsedId: number | null = null // Per il logging degli errori
 
   try {
-    body = parseConfirmData(await request.json(), /* strict */ true)
+    const rawBody = await request.json()
+    // 1. Usiamo 'strict: false'
+    body = parseConfirmData(rawBody, /* strict */ false)
     parsedId = body.id // Salviamo l'ID per il logging
+    
   } catch (e: unknown) {
     if (e instanceof z.ZodError) {
-      return NextResponse.json(
+       return NextResponse.json(
         { success: false, error: 'Payload non valido', details: e.format() },
         { status: 400 }
       )
@@ -63,7 +66,7 @@ export async function PATCH(request: NextRequest) {
 
   const { id, supplier_tax_id, receiver_tax_id, supplier_iban } = body
 
-  // Logica "Smart Update" (invariata)
+  // Logica "Smart Update"
   const updatePayload: UpdateRow = {}
   const setIfPresent = <K extends keyof UpdateRow>(key: K, value: unknown) => {
     if (value === undefined) return
@@ -92,13 +95,13 @@ export async function PATCH(request: NextRequest) {
       .single()
 
     if (error) {
-      throw error
+      throw error // Lancia l'errore PostgREST al blocco catch
     }
 
     return NextResponse.json({ success: true, data }, { status: 200 })
 
   } catch (error: unknown) {
-    // --- BLOCCO CATCH ---
+    // --- 2. BLOCCO CATCH  ---
     let errorMessage = 'Errore sconosciuto durante l\'aggiornamento del database.'
     
     // Controlliamo se è un oggetto errore di Supabase (PostgrestError)
@@ -109,7 +112,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     console.error('[confirm-data][PATCH] ERRORE DATABASE:', errorMessage, {
-      id: parsedId,
+      id: parsedId, // Usa l'ID salvato
       userId: user.id,
       errorObject: JSON.stringify(error) // Logga l'intero oggetto errore
     });

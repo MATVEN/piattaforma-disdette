@@ -53,7 +53,7 @@
 - **Data Confirmation (C6):**
   - **Frontend:**
     - Converts `ReviewForm` (C5) into a controlled component using `useState`.
-    - Amplements `handleFormChange` and `handleSubmit` to manage submission state.
+    - Implements `handleFormChange` and `handleSubmit` to manage submission state.
     - Redirects user to `/dashboard` upon successful submission.
   - **Backend:**
     - Creates the new API route `/api/confirm-data` (PATCH).
@@ -137,3 +137,8 @@
   - **Frontend (`DashboardList`):**
     - Updates the UI to support the "Invia Disdetta" button.
     - Updates the `StatusBadge` component to render the new `TEST_SENT` and `FAILED` states.
+
+- **Form Styling (C12):**
+  - **Install:** Adds `tailwindcss@^3` (removing v4) and the `@tailwindcss/forms` plugin.
+  - **Config:** Creates and configures `tailwind.config.js` (ESM version) and `postcss.config.js`.
+  - **CSS:** Fixes "white-on-white" input bug by adding `@tailwind` directives and a text-color override in `globals.css`.

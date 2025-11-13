@@ -32,7 +32,7 @@ export default function DashboardList() {
       setLoading(true)
       setError(null)
 
-      const response = await fetch('/api/get-my-disdetta', {
+      const response = await fetch('/api/get-my-disdette', {
         credentials: 'include',
       })
 
