@@ -78,24 +78,29 @@ export async function middleware(request: NextRequest) {
     // Dobbiamo controllare il profilo
     const { data: profile, error } = await supabase
       .from('profiles')
-      .select('nome, cognome, indirizzo_residenza')
+      .select('nome, cognome, indirizzo_residenza, documento_identita_path') // <-- 1. Seleziona il path
       .eq('user_id', user.id)
       .maybeSingle()
 
     if (error) {
       console.error("C11: Errore query profilo nel middleware", error.message)
-      // Non blocchiamo l'utente se il DB fallisce, ma logghiamo
       return NextResponse.next()
     }
     
-    const isProfileComplete = profile && profile.nome && profile.cognome && profile.indirizzo_residenza
+    // 2. Aggiungi il controllo del documento
+    const isProfileComplete = profile &&
+                              profile.nome &&
+                              profile.cognome &&
+                              profile.indirizzo_residenza &&
+                              profile.documento_identita_path // <-- 3. Controlla che esista
 
     if (!isProfileComplete) {
-      console.log("C11: Profilo incompleto, reindirizzo a /profileUser")
+      console.log("C11: Profilo incompleto (mancano dati o documento ID), reindirizzo a /profileUser")
       const url = request.nextUrl.clone()
       url.pathname = '/profileUser'
       return NextResponse.redirect(url)
     }
+
   }
 
   // Se nessuno dei casi scatta, l'utente può procedere

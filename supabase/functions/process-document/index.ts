@@ -22,9 +22,8 @@ const GOOGLE_SCOPE = "https://www.googleapis.com/auth/cloud-platform"
 // -----------------------------
 const PayloadSchema = z.object({
   bucket: z.string().min(1),
-  path: z.string().min(3),           // es: "<user_id>/uploads/xxx.pdf"
-  delegaPath: z.string().min(3).nullable().optional(),
-  body: z.any().optional(),          // per retrocompatibilità (payload.body)
+  path: z.string().min(3),
+  body: z.any().optional(),
 })
 
 type Payload = z.infer<typeof PayloadSchema>
@@ -186,15 +185,6 @@ serve(async (req: Request) => {
     const bucket = typeof bodyObj?.bucket === "string" ? (bodyObj.bucket as string) : p.bucket
     const path   = typeof bodyObj?.path   === "string" ? (bodyObj.path   as string) : p.path
 
-    function readStrOrNull(obj: Indexable | undefined, key: string): string | null | undefined {
-      if (!obj) return undefined
-      const v = obj[key]
-      if (typeof v === "string") return v
-      if (v === null) return null
-      return undefined
-    }
-    const delegaPath = readStrOrNull(bodyObj, "delegaPath") ?? p.delegaPath ?? null
-
     logBucket = bucket
     logPath = path
 
@@ -286,7 +276,6 @@ serve(async (req: Request) => {
     const row = {
       user_id: userId,
       file_path: path,
-      documento_delega_path: delegaPath ?? null,
       status: "PENDING_REVIEW",
       supplier_tax_id: extracted.get("supplier_tax_id") ?? null,
       receiver_tax_id: extracted.get("receiver_tax_id") ?? null,

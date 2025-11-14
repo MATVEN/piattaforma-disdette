@@ -142,3 +142,13 @@
   - **Install:** Adds `tailwindcss@^3` (removing v4) and the `@tailwindcss/forms` plugin.
   - **Config:** Creates and configures `tailwind.config.js` (ESM version) and `postcss.config.js`.
   - **CSS:** Fixes "white-on-white" input bug by adding `@tailwind` directives and a text-color override in `globals.css`.
+
+- **Form Refactor & Delega PDF (C13):**
+  - **Database (Cleanup):** DROPPED `documento_delega_path` column and `documenti-delega` bucket/RLS.
+  - **C3/C4 (Cleanup):** Removed "Step 2" (Delega Upload) from C3 and removed `delegaPath` logic from C4.
+  - **C6/C13 (ReviewForm):**
+    - Refactored the form to use `react-hook-form` and `zod`.
+    - Added a mandatory `delegaCheckbox` to the form and Zod schema.
+  - **C8 (send-pec-disdetta):**
+    - Added `creaPdfDelega` helper to auto-generate the delega PDF using profile data.
+    - Updated the function to upload *both* the Lettera PDF and Delega PDF to storage for tracking.

@@ -173,3 +173,33 @@ export function parseGetExtractedData(input: unknown) {
   const userId = filePath.split('/')[0] // sicuro perché storagePath già valida il formato
   return { filePath, userId }
 }
+
+/* -------------------------------------------
+ * Schemi per Form Frontend (C13)
+ * ------------------------------------------- */
+
+// Schema per il form /profileUser
+export const profileFormSchema = z.object({
+  nome: z.string().trim().min(1, "Il nome è obbligatorio."),
+  cognome: z.string().trim().min(1, "Il cognome è obbligatorio."),
+  indirizzo_residenza: z.string().trim().min(1, "L'indirizzo è obbligatorio."),
+  telefono: z.string().trim().min(1, "Il telefono è obbligatorio."),
+})
+
+export type ProfileFormData = z.infer<typeof profileFormSchema>
+
+// Schema per il form /review (C13)
+export const reviewFormSchema = z.object({
+  // I campi dati (soft validation, come in confirmDataSchema)
+  supplier_tax_id: z.string().trim().nullish(),
+  receiver_tax_id: z.string().trim().nullish(),
+  supplier_iban: z.string().trim().toUpperCase().nullish(),
+  
+  // --- NOVITÀ C13: Il Checkbox di Delega ---
+  // Questo campo DEVE essere 'true' per inviare il modulo.
+  delegaCheckbox: z.boolean().refine(val => val === true, {
+    message: "Devi accettare la delega per poter inviare la PEC."
+  })
+})
+
+export type ReviewFormData = z.infer<typeof reviewFormSchema>

@@ -3,7 +3,10 @@
 import { useState, useEffect, type FormEvent } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuth } from '@/context/AuthContext'
-import { useRouter } from 'next/navigation' // <-- ASSICURATI CHE CI SIA
+import { useRouter } from 'next/navigation'
+import { useForm, type SubmitHandler } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { profileFormSchema, type ProfileFormData } from '@/domain/schemas'
 
 type Profile = {
   nome: string | null
@@ -15,31 +18,38 @@ type Profile = {
 
 export default function ProfilePage() {
   const { user, isAuthLoading } = useAuth()
-  const router = useRouter() // <-- INIZIALIZZA IL ROUTER
+  const router = useRouter()
 
   const [loading, setLoading] = useState(true)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  // ... (tutti gli altri stati sono invariati) ...
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [profileData, setProfileData] = useState<Profile>({
-    nome: null,
-    cognome: null,
-    indirizzo_residenza: null,
-    telefono: null,
-    documento_identita_path: null,
-  })
+  
   const [idDocumentFile, setIdDocumentFile] = useState<File | null>(null)
+  const [currentDocPath, setCurrentDocPath] = useState<string | null>(null)
 
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ProfileFormData>({
+    resolver: zodResolver(profileFormSchema),
+    defaultValues: {
+      nome: '',
+      cognome: '',
+      indirizzo_residenza: '',
+      telefono: '',
+    }
+  })
 
-  // --- useEffect per Auth (invariato) ---
+  // --- 1. PROTEZIONE PAGINA ---
   useEffect(() => {
     if (!isAuthLoading && !user) {
       router.push('/login')
     }
   }, [user, isAuthLoading, router])
 
-  // --- useEffect per Caricamento Dati (invariato) ---
+  // --- 2. Caricamento Dati Profilo ---
   useEffect(() => {
     if (user) {
       async function fetchProfile() {
@@ -53,7 +63,13 @@ export default function ProfilePage() {
 
           if (error) throw error
           if (data) {
-            setProfileData(data)
+            reset({
+              nome: data.nome || '',
+              cognome: data.cognome || '',
+              indirizzo_residenza: data.indirizzo_residenza || '',
+              telefono: data.telefono || '',
+            })
+            setCurrentDocPath(data.documento_identita_path)
           }
         } catch (error: unknown) {
           if (error instanceof Error) setError(error.message)
@@ -64,17 +80,9 @@ export default function ProfilePage() {
       }
       fetchProfile()
     }
-  }, [user])
+  }, [user, reset])
 
-  // --- Gestori Modifiche (invariati) ---
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setProfileData((prev) => ({
-      ...prev,
-      [name]: value || null,
-    }))
-  }
-
+  // --- 3. Gestore File ---
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setIdDocumentFile(e.target.files[0])
@@ -82,22 +90,27 @@ export default function ProfilePage() {
     }
   }
 
-  // --- Gestore Invio Modulo (MODIFICATO) ---
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
+  // --- 4. GESTORE INVIO ---
+  const onSubmit: SubmitHandler<ProfileFormData> = async (formData) => {
     if (!user) {
       setError('Utente non trovato.')
       return
     }
 
-    setIsSubmitting(true)
     setError(null)
     setSuccess(null)
 
-    try {
-      let filePath: string | null = profileData.documento_identita_path
+    // --- NUOVO CONTROLLO C13.5 ---
+    if (!idDocumentFile && !currentDocPath) {
+      setError("Il documento d'identità è obbligatorio. Seleziona un file.")
+      return // Blocca l'invio
+    }
+    // --- FINE CONTROLLO ---
 
-      // A. Upload Documento (invariato)
+    try {
+      let filePath: string | null = currentDocPath
+
+      // A. Upload Documento
       if (idDocumentFile) {
         const newFilePath = `${user.id}/${idDocumentFile.name}`
         const { error: uploadError } = await supabase.storage
@@ -107,13 +120,13 @@ export default function ProfilePage() {
         filePath = newFilePath
       }
 
-      // B. Aggiornamento Dati 'profiles' (invariato)
+      // B. Aggiornamento Dati 'profiles'
       const profileUpdate = {
         user_id: user.id,
-        nome: profileData.nome,
-        cognome: profileData.cognome,
-        indirizzo_residenza: profileData.indirizzo_residenza,
-        telefono: profileData.telefono,
+        nome: formData.nome,
+        cognome: formData.cognome,
+        indirizzo_residenza: formData.indirizzo_residenza,
+        telefono: formData.telefono,
         documento_identita_path: filePath,
         updated_at: new Date().toISOString(),
       }
@@ -128,85 +141,78 @@ export default function ProfilePage() {
 
       setSuccess('Profilo aggiornato con successo! Reindirizzamento...')
       
-      if (upsertedData) {
-        setProfileData(upsertedData)
-      }
+      setCurrentDocPath(upsertedData.documento_identita_path)
       setIdDocumentFile(null)
 
-      // --- INIZIO NUOVA MODIFICA ---
-      // Reindirizza l'utente alla dashboard dopo 2 secondi
       setTimeout(() => {
         router.push('/dashboard')
-      }, 2000) // 2 secondi per leggere il messaggio di successo
-      // --- FINE NUOVA MODIFICA ---
+      }, 2000)
 
     } catch (error: unknown) {
       if (error instanceof Error) setError(error.message)
-      else setError('Errore sconosciuto durante il salvataggio del profilo.')
-    } finally {
-      // Non reimpostiamo isSubmitting a false se il reindirizzamento
-      // sta per avvenire, ma lo facciamo se c'è un errore.
-      if (error) {
-        setIsSubmitting(false)
-      }
+      else setError('Errore sconosciuto during il salvataggio del profilo.')
     }
   }
 
-  // --- RENDER (invariato) ---
+  // --- 5. RENDER (Caricamento) ---
   if (isAuthLoading || !user || loading) {
     return <div className="p-8 text-center">Caricamento...</div>
   }
 
   return (
     <div className="mx-auto max-w-2xl p-8">
-      {/* ... resto del JSX ... */}
-       <h1 className="mb-6 text-3xl font-bold">Il mio Profilo</h1>
+      <h1 className="mb-6 text-3xl font-bold">Il mio Profilo</h1>
       <p className="mb-4 text-gray-600">
         Completa i tuoi dati anagrafici per poter procedere con le disdette.
       </p>
 
-      <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border bg-white p-6 shadow-sm">
-        {/* ... tutti gli input (nome, cognome, etc.) sono invariati ... */}
+      {/* --- 6. RENDER FORM --- */}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 rounded-lg border bg-white p-6 shadow-sm">
+        
         {/* Nome */}
         <div>
           <label htmlFor="nome" className="block text-sm font-medium text-gray-700">Nome</label>
           <input
-            type="text" id="nome" name="nome"
-            value={profileData.nome || ''}
-            onChange={handleInputChange}
+            type="text" id="nome"
+            {...register("nome")}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
+          {errors.nome && <p className="mt-1 text-sm text-red-600">{errors.nome.message}</p>}
         </div>
+
         {/* Cognome */}
         <div>
           <label htmlFor="cognome" className="block text-sm font-medium text-gray-700">Cognome</label>
           <input
-            type="text" id="cognome" name="cognome"
-            value={profileData.cognome || ''}
-            onChange={handleInputChange}
+            type="text" id="cognome"
+            {...register("cognome")}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
+          {errors.cognome && <p className="mt-1 text-sm text-red-600">{errors.cognome.message}</p>}
         </div>
+
         {/* Indirizzo Residenza */}
         <div>
           <label htmlFor="indirizzo_residenza" className="block text-sm font-medium text-gray-700">Indirizzo di Residenza</label>
           <input
-            type="text" id="indirizzo_residenza" name="indirizzo_residenza"
-            value={profileData.indirizzo_residenza || ''}
-            onChange={handleInputChange}
+            type="text" id="indirizzo_residenza"
+            {...register("indirizzo_residenza")}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
+          {errors.indirizzo_residenza && <p className="mt-1 text-sm text-red-600">{errors.indirizzo_residenza.message}</p>}
         </div>
+
         {/* Telefono */}
         <div>
           <label htmlFor="telefono" className="block text-sm font-medium text-gray-700">Telefono</label>
           <input
-            type="tel" id="telefono" name="telefono"
-            value={profileData.telefono || ''}
-            onChange={handleInputChange}
+            type="tel" id="telefono"
+            {...register("telefono")}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
+          {errors.telefono && <p className="mt-1 text-sm text-red-600">{errors.telefono.message}</p>}
         </div>
+        
         {/* Documento Identità */}
         <div>
           <label htmlFor="documento" className="block text-sm font-medium text-gray-700">Documento di Identità</label>
@@ -214,18 +220,15 @@ export default function ProfilePage() {
             type="file" id="documento" name="documento"
             onChange={handleFileChange}
             accept="application/pdf, image/png, image/jpeg"
-            className="mt-1 block w-full text-sm text-gray-500
-              file:mr-4 file:rounded-md file:border-0
-              file:bg-indigo-50 file:px-4 file:py-2
-              file:text-sm file:font-semibold file:text-indigo-700
-              hover:file:bg-indigo-100"
+            className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100"
           />
-          {profileData.documento_identita_path && !idDocumentFile && (
+          {currentDocPath && !idDocumentFile && (
              <p className="mt-2 text-sm text-gray-500">
-               File attuale: {profileData.documento_identita_path.split('/').pop()}
+               File attuale: {currentDocPath.split('/').pop()}
              </p>
           )}
         </div>
+
         {/* Pulsante Salva */}
         <div>
           <button
@@ -238,7 +241,7 @@ export default function ProfilePage() {
         </div>
       </form>
 
-      {/* Messaggi di feedback */}
+      {/* Messaggi di feedback (API) */}
       {success && (
         <p className="mt-4 rounded-md bg-green-100 p-3 text-center text-sm text-green-700">
           {success}

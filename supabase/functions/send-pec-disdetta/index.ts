@@ -1,5 +1,6 @@
+
+
 // supabase/functions/send-pec-disdetta/index.ts
-// (C12 - Hardened: Correzione 'already declared' - FINALE)
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
@@ -65,7 +66,6 @@ interface ProfileData {
 interface DisdettaData {
   id: number
   user_id: string
-  documento_delega_path: string | null
   receiver_tax_id: string | null
   supplier_tax_id: string | null
   status: string
@@ -169,7 +169,44 @@ ${profile.nome || ''} ${profile.cognome || ''}
 }
 
 // ==========================
-// 5) HANDLER (C12)
+// 4.5) HELPER: CREA PDF DELEGA (C13)
+// ==========================
+async function creaPdfDelega(profile: ProfileData): Promise<Uint8Array> {
+  console.log('Inizio creazione PDF Delega...')
+  const pdfDoc = await PDFDocument.create()
+  const page = pdfDoc.addPage([300, 200]) // Un formato più piccolo per la delega
+  const { width, height } = page.getSize()
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
+  const fontSize = 10
+
+  const testo = `
+    DELEGA PER INVIO DISDETTA
+    
+    Io sottoscritto ${profile.nome || ''} ${profile.cognome || ''},
+    residente in ${profile.indirizzo_residenza || ''},
+    
+    DELEGO formalmente la piattaforma [Nome Piattaforma]
+    a inviare la richiesta di disdetta per mio conto.
+    
+    Data: ${new Date().toLocaleDateString('it-IT')}
+  `.trim()
+
+  // Usiamo la tua funzione wrapText (se vuoi, o un testo semplice)
+  page.drawText(testo, {
+    x: 20,
+    y: height - 3 * fontSize,
+    size: fontSize,
+    font: font,
+    lineHeight: fontSize * 1.5,
+    color: rgb(0, 0, 0),
+  })
+
+  console.log('PDF Delega creato.')
+  return await pdfDoc.save()
+}
+
+// ==========================
+// 5) HANDLER (C13 - Generazione Delega)
 // ==========================
 serve(async (req: Request) => {
   const origin = resolveCorsOrigin(req)
@@ -192,45 +229,38 @@ serve(async (req: Request) => {
   try {
     // --- Validazione body ---
     let body: unknown
-    try {
-      body = await req.json()
-    } catch {
-      throw new Error('Body JSON non valido')
-    }
-    if (!isRequestBody(body)) {
-      throw new Error("Parametro 'id' mancante o non numerico")
-    }
+    try { body = await req.json() } catch { throw new Error('Body JSON non valido') }
+    if (!isRequestBody(body)) { throw new Error("Parametro 'id' mancante o non numerico") }
     disdettaId = body.id
     console.log(`[TEST] Richiesta ricevuta per ID: ${disdettaId}`)
 
-    // --- 1. MODIFICA C12: DUAL CLIENT AUTH ---
+    // --- 1. Dual Client Auth (C12) ---
     const supabaseUser = createClient(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!, // <-- Usa ANON key
+      Deno.env.get('SUPABASE_ANON_KEY')!,
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     )
 
+    // Select pulita (C13 - senza 'documento_delega_path')
     const { data: disdettaData, error: disdettaError } = await supabaseUser
       .from('extracted_data')
-      .select('id, user_id, documento_delega_path, receiver_tax_id, supplier_tax_id, status')
+      .select('id, user_id, receiver_tax_id, supplier_tax_id, status')
       .eq('id', disdettaId)
       .single()
 
     if (disdettaError) throw new Error(`Disdetta non trovata o accesso negato: ${disdettaError.message}`)
     if (!disdettaData) throw new Error('Disdetta non trovata')
     
-    // --- 2. MODIFICA C12: State Transition Check (Early) ---
+    // --- 2. State Transition Check (C12) ---
     if (disdettaData.status !== 'CONFIRMED') {
       throw new Error(`Impossibile inviare: lo stato è ${disdettaData.status} (atteso CONFIRMED)`)
     }
     
     userId = disdettaData.user_id
     const typedDisdettaData: DisdettaData = disdettaData
-
-    // --- Creiamo il client Admin SOLO ORA ---
     const supabaseAdmin = getSupabaseAdmin()
 
-    // 2) Recupera Profilo
+    // 3. Recupera Profilo (invariato)
     const { data: profileData, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('nome, cognome, indirizzo_residenza, documento_identita_path')
@@ -240,64 +270,60 @@ serve(async (req: Request) => {
     if (!profileData) throw new Error('Profilo non trovato')
     const typedProfileData: ProfileData = profileData
 
-    // 3) Recupera File Delega
-    if (!typedDisdettaData.documento_delega_path) throw new Error("Errore: manca 'documento_delega_path'")
-    const { data: delegaFile, error: delegaError } = await supabaseAdmin
-      .storage.from('documenti-delega').download(typedDisdettaData.documento_delega_path)
-    if (delegaError) throw new Error(`Errore download delega: ${delegaError.message}`)
-
-    // 4) Recupera Documento Identità
+    // 4. Recupera Documento Identità (PULITO C13 - blocco delega rimosso)
     if (!typedProfileData.documento_identita_path) throw new Error("Errore: manca 'documento_identita_path' nel profilo")
     const { data: idFile, error: idError } = await supabaseAdmin
       .storage.from('documenti-identita').download(typedProfileData.documento_identita_path)
     if (idError) throw new Error(`Errore download documento identità: ${idError.message}`)
 
-    // --- 5. MODIFICA C12: MIME & Size Whitelist ---
-    if (!delegaFile || !ALLOWED_MIME.includes(delegaFile.type) || delegaFile.size > MAX_FILE_BYTES) {
-      throw new Error(`File delega non valido (tipo: ${delegaFile?.type}, size: ${delegaFile?.size})`)
-    }
+    // 5. MIME & Size Whitelist (PULITO C13 - controllo delega rimosso)
     if (!idFile || !ALLOWED_MIME.includes(idFile.type) || idFile.size > MAX_FILE_BYTES) {
       throw new Error(`File ID non valido (tipo: ${idFile?.type}, size: ${idFile?.size})`)
     }
-    console.log(`File validati. Delega=${delegaFile.size}B, ID=${idFile.size}B`)
+    console.log(`File validati. ID=${idFile.size}B`)
 
-    // 6) Genera PDF
-    const pdfBytes = await creaPdfDisdetta(typedProfileData, typedDisdettaData)
-    console.log(`PDF generato (${pdfBytes.length} bytes).`)
+    // --- 6. Genera PDF (MODIFICATO C13) ---
+    const pdfDisdettaBytes = await creaPdfDisdetta(typedProfileData, typedDisdettaData)
+    const pdfDelegaBytes = await creaPdfDelega(typedProfileData) // <-- La tua nuova logica
+    const idBytes = await idFile.arrayBuffer()
+    console.log(`PDF generati: Disdetta (${pdfDisdettaBytes.length}B), Delega (${pdfDelegaBytes.length}B).`)
+    
+    // --- 7. Upload PDF (MODIFICATO C13) ---
+    const pdfDisdettaPath = `disdette/${disdettaId}_lettera.pdf`
+    const { error: upErrDisdetta } = await supabaseAdmin
+      .storage.from(PDF_BUCKET).upload(pdfDisdettaPath, pdfDisdettaBytes, { contentType: 'application/pdf', upsert: true })
+    if (upErrDisdetta) throw new Error(`Errore upload PDF Disdetta: ${upErrDisdetta.message}`)
+    console.log(`PDF Disdetta (Lettera) caricato su '${PDF_BUCKET}/${pdfDisdettaPath}'`)
 
-    // 7) Upload PDF
-    const pdfPath = `disdette/${disdettaId}.pdf`
-    const { error: upErr } = await supabaseAdmin
-      .storage.from(PDF_BUCKET).upload(pdfPath, pdfBytes, { contentType: 'application/pdf', upsert: true })
-    if (upErr) throw new Error(`Errore upload PDF: ${upErr.message}`)
-    console.log(`PDF caricato su '${PDF_BUCKET}/${pdfPath}'`)
+    const pdfDelegaPath = `disdette/${disdettaId}_delega.pdf`
+    const { error: upErrDelega } = await supabaseAdmin
+      .storage.from(PDF_BUCKET).upload(pdfDelegaPath, pdfDelegaBytes, { contentType: 'application/pdf', upsert: true })
+    if (upErrDelega) throw new Error(`Errore upload PDF Delega: ${upErrDelega.message}`)
+    console.log(`PDF Delega (Auto-generato) caricato su '${PDF_BUCKET}/${pdfDelegaPath}'`)
 
-    // 8) Invio PEC (DISABILITATO IN TEST)
+    // 8. Invio PEC (DISABILITATO IN TEST)
     if (TEST_MODE) {
       console.log('MODALITÀ TEST: Invio PEC saltato.')
+      // (In futuro, la logica SMTP userà pdfDisdettaBytes, pdfDelegaBytes, idBytes)
     }
-    // else { ... logica SMTP ... }
 
-    // --- 9. MODIFICA C12: State Transition Check (Finale) ---
+    // --- 9. Aggiornamento Stato (MODIFICATO C13) ---
     const newStatus = TEST_MODE ? 'TEST_SENT' : 'SENT'
     const { error: updateError, count } = await supabaseAdmin
       .from('extracted_data')
-      .update({ status: newStatus, pdf_path: pdfPath })
+      .update({ status: newStatus, pdf_path: pdfDisdettaPath })
       .eq('id', disdettaId)
-      .eq('status', 'CONFIRMED') // <-- Impedisce doppi invii
-
+      .eq('status', 'CONFIRMED')
     if (updateError) throw new Error(`Errore aggiornamento stato: ${updateError.message}`)
-    if (count === 0) {
-      console.warn(`[send-pec-disdetta] Doppio invio bloccato per ID: ${disdettaId}`)
-    }
+    if (count === 0) { console.warn(`[send-pec-disdetta] Doppio invio bloccato per ID: ${disdettaId}`) }
     
-    console.log(`Stato aggiornato a '${newStatus}'. Flusso C12 (Test) completato.`)
+    console.log(`Stato aggiornato a '${newStatus}'. Flusso C13 (Test) completato.`)
 
-    // 10) Risposta
+    // 10. Risposta
     return new Response(JSON.stringify({
       success: true,
       message: TEST_MODE ? 'Invio SIMULATO con successo.' : 'Invio completato.',
-      pdf_path: `${PDF_BUCKET}/${pdfPath}`,
+      pdf_path: `${PDF_BUCKET}/${pdfDisdettaPath}`,
       status: newStatus,
     }), { headers: { ...headers, "Content-Type": "application/json" } })
 

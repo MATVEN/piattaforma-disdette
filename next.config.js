@@ -1,8 +1,8 @@
-// next.config.ts
+// next.config.js (Sintassi CommonJS corretta)
 
 /** @type {import('next').NextConfig} */
 
-// 1. Definizione degli Security Headers (dall'audit)
+// 1. Definizione degli Security Headers (invariati)
 const securityHeaders = [
   {
     key: 'X-Frame-Options',
@@ -24,11 +24,13 @@ const securityHeaders = [
 
 // 2. Configurazione di Next.js
 const nextConfig = {
+  // Aggiungi qui altre tue configurazioni se ne hai (es. 'reactStrictMode: true')
   
   // 3. Applicazione degli headers
   async headers() {
     return [
       {
+        // Applica questi header a tutte le rotte
         source: '/(.*)',
         headers: securityHeaders,
       },
@@ -36,4 +38,5 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+// 4. Esporta la configurazione (Sintassi JS corretta)
+module.exports = nextConfig
