@@ -9,7 +9,7 @@ import { getExtractedDataSchema } from '@/domain/schemas'
 type BasicCookie = { name: string; value: string }
 type CookieStoreType = Awaited<ReturnType<typeof nextCookies>>
 
-// --- 1. ADATTATORE COOKIE (SENZA 'workRes') ---
+// --- Adattatore Cookie ---
 const createCookieAdapter = (cookieStore: CookieStoreType) => ({
   getAll() {
     const all = cookieStore.getAll()
@@ -20,29 +20,25 @@ const createCookieAdapter = (cookieStore: CookieStoreType) => ({
       cookiesToSet.forEach(({ name, value, options }) => {
         cookieStore.set(name, value, options)
       })
-    } catch (error) {
-      // Ignora errori read-only (necessario per auth.getUser())
-    }
+    } catch (error) { /* Ignora errori read-only */ }
   },
 })
 
 export async function GET(request: NextRequest) {
   const cookieStore = await nextCookies()
-  
-  // 1) Supabase SSR
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     { cookies: createCookieAdapter(cookieStore) }
   )
 
-  // 2) Auth
+  // 1. Auth
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
   }
 
-  // 3) Validazione query param
+  // 2. Validazione query
   let filePath: string
   try {
     const filePathRaw = request.nextUrl.searchParams.get('filePath')
@@ -58,18 +54,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Parametri query non validi' }, { status: 400 })
   }
 
-  // 4) Query con least-privilege select
+  // 3. Query
   try {
     const { data, error } = await supabase
       .from('extracted_data')
-      .select('id,file_path,status,supplier_tax_id,receiver_tax_id,supplier_iban,raw_json_response,created_at,updated_at')
+      .select('id, file_path, status, supplier_tax_id, receiver_tax_id, supplier_iban, raw_json_response, created_at, updated_at, error_message')
       .eq('file_path', filePath)
       .eq('user_id', user.id)
       .single()
 
     if (error) {
       if ((error as { code?: string }).code === 'PGRST116') {
-        // --- 3. RISPOSTA ---
         return NextResponse.json(
           { success: false, error: 'Data not found or access denied' },
           { status: 404 }
@@ -78,13 +73,11 @@ export async function GET(request: NextRequest) {
       throw error
     }
 
-    // --- 3. RISPOSTA ---
     return NextResponse.json({ success: true, data }, { status: 200 })
 
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Errore sconosciuto'
     console.error('[get-extracted-data][GET] error:', msg, { userId: user.id })
-    // --- 3. RISPOSTA ---
     return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 })
   }
 }

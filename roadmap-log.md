@@ -152,3 +152,12 @@
   - **C8 (send-pec-disdetta):**
     - Added `creaPdfDelega` helper to auto-generate the delega PDF using profile data.
     - Updated the function to upload *both* the Lettera PDF and Delega PDF to storage for tracking.
+
+- **OCR Error Handling (C14):**
+  - **Database (Schema):** Adds `error_message` column to `extracted_data`.
+  - **C3 (Upload Page):** Refactored to create a record with `status: 'PROCESSING'` *before* invoking the function, passing only the record `id`.
+  - **C4 (process-document):** Refactored to receive an `id`. Implements a `try...catch` block to update the record to `status: 'FAILED'` and save the `error_message` on failure, preventing a crash.
+  - **C13 (ReviewForm):**
+    - Implements "polling" logic in `useEffect` to check the status (`PROCESSING`).
+    - Adds a new `StatusDisplay` component to show loading/processing messages.
+    - If `status: 'FAILED'` is detected, it displays the `error_message` from the database.

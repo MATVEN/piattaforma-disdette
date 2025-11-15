@@ -14,7 +14,6 @@ export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
 
   useEffect(() => {
     if (!isAuthLoading && !user) {
@@ -26,10 +25,10 @@ export default function UploadPage() {
     if (e.target.files && e.target.files.length > 0) {
       setFile(e.target.files[0])
       setError(null)
-      setSuccess(null)
     }
   }
 
+  // --- GESTORE INVIO (MODIFICATO C14) ---
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (!file) {
@@ -42,51 +41,79 @@ export default function UploadPage() {
     }
 
     setIsSubmitting(true)
-    setError(null)
-    setSuccess(null) 
+    setError(null) 
+
+    const filePath = `${user.id}/${serviceId}/${file.name}`
+    let recordId: number | null = null; // Ci serve l'ID per l'invocazione
 
     try {
-      // 1. Upload Bolletta
-      const filePath = `${user.id}/${serviceId}/${file.name}`
+      // --- 1. Upload Bolletta (C3) ---
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('documenti_utente')
         .upload(filePath, file, { upsert: true })
 
       if (uploadError) throw uploadError
-      console.log('File bolletta caricato:', uploadData.path)
+      console.log('C14: File bolletta caricato:', uploadData.path)
 
-      // 2. Invocazione Edge Function
+      // --- 2. CREAZIONE RECORD DB (C14) ---
+      // Creiamo il record 'placeholder' con stato 'PROCESSING'
+      // Usiamo 'upsert' per sicurezza, nel caso l'utente ricarichi lo stesso file
+      const { data: recordData, error: insertError } = await supabase
+        .from('extracted_data')
+        .upsert(
+          { 
+            user_id: user.id,
+            file_path: filePath,
+            status: 'PROCESSING' // Nuovo stato
+          },
+          { onConflict: 'file_path' } // Se il file esiste, aggiorna lo stato
+        )
+        .select('id') // Chiediamo l'ID del record
+        .single()
+      
+      if (insertError) throw new Error(`Errore creazione record: ${insertError.message}`)
+      if (!recordData) throw new Error("Impossibile recuperare l'ID del record creato.")
+      
+      recordId = recordData.id
+      console.log(`C14: Record creato/aggiornato. ID: ${recordId}`)
+
+      // --- 3. Invocazione Edge Function (C4 - Modificato) ---
+      // Ora passiamo l'ID, non il payload
       const payload = {
-        bucket: 'documenti_utente',
-        path: filePath,
-        // delegaPath non più inviato (C13)
+        id: recordId 
       }
-      console.log("Invocazione Edge Function (solo bolletta)...", payload)
+      console.log("C14: Invocazione 'process-document' con ID...", payload)
       
       const { error: invokeError } = await supabase.functions.invoke(
         'process-document',
-        { body: payload } // <-- Annidato in 'body'
+        { body: payload }
       )
-
       if (invokeError) throw invokeError
 
-      // 3. Redirect a Check Dati
-      console.log("Invocazione riuscita. Reindirizzamento a /review...")
+      // --- 4. Redirect a Check Dati (C5) ---
+      // L'utente viene reindirizzato. La pagina /review
+      // mostrerà "Caricamento..." finché lo stato non cambia
+      // da 'PROCESSING' a 'PENDING_REVIEW' o 'FAILED'.
+      console.log("C14: Invocazione riuscita. Reindirizzamento a /review...")
       router.push(`/review?filePath=${encodeURIComponent(filePath)}`)
 
     } catch (error: unknown) {
-      if (error instanceof Error) setError(error.message)
-      else setError('Errore sconosciuto.')
-      setIsSubmitting(false) 
+      let errorMessage = 'Errore sconosciuto.'
+      if (error instanceof Error) errorMessage = error.message
+      setError(errorMessage)
+      setIsSubmitting(false)
+      
     }
   }
   
+  // --- RENDER ---
   if (isAuthLoading || !user) {
     return <div className="p-8 text-center">Caricamento...</div>
   }
 
   return (
     <div className="mx-auto max-w-2xl p-8">
+      {/* ... (resto del JSX invariato) ... */}
       <h1 className="mb-6 text-3xl font-bold">
         Carica il tuo documento
       </h1>
@@ -96,7 +123,6 @@ export default function UploadPage() {
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border bg-white p-6 shadow-sm">
-        {/* Step Unico */}
         <div>
           <label htmlFor="documento_bolletta" className="block text-sm font-medium text-gray-700">
             Documento Bolletta
@@ -119,7 +145,6 @@ export default function UploadPage() {
           </button>
         </div>
 
-        {/* Messaggi di feedback */}
         {error && (
           <p className="mt-4 rounded-md bg-red-100 p-3 text-center text-sm text-red-700">
             {error}
