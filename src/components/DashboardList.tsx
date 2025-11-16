@@ -45,8 +45,9 @@ export default function DashboardList() {
       }
 
       // L'API ora restituisce solo i campi che ci servono (C11)
-      const data: DisdettaData[] = await response.json()
-      setDisdette(data)
+      const result = await response.json()
+      setDisdette(result.data || [])
+
     } catch (err: unknown) {
       if (err instanceof Error) setError(err.message)
       else setError('Si è verificato un errore sconosciuto.')
@@ -137,10 +138,7 @@ export default function DashboardList() {
               <div className="flex items-center justify-between space-x-4">
                 
                 {/* 1. Area Link (per info) */}
-                <Link
-                  href={`/review?filePath=${encodeURIComponent(item.file_path)}`}
-                  className="group flex-1 truncate" // flex-1 = occupa lo spazio
-                >
+                <Link href={`/review?id=${item.id}`} className="group flex-1 truncate">
                   <p className="truncate text-sm font-medium text-indigo-600 group-hover:underline">
                     {item.file_path.split('/').pop() || item.file_path}
                   </p>

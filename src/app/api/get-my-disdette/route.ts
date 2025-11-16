@@ -1,81 +1,46 @@
-// src/app/api/get-my-disdette/route.ts
+/**
+ * API Route: GET /api/get-my-disdette
+ * Recupera tutte le disdette dell'utente autenticato con paginazione
+ * 
+ * Query Parameters:
+ * - page: numero pagina (default: 1)
+ * - pageSize: elementi per pagina (default: 10, max: 100)
+ * 
+ * Response:
+ * {
+ *   data: ExtractedData[],
+ *   count: number,
+ *   hasMore: boolean
+ * }
+ */
 
-import { NextResponse, type NextRequest } from 'next/server'
-import { cookies as nextCookies } from 'next/headers'
-import {
-  createServerClient,
-  type CookieOptions,
-} from '@supabase/ssr'
+import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@/lib/supabase/server";
+import { AuthService } from "@/services/auth.service";
+import { DisdettaService } from "@/services/disdetta.service";
+import { DisdettaRepository } from "@/repositories/disdetta.repository";
+import { handleApiError } from "@/lib/errors/AppError";
 
-export const dynamic = 'force-dynamic'
-
-// Definiamo il tipo per l'oggetto cookie
-type CookieStoreType = Awaited<ReturnType<typeof nextCookies>>
-
-const createCookieAdapter = (cookieStore: CookieStoreType) => {
-  return {
-    getAll() {
-      return cookieStore.getAll().map((c: { name: string; value: string }) => ({
-        name: c.name,
-        value: c.value,
-      }))
-    },
-    setAll(cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) {
-      try {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          cookieStore.set(name, value, options)
-        })
-      } catch (error) {
-        // Ignora errori
-      }
-    },
-  }
-}
-
-// Gestiamo le richieste GET
 export async function GET(request: NextRequest) {
-  
-  const cookieStore = await nextCookies()
-  const cookieAdapter = createCookieAdapter(cookieStore)
-
-  // 1. Client e Autenticazione
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: cookieAdapter }
-  )
-
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  // 2. Query al Database
   try {
+    // 1. Setup client e autenticazione
+    const supabase = await createServerClient();
+    const user = await AuthService.getCurrentUser(supabase);
+
+    // 2. Parse parametri paginazione
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
+
+    // 3. Business logic delegata al service
+    const repository = new DisdettaRepository(supabase);
+    const service = new DisdettaService(repository, user.id);
     
-    const { data, error } = await supabase
-      .from('extracted_data')
-      .select('id, created_at, file_path, status') // Seleziona solo i campi per la dashboard
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
+    const result = await service.getMyDisdette(page, pageSize);
 
-    if (error) {
-      throw error
-    }
-
-    // 3. Successo
-    return NextResponse.json(data, { status: 200 })
-
-  } catch (error: unknown) {
-    let errorMessage = 'Errore sconosciuto'
-    if (error instanceof Error) {
-      errorMessage = error.message
-    }
-    console.error('Errore in get-my-disdette (route.ts):', errorMessage)
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    )
+    // 4. Response
+    return NextResponse.json(result);
+  } catch (error) {
+    return handleApiError(error);
   }
 }

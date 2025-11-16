@@ -44,7 +44,7 @@ function StatusDisplay({ message, isError }: { message: string; isError: boolean
 export default function ReviewForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const filePath = searchParams.get('filePath')
+  const id = searchParams.get('id')
 
   const [data, setData] = useState<ExtractedData | null>(null)
   const [currentStatus, setCurrentStatus] = useState<'LOADING' | 'PROCESSING' | 'FAILED' | 'SUCCESS'>('LOADING')
@@ -73,8 +73,8 @@ export default function ReviewForm() {
 
   // Caricamento + polling robusto
   useEffect(() => {
-    if (!filePath) {
-      setErrorMessage('Percorso file mancante. Impossibile caricare i dati.')
+    if (!id) {
+      setErrorMessage('ID mancante. Impossibile caricare i dati.')
       setCurrentStatus('FAILED')
       return
     }
@@ -90,17 +90,20 @@ export default function ReviewForm() {
     const fetchOnce = async () => {
       try {
         const res = await fetch(
-          `/api/get-extracted-data?filePath=${encodeURIComponent(filePath)}`,
+          `/api/get-extracted-data?id=${id}`,
           { credentials: 'include', signal: ac.signal, headers: { Accept: 'application/json' } }
         )
-        const result = await safeJson<ApiResponse<ExtractedData>>(res)
 
-        if (!res.ok || !result?.success || !result.data) {
-          const msg = result?.error || `Errore ${res.status}`
-          throw new Error(msg)
+        if (!res.ok) {
+          const errorData = await safeJson<{ error: string }>(res)
+          throw new Error(errorData?.error || `Errore ${res.status}`)
         }
 
-        const extracted = result.data
+        const extracted = await safeJson<ExtractedData>(res)
+
+        if (!extracted) {
+          throw new Error('Dati non validi ricevuti dal server')
+        }
 
         switch (extracted.status) {
           case 'FAILED':
@@ -150,7 +153,7 @@ export default function ReviewForm() {
       ac.abort()
       document.removeEventListener('visibilitychange', onVisibility)
     }
-  }, [filePath, reset])
+  }, [id, reset])
 
   // Invio
   const onSubmit: SubmitHandler<ReviewFormData> = async (formData) => {
@@ -189,9 +192,14 @@ export default function ReviewForm() {
         return
       }
 
-      const confirmJson = await safeJson<ApiResponse<ExtractedData>>(confirmResponse)
-      if (!confirmResponse.ok || !confirmJson?.success || !confirmJson.data) {
-        throw new Error(confirmJson?.error || 'Errore durante il salvataggio dei dati.')
+      if (!confirmResponse.ok) {
+        const errorData = await safeJson<{ error: string }>(confirmResponse)
+        throw new Error(errorData?.error || 'Errore durante il salvataggio dei dati.')
+      }
+
+      const confirmedData = await safeJson<ExtractedData>(confirmResponse)
+      if (!confirmedData) {
+        throw new Error('Dati confermati non validi')
       }
 
       // 2) Avvio invio PEC
@@ -200,7 +208,7 @@ export default function ReviewForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ id: confirmJson.data.id }),
+        body: JSON.stringify({ id: confirmedData.id }),
       })
 
       if (pecResponse.status === 401) {
@@ -213,9 +221,14 @@ export default function ReviewForm() {
         return
       }
 
-      const pecJson = await safeJson<ApiResponse<unknown>>(pecResponse)
-      if (!pecResponse.ok || !pecJson?.success) {
-        throw new Error(pecJson?.error || "Errore durante l'avvio dell'invio PEC.")
+      if (!pecResponse.ok) {
+        const errorData = await safeJson<{ error: string }>(pecResponse)
+        throw new Error(errorData?.error || "Errore durante l'avvio dell'invio PEC.")
+      }
+
+      const pecResult = await safeJson<{ success: boolean, message: string, pdfPath?: string }>(pecResponse)
+      if (!pecResult?.success) {
+        throw new Error("Errore durante l'avvio dell'invio PEC.")
       }
 
       setApiSuccess('Invio PEC avviato con successo! Sarai reindirizzato.')

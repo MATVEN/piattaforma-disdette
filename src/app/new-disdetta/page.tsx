@@ -26,7 +26,7 @@ type ServiceType = {
 }
 
 export default function NewDisdettaPage() {
-    const { user, isLoading: isAuthLoading } = useAuth()
+    const { user, isAuthLoading } = useAuth()
     const router = useRouter()
 
     // Stati per il wizard

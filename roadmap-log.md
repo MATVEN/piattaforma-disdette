@@ -161,3 +161,38 @@
     - Implements "polling" logic in `useEffect` to check the status (`PROCESSING`).
     - Adds a new `StatusDisplay` component to show loading/processing messages.
     - If `status: 'FAILED'` is detected, it displays the `error_message` from the database.
+
+- **Architecture Refactoring (C15):**
+  - **Foundation Layer:**
+    - Introduce `src/lib/errors/AppError.ts` con error types (UnauthorizedError, NotFoundError, ValidationError, …) e mappatura codici.
+    - Aggiunge `AuthService` (`src/services/auth.service.ts`) per centralizzare l’autenticazione (elimina duplicazioni nelle API).
+    - Crea factory Supabase server-side (`src/lib/supabase/server.ts`) con gestione cookie corretta e tipizzazione.
+  - **Data Access Layer:**
+    - Aggiunge `DisdettaRepository` (`src/repositories/disdetta.repository.ts`) per tutte le query su `extracted_data`.
+    - Implementa metodi: `getById`, `getByUser`, `create`, `updateStatus`, `confirmData`, `savePdfPath`, `countByStatus`.
+    - Supporta paginazione con `.range()` e tipo `PaginatedResult` per futura infinite scroll.
+    - Gestisce errori DB con codici specifici.
+  - **Business Logic Layer:**
+    - Aggiunge `DisdettaService` (`src/services/disdetta.service.ts`) con regole di dominio e orchestrazione.
+    - Valida transizioni di stato (es. conferma solo se `PENDING_REVIEW`, invio solo se `CONFIRMED`).
+    - Metodi chiave: `getDisdettaForReview`, `getMyDisdette`, `confirmAndPrepareForSend`, `prepareForPecSend`, `markAsSent`, `getDashboardStats`.
+    - Integra validazioni Zod lato service per operazioni type-safe.
+  - **API Routes Refactoring:**
+    - `GET /api/get-my-disdette`: aggiunge paginazione (`page`, `pageSize`, `status`), riduce codice e delega a service/repo.
+    - `GET /api/get-extracted-data`: semplifica, aggiunge check di business (es. `isProcessing`, `canEdit`, `errorInfo`).
+    - `PATCH /api/confirm-data`: valida automaticamente stato/coerenza dati, riduce codice duplicato.
+    - `POST /api/send-pec`: passa correttamente l’`Authorization` alla Edge Function e aggiorna lo stato post-invio.
+    - Tutte le route usano un `handleApiError` coerente per la serializzazione degli errori.
+  - **Frontend Updates:**
+    - `/upload/[serviceId]`: redirect con parametro `id` (non più `filePath`).
+    - `ReviewForm`: usa query `id` e il nuovo formato risposta (oggetto diretto).
+    - `DashboardList`: gestisce risposta paginata `{ data, count, hasMore }` e link uniformi con `?id=`.
+  - **Breaking Changes:**
+    - Le API restituiscono oggetti diretti (non più `{ success, data }`).
+    - La pagina di review usa `?id=` (non più `?filePath=`).
+    - `get-my-disdette` ora risponde `{ data, count, hasMore }` (non `{ disdette }`).
+    - `tsconfig.json`: esclude `supabase/` per evitare che Next compili le Edge Functions Deno.
+  - **Results:**
+    - ~170 righe duplicate eliminate complessivamente.
+    - Manutenibilità migliorata (business logic centralizzata), servizi/repository facilmente testabili.
+    - Tipi end-to-end più solidi e base pronta per **infinite scroll (C16)**.

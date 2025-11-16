@@ -1,108 +1,99 @@
-// src/app/api/send-pec/route.ts
+/**
+ * API Route: POST /api/send-pec
+ * Invia una disdetta confermata tramite PEC
+ * 
+ * Body:
+ * {
+ *   id: number  // ID della disdetta da inviare
+ * }
+ * 
+ * Workflow:
+ * 1. Verifica autenticazione
+ * 2. Verifica che la disdetta sia in stato CONFIRMED
+ * 3. Chiama l'Edge Function send-pec-disdetta
+ * 4. Se successo, aggiorna lo stato a TEST_SENT
+ * 
+ * Response:
+ * {
+ *   success: boolean,
+ *   message: string,
+ *   pdfPath?: string
+ * }
+ */
 
-import { NextResponse, type NextRequest } from 'next/server'
-import { cookies as nextCookies } from 'next/headers'
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
-import { z } from 'zod'
-import { parseSendPec } from '@/domain/schemas'
-
-type BasicCookie = { name: string; value: string }
-type CookieStoreType = Awaited<ReturnType<typeof nextCookies>>
-
-// --- 1. ADATTATORE COOKIE CORRETTO (SENZA 'workRes') ---
-const createCookieAdapter = (cookieStore: CookieStoreType) => ({
-  getAll() {
-    const all = cookieStore.getAll()
-    return all.map((c: BasicCookie) => ({ name: c.name, value: c.value }))
-  },
-  setAll(cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) {
-    try {
-      cookiesToSet.forEach(({ name, value, options }) => {
-        cookieStore.set(name, value, options)
-      })
-    } catch (error) {
-      // Ignora errori read-only (necessario per auth.getUser())
-    }
-  },
-})
+import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@/lib/supabase/server";
+import { AuthService } from "@/services/auth.service";
+import { DisdettaService } from "@/services/disdetta.service";
+import { DisdettaRepository } from "@/repositories/disdetta.repository";
+import { handleApiError, ValidationError, ExternalServiceError, UnauthorizedError } from "@/lib/errors/AppError";
 
 export async function POST(request: NextRequest) {
-  const cookieStore = await nextCookies()
-
-  // 1) Supabase SSR (ora usa l'adapter corretto)
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: createCookieAdapter(cookieStore) }
-  )
-
-  // 2) Auth 
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
-  }
-
-  // 3) Body validation 
-  let body: ReturnType<typeof parseSendPec>
   try {
-    body = parseSendPec(await request.json())
-  } catch (e) {
-    const details = e instanceof z.ZodError ? e.format() : undefined
-    const message = e instanceof Error ? e.message : 'Body non valido'
-    return NextResponse.json({ success: false, error: message, details }, { status: 400 })
-  }
+    // 1. Setup client e autenticazione
+    const supabase = await createServerClient();
+    const user = await AuthService.getCurrentUser(supabase);
 
-  const { id: disdettaId, test_mode } = body
-
-  // 4) Guard: stato record 
-  try {
-    const { data: row, error: selErr } = await supabase
-      .from('extracted_data')
-      .select('id,status,user_id')
-      .eq('id', disdettaId)
-      .eq('user_id', user.id) // ownership + RLS
-      .single()
-
-    if (selErr || !row) {
-      return NextResponse.json(
-        { success: false, error: 'Disdetta non trovata o accesso negato' },
-        { status: 404 }
-      )
+    // 2. Parse body JSON
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      throw new ValidationError("Body JSON non valido o mancante");
     }
 
-    if (row.status === 'SENT' || row.status === 'TEST_SENT') {
-      return NextResponse.json(
-        { success: false, error: `Disdetta già inviata (stato: ${row.status})` },
-        { status: 409 } // 409 = Conflict
-      )
+    const { id } = body;
+    if (!id || typeof id !== "number") {
+      throw new ValidationError("Parametro 'id' mancante o non valido");
     }
 
-    if (row.status !== 'CONFIRMED') {
-      return NextResponse.json(
-        { success: false, error: `Impossibile inviare: lo stato è ${row.status}` },
-        { status: 409 } // conflict / precondition failed
-      )
+    // 3. Verifica che la disdetta sia pronta per l'invio
+    // Il service controlla:
+    // - Disdetta esiste e appartiene all'utente
+    // - Stato è CONFIRMED
+    // - Dati essenziali presenti
+    const repository = new DisdettaRepository(supabase);
+    const service = new DisdettaService(repository, user.id);
+    
+    const disdetta = await service.prepareForPecSend(id);
+
+    // DEBUG TEMPORANEO
+    console.log('Disdetta preparata:', {
+      id: disdetta.id,
+      status: disdetta.status,
+      user_id: disdetta.user_id,
+    });
+
+    // 4. Chiama l'Edge Function send-pec-disdetta
+    const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-pec-disdetta`;
+    
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      throw new UnauthorizedError("Sessione non valida");
     }
 
-    // 5) Invoke Edge Function
-    const { error: invokeError } = await supabase.functions.invoke('send-pec-disdetta', {
-      body: { id: disdettaId, ...(test_mode ? { test_mode: true } : {}) },
-    })
+    const response = await fetch(functionUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`, // Token utente, non ANON_KEY!
+      },
+      body: JSON.stringify({ id: id }),
+    });
 
-    if (invokeError) {
-      throw new Error(`Errore invocazione funzione: ${invokeError.message}`)
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new ExternalServiceError(
+        "Edge Function send-pec-disdetta",
+        errorData.error || "Errore durante l'invio della PEC"
+      );
     }
 
-    // --- 6. RISPOSTA ---
-    return NextResponse.json(
-      { success: true, message: 'Invio PEC avviato' },
-      { status: 202 }
-    )
+    const result = await response.json();
 
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Errore sconosciuto'
-    console.error('[send-pec][POST] error:', msg, { disdettaId, userId: user.id })
-    // --- 6. RISPOSTA ---
-    return NextResponse.json({ success: false, error: msg }, { status: 500 })
+    // 5. Response
+    return NextResponse.json(result);
+  } catch (error) {
+    return handleApiError(error);
   }
 }

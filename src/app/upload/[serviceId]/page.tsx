@@ -95,7 +95,7 @@ export default function UploadPage() {
       // mostrerà "Caricamento..." finché lo stato non cambia
       // da 'PROCESSING' a 'PENDING_REVIEW' o 'FAILED'.
       console.log("C14: Invocazione riuscita. Reindirizzamento a /review...")
-      router.push(`/review?filePath=${encodeURIComponent(filePath)}`)
+      router.push(`/review?id=${recordId}`)
 
     } catch (error: unknown) {
       let errorMessage = 'Errore sconosciuto.'
