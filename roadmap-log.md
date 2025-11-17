@@ -163,36 +163,93 @@
     - If `status: 'FAILED'` is detected, it displays the `error_message` from the database.
 
 - **Architecture Refactoring (C15):**
-  - **Foundation Layer:**
-    - Introduce `src/lib/errors/AppError.ts` con error types (UnauthorizedError, NotFoundError, ValidationError, …) e mappatura codici.
-    - Aggiunge `AuthService` (`src/services/auth.service.ts`) per centralizzare l’autenticazione (elimina duplicazioni nelle API).
-    - Crea factory Supabase server-side (`src/lib/supabase/server.ts`) con gestione cookie corretta e tipizzazione.
+    - **Foundation Layer:**
+    - Introduces `src/lib/errors/AppError.ts` with error types `(UnauthorizedError, NotFoundError, ValidationError, …)` and code mapping.
+    - Adds AuthService `(src/services/auth.service.ts)` to centralize authentication (removes duplication across APIs).
+    - Creates Supabase server-side factory `(src/lib/supabase/server.ts)` with proper cookie handling and typing.
   - **Data Access Layer:**
-    - Aggiunge `DisdettaRepository` (`src/repositories/disdetta.repository.ts`) per tutte le query su `extracted_data`.
-    - Implementa metodi: `getById`, `getByUser`, `create`, `updateStatus`, `confirmData`, `savePdfPath`, `countByStatus`.
-    - Supporta paginazione con `.range()` e tipo `PaginatedResult` per futura infinite scroll.
-    - Gestisce errori DB con codici specifici.
+    - Adds DisdettaRepository `(src/repositories/disdetta.repository.ts)` for all queries on extracted_data.
+    - Implements methods: getById, getByUser, create, updateStatus, confirmData, savePdfPath, countByStatus.
+    - Supports pagination with `.range()` and `PaginatedResult` type for future infinite scroll.
+    - Handles DB errors with specific codes.
   - **Business Logic Layer:**
-    - Aggiunge `DisdettaService` (`src/services/disdetta.service.ts`) con regole di dominio e orchestrazione.
-    - Valida transizioni di stato (es. conferma solo se `PENDING_REVIEW`, invio solo se `CONFIRMED`).
-    - Metodi chiave: `getDisdettaForReview`, `getMyDisdette`, `confirmAndPrepareForSend`, `prepareForPecSend`, `markAsSent`, `getDashboardStats`.
-    - Integra validazioni Zod lato service per operazioni type-safe.
+    - Adds DisdettaService `(src/services/disdetta.service.ts)` with domain rules and orchestration.
+    - Validates state transitions `(e.g., confirm only if PENDING_REVIEW, send only if CONFIRMED)`.
+    - Key methods: `getDisdettaForReview`, `getMyDisdette`, `confirmAndPrepareForSend`, `prepareForPecSend`, `markAsSent`, `getDashboardStats`.
+    - Integrates Zod validations at service level for type-safe operations.
   - **API Routes Refactoring:**
-    - `GET /api/get-my-disdette`: aggiunge paginazione (`page`, `pageSize`, `status`), riduce codice e delega a service/repo.
-    - `GET /api/get-extracted-data`: semplifica, aggiunge check di business (es. `isProcessing`, `canEdit`, `errorInfo`).
-    - `PATCH /api/confirm-data`: valida automaticamente stato/coerenza dati, riduce codice duplicato.
-    - `POST /api/send-pec`: passa correttamente l’`Authorization` alla Edge Function e aggiorna lo stato post-invio.
-    - Tutte le route usano un `handleApiError` coerente per la serializzazione degli errori.
+    - `GET /api/get-my-disdette`: adds pagination (page, pageSize, status), reduces code, delegates to service/repo.
+    - `GET /api/get-extracted-data`: simplifies, adds business checks (e.g., isProcessing, canEdit, errorInfo).
+    - `PATCH /api/confirm-data`: automatically validates state/data consistency, reduces duplicate code.
+    - `POST /api/send-pec`: correctly passes Authorization to the Edge Function and updates status post-send.
+    - All routes use a consistent handleApiError for error serialization.
   - **Frontend Updates:**
-    - `/upload/[serviceId]`: redirect con parametro `id` (non più `filePath`).
-    - `ReviewForm`: usa query `id` e il nuovo formato risposta (oggetto diretto).
-    - `DashboardList`: gestisce risposta paginata `{ data, count, hasMore }` e link uniformi con `?id=`.
+    - `/upload/[serviceId]`: redirect with id parameter (no longer filePath).
+    - `ReviewForm`: uses id query and new response format (direct object).
+    - `DashboardList`: handles paginated response { data, count, hasMore } and uniform links with ?id=.
   - **Breaking Changes:**
-    - Le API restituiscono oggetti diretti (non più `{ success, data }`).
-    - La pagina di review usa `?id=` (non più `?filePath=`).
-    - `get-my-disdette` ora risponde `{ data, count, hasMore }` (non `{ disdette }`).
-    - `tsconfig.json`: esclude `supabase/` per evitare che Next compili le Edge Functions Deno.
+    - APIs now return direct objects (no longer `{ success, data }`).
+    - Review page uses `?id= (no longer ?filePath=)`.
+    - `get-my-disdette` now responds `{ data, count, hasMore }` (not { disdette }).
+    - `tsconfig.json`: excludes `supabase/` to prevent Next from compiling Deno Edge Functions.
   - **Results:**
-    - ~170 righe duplicate eliminate complessivamente.
-    - Manutenibilità migliorata (business logic centralizzata), servizi/repository facilmente testabili.
-    - Tipi end-to-end più solidi e base pronta per **infinite scroll (C16)**.
+    - ~170 duplicate lines removed overall.
+    - Improved maintainability (centralized business logic), services/repositories easily testable.
+    - Stronger end-to-end types and ready foundation for infinite scroll (C16).
+
+- **C16 — Infinite Scroll Pagination**
+  - **Custom Hook (useInfiniteScroll)**
+    - Creates `src/hooks/useInfiniteScroll.ts` to centralize all pagination logic.
+    - Manages full pagination state: `items, page, isLoading, isLoadingMore, hasMore, error, totalCount.`
+    - Provides two core methods:
+      - `loadMore()` → fetches the next page.
+      - `refresh()` → reloads from page 1.
+    - Prevents duplicate fetches through proper state guarding.
+    - Implements robust error handling and race-condition protection.
+    - Uses `useCallback` for memoized fetch functions.
+    - Ensures correct `useEffect` dependencies to avoid infinite loops.
+  - **Intersection Observer (InfiniteScrollTrigger)**
+    - Adds `src/components/InfiniteScrollTrigger.tsx.`
+    - Uses the Intersection Observer `API` to detect when the user reaches the bottom area.
+    - Automatically triggers `loadMore()` when the element becomes visible.
+    - Supports configurable threshold and rootMargin `(e.g., 100px for pre-loading)`.
+    - Includes proper cleanup on unmount to avoid memory leaks.
+  - **Dashboard Refactoring**
+    - Refactors the `DashboardList` to fully adopt the infinite scroll pattern.
+    - Progressive loading:
+      - Fetches `10 items` per page.
+      - Skeleton loaders for the initial load (3 animated placeholders).
+      - Loading spinner for subsequent pages.
+    - UX enhancements:
+      - `Items counter` → “Showing X of Y”.
+      - `Scroll hint` → “Scroll to load more”.
+      - `End-of-list message` → “🎉 You’ve reached the end”.
+    - Maintains scroll position when new items are appended.
+    - Automatically refreshes the list after PEC submission to update statuses.
+  - **Performance Improvements**
+    - Dramatically reduces initial load time by loading only `10 items` at startup.
+    - Implements `lazy loading` — next pages load only when needed.
+    - Prevents duplicate network calls during pagination.
+    - Preloads the next page early via `rootMargin`.
+    - Removes the `refresh dependency` in `useEffect` to eliminate infinite rerenders.
+  - **Bug Fixes & Edge Cases**
+    - Fixes infinite loop caused by incorrect `useEffect` dependencies.
+    - Ensures proper cleanup of the Intersection Observer.
+    - Handles edge cases such as:
+      - `Empty lists`,
+      - `Lists with exactly 10 items,`
+      - `Network errors, slow responses, or unexpected payloads.`
+    - Guarantees stable UX even with rapidly changing data.
+  - **API Integration (C15)**
+    - Fully integrates backend pagination using query parameters: `?page=X&pageSize=Y`.
+    - Correctly parses paginated responses: `{ data: [], count: number, hasMore: boolean }`.
+    - Uses `DisdettaService.getMyDisdette()` in strict paginated mode.
+    - Reduces initial `API payload` and improves scalability for large datasets.
+  - **Results**
+    - Significant performance improvement for users with many disdette.
+    - Modern, fluid UX similar to social media feeds.
+    - Scalable pattern ready for:
+      - `filters`,
+      - `search with pagination`,
+      - `dynamic sorting`.
+    - Smooth transitions thanks to skeletons, spinners, and preloading.
