@@ -3,8 +3,8 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/context/AuthContext'
-// 1. Importa il Navbar
 import Navbar from '@/components/Navbar'
+import ToastProvider from '@/components/ToastProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -22,10 +22,10 @@ export default function RootLayout({
     <html lang="it">
       <body className={inter.className}>
         <AuthProvider>
-          {/* 2. Aggiungi il Navbar qui */}
           <Navbar />
-          {/* 'children' ora sono le nostre pagine (login, register, home...) */}
+          {/* 'children' sono le pagine (login, register, home...) */}
           <main>{children}</main>
+          <ToastProvider />
         </AuthProvider>
       </body>
     </html>

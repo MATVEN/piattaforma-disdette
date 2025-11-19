@@ -57,13 +57,6 @@ export async function POST(request: NextRequest) {
     
     const disdetta = await service.prepareForPecSend(id);
 
-    // DEBUG TEMPORANEO
-    console.log('Disdetta preparata:', {
-      id: disdetta.id,
-      status: disdetta.status,
-      user_id: disdetta.user_id,
-    });
-
     // 4. Chiama l'Edge Function send-pec-disdetta
     const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-pec-disdetta`;
     

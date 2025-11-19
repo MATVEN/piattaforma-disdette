@@ -253,3 +253,112 @@
       - `search with pagination`,
       - `dynamic sorting`.
     - Smooth transitions thanks to skeletons, spinners, and preloading.
+
+- **C17 — Modern Design System & UI Overhaul**
+  - **Design System Foundation:**
+    - Implements comprehensive `tailwind.config.js` with modern color palette:
+      - Primary indigo gradient (`#6366F1` → `#4F46E5`)
+      - Secondary pink/rose accents
+      - Semantic colors (success green, warning amber, danger red)
+    - Adds custom animations: `fade-in`, `slide-up`, `scale-in`, `pulse-slow`
+    - Creates glassmorphism utilities: `shadow-glass`, `shadow-glass-hover`, `backdrop-blur`
+    - Defines card shadow system: `shadow-card`, `shadow-card-hover`
+    - Pre-configures gradient utilities: `bg-gradient-primary`, `bg-gradient-success`
+  
+  - **Navbar Complete Redesign:**
+    - **Phase 1 (Glassmorphism):**
+      - Transparent background with `backdrop-blur-md`
+      - Sticky positioning with dynamic opacity on scroll
+      - Gradient logo with glow effect using `Sparkles` icon
+    - **Phase 2 (Dark Theme - Final):**
+      - Deep indigo background (`bg-indigo-900`)
+      - Vibrant gradient accent bar on top
+      - White navigation links with luminous hover states
+      - Glass-effect profile dropdown with blur
+      - Responsive mobile menu with slide-in animation
+      - Logo with text shadow and colored glow effect
+    - Integrates Framer Motion for smooth page transitions
+    - Mobile hamburger menu with animated icon states
+  
+  - **Dashboard Cards Modernization:**
+    - Elevated card design with `shadow-card` and hover lift effect
+    - Gradient accent bar at the top of each card (`h-1 bg-gradient-primary`)
+    - Color-coded icons in rounded containers (`bg-primary-50`)
+    - Smooth hover transitions with border color changes
+    - Stagger animations on card appearance (Framer Motion)
+    - Modern empty state with:
+      - Illustrated icon placeholder
+      - Dashed border design
+      - Prominent gradient CTA button with scale hover effect
+    - Status badges with icons and semantic colors:
+      - `PROCESSING` → spinning loader + indigo
+      - `PENDING_REVIEW` → clock icon + amber
+      - `CONFIRMED` → gradient success button with send icon
+      - `SENT`/`TEST_SENT` → checkmark + green
+      - `FAILED` → X icon + red
+  
+  - **Form Components Styling:**
+    - **ReviewForm:**
+      - Adds colored icons to each input field
+      - Implements focus states with colored borders
+      - Animated error messages with smooth transitions
+      - Redesigned delega checkbox with decorative dashed box
+      - Gradient submit button with hover scale effect
+      - Inline success/error feedback with animations
+    - Ensures all buttons use consistent gradient styling
+    - Touch-friendly spacing for mobile inputs
+  
+  - **Toast Notifications System:**
+    - Integrates `react-hot-toast` library
+    - Creates centralized toast utility (`src/lib/toast.ts`)
+    - Styled toasts with:
+      - Success: green background + checkmark icon
+      - Error: red background + X icon
+      - Auto-dismiss after 3-5 seconds
+      - Smooth entrance/exit animations
+    - Top-right positioning for non-intrusive feedback
+    - Replaces old static success/error boxes in forms
+    - Implemented across:
+      - Dashboard (PEC send confirmation)
+      - Review form (data confirmation)
+      - Error handling flows
+  
+  - **Mobile Optimization:**
+    - **Responsive Layout:**
+      - Dashboard cards: `flex-col` on mobile, `flex-row` on desktop
+      - Status badges: full width on mobile, auto-width on desktop
+      - Hidden text labels on mobile, visible on desktop (`hidden sm:inline`)
+      - Touch-friendly button sizes (minimum 44x44px)
+    - **Overflow Prevention:**
+      - Added `w-full max-w-full overflow-hidden` to all card containers
+      - Implemented `break-words` for long file names on mobile
+      - Changed `grid` to `flex flex-col` for more predictable stacking
+      - Added `gap-2` instead of `space-x-2` to prevent wrapping issues
+      - Fixed parent container with `overflow-x-hidden`
+    - **Progressive Enhancement:**
+      - Reduced padding on mobile (`p-3`), expanded on desktop (`sm:p-5`)
+      - Scroll hint text hidden on small screens
+      - Adaptive typography sizing
+  
+  - **UX Improvements:**
+    - Removed duplicate "Crea Disdetta" button from dashboard header (kept in navbar only)
+    - Added item counter: "Showing X of Y disdette"
+    - Scroll hint for infinite scroll ("Scorri per caricarne altre")
+    - End-of-list indicator with celebratory message
+    - Skeleton loaders with pulse animation for better perceived performance
+    - Smooth color transitions on all interactive elements
+  
+  - **Performance & Accessibility:**
+    - Optimized animations to use `transform` and `opacity` for GPU acceleration
+    - Proper color contrast ratios for WCAG compliance
+    - Focus states visible on all interactive elements
+    - Semantic HTML structure maintained
+    - Reduced motion respected via Tailwind's motion utilities
+  
+  - **Results:**
+    - Modern, professional aesthetic aligned with contemporary SaaS products
+    - Consistent visual language across all pages and components
+    - Improved mobile experience with zero horizontal overflow
+    - Reduced cognitive load through clear visual hierarchy
+    - Enhanced user feedback with toast notifications
+    - Scalable design system ready for new features
