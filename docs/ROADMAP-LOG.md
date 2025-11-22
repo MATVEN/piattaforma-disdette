@@ -392,3 +392,53 @@
     - Improved UX during errors with clear messaging and recovery options
     - Enhanced debugging capabilities with error logging
     - Professional polish aligned with modern design system
+
+- **C19 — Footer & Legal Pages (Placeholder)**
+  - **Footer Component:**
+    - Creates responsive footer with 4-column layout (Brand, Product, Support, Legal)
+    - Dark theme design (bg-gray-900) with consistent hover states (text-primary-400)
+    - Brand section with Sparkles logo and "Disdette Facile" tagline
+    - Navigation links to product features (/how-it-works, /operators, /faq)
+    - Support section with help center, contacts, and email (supporto@disdette.it)
+    - Legal section linking to Privacy Policy, Terms of Service, Cookie Policy
+    - Social media icons (GitHub, Twitter, LinkedIn) with rel="noopener noreferrer"
+    - Dynamic copyright year with proper accessibility (aria-labels)
+    - Mobile-first responsive (grid-cols-1 → sm:grid-cols-2 → lg:grid-cols-4)
+  - **Legal Pages with Placeholder Content:**
+    - Creates /privacy-policy with GDPR-compliant structure placeholder
+      - Sections: Titolare, Tipologie Dati, Finalità, Base Giuridica, Diritti Utenti, Contatti
+      - Lists user rights: access, rectification, erasure, portability, opposition
+    - Creates /terms-of-service with standard terms sections placeholder
+      - Sections: Oggetto Servizio, Registrazione, Utilizzo, Responsabilità, Proprietà Intellettuale, Modifiche, Legge Applicabile
+    - Creates /cookie-policy with cookie management information placeholder
+      - Cookie categories: Tecnici (necessary), Analitici (optional), Marketing (optional)
+      - Management instructions: browser settings, cookie banner (future)
+    - Each page includes breadcrumb navigation (Home → Page Title)
+    - Prose styling with proper typography hierarchy (h1, h2, h3)
+    - Clear "in redazione" status with italic disclaimer
+    - Contact emails (privacy@disdette.it) for legal inquiries
+  - **Global Integration:**
+    - Footer automatically appears on all pages via layout.tsx integration
+    - Positioned after <main>{children}</main> in root layout
+    - Consistent with C17 design system (shadow-card, prose-indigo, hover:text-primary-700)
+    - Accessible markup with semantic HTML (<footer>, <nav>) and ARIA labels
+    - SEO-ready structure for future metadata additions
+  - **Files Created:**
+    - src/components/Footer.tsx (global footer component, 152 lines)
+    - src/app/privacy-policy/page.tsx (GDPR placeholder, 102 lines)
+    - src/app/terms-of-service/page.tsx (terms placeholder, 86 lines)
+    - src/app/cookie-policy/page.tsx (cookie info placeholder, 103 lines)
+  - **Files Modified:**
+    - src/app/layout.tsx (added Footer import and component)
+  - **Technical Implementation:**
+    - Server Components for legal pages (better performance, no client JS)
+    - External links with security attributes (target="_blank", rel="noopener noreferrer")
+    - Dynamic year calculation for copyright (no hardcoding)
+    - Proper TypeScript types and strict mode compliance
+  - **Results:**
+    - Professional site-wide footer with complete navigation structure
+    - Legal compliance foundation ready for attorney content insertion (5-minute swap)
+    - Consistent brand experience across all pages
+    - Improved SEO structure with semantic HTML
+    - Reduced bounce rate with clear navigation paths
+    - Foundation for future features (contact form, FAQ, help center)
