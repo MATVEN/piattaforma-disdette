@@ -362,3 +362,33 @@
     - Reduced cognitive load through clear visual hierarchy
     - Enhanced user feedback with toast notifications
     - Scalable design system ready for new features
+
+- **C18 — Custom Error Pages**
+  - **Error Page Design:**
+    - Creates custom 404 (not-found.tsx) with AlertCircle icon and primary-600 color
+    - Creates custom 500 (error.tsx) with XCircle icon, dual action buttons (retry + dashboard), and error logging
+    - Creates global error boundary (global-error.tsx) with AlertTriangle icon and page reload functionality
+  - **Design System Integration:**
+    - Applies C17 design system consistently across all error pages
+    - Uses glassmorphism cards (bg-white, rounded-xl, shadow-card)
+    - Implements gradient primary buttons with hover effects (shadow-glass, hover:scale-105)
+    - Mobile-first responsive layout (p-8 sm:p-12, flex-col sm:flex-row)
+  - **Animation & UX:**
+    - Framer Motion entrance animations (fade-in + slide-up)
+    - Lucide React icons for visual feedback
+    - Clear action paths (dashboard navigation, retry functionality, page reload)
+    - Italian localized error messages
+  - **Technical Implementation:**
+    - Proper 'use client' directives where required
+    - TypeScript strict compliance with proper error boundary types
+    - Console error logging for monitoring
+    - Next.js 14 App Router convention (files in src/app/)
+  - **Files Created:**
+    - src/app/not-found.tsx (404 handler)
+    - src/app/error.tsx (runtime error boundary)
+    - src/app/global-error.tsx (critical error fallback)
+  - **Results:**
+    - Production-ready error handling with consistent brand experience
+    - Improved UX during errors with clear messaging and recovery options
+    - Enhanced debugging capabilities with error logging
+    - Professional polish aligned with modern design system

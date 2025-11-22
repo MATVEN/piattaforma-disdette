@@ -1,4 +1,4 @@
-// src/components/DashboardList.tsx (C17 - Modern Cards Design)
+// src/components/DashboardList.tsx
 
 'use client'
 
