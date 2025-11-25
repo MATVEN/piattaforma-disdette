@@ -43,7 +43,8 @@ export default function UploadPage() {
     setIsSubmitting(true)
     setError(null) 
 
-    const filePath = `${user.id}/${serviceId}/${file.name}`
+    const timestamp = Date.now()
+    const filePath = `${user.id}/${serviceId}/${timestamp}_${file.name}`
     let recordId: number | null = null; // Ci serve l'ID per l'invocazione
 
     try {
@@ -60,22 +61,19 @@ export default function UploadPage() {
       // Usiamo 'upsert' per sicurezza, nel caso l'utente ricarichi lo stesso file
       const { data: recordData, error: insertError } = await supabase
         .from('extracted_data')
-        .upsert(
-          { 
-            user_id: user.id,
-            file_path: filePath,
-            status: 'PROCESSING' // Nuovo stato
-          },
-          { onConflict: 'file_path' } // Se il file esiste, aggiorna lo stato
-        )
-        .select('id') // Chiediamo l'ID del record
+        .insert({
+          user_id: user.id,
+          file_path: filePath,
+          status: 'PROCESSING'
+        })
+        .select('id')
         .single()
       
       if (insertError) throw new Error(`Errore creazione record: ${insertError.message}`)
       if (!recordData) throw new Error("Impossibile recuperare l'ID del record creato.")
-      
+
       recordId = recordData.id
-      console.log(`C14: Record creato/aggiornato. ID: ${recordId}`)
+      console.log(`C21-FIX: Record creato. ID: ${recordId}, Path: ${filePath}`)
 
       // --- 3. Invocazione Edge Function (C4 - Modificato) ---
       // Ora passiamo l'ID, non il payload

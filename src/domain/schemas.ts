@@ -111,10 +111,12 @@ export const parseSendPec = (input: unknown) => sendPecSchema.parse(input)
  */
 export const confirmDataSchema = z
   .object({
-    id: z.number().int().positive(),
-    supplier_tax_id: z.string().trim().nullish(), // string | null | undefined
-    receiver_tax_id: z.string().trim().nullish(),
-    supplier_iban: z.string().trim().toUpperCase().nullish(),
+    id: z.number(),
+    supplier_tax_id: z.string().nullable().optional(),
+    receiver_tax_id: z.string().nullable().optional(),
+    supplier_iban: z.string().nullable().optional(),
+    supplier_contract_number: z.string().nullable().optional(),
+    bypassDuplicateCheck: z.boolean().optional(),
   })
   .strict()
   .refine(
@@ -190,15 +192,27 @@ export type ProfileFormData = z.infer<typeof profileFormSchema>
 
 // Schema per il form /review (C13)
 export const reviewFormSchema = z.object({
-  // I campi dati (soft validation, come in confirmDataSchema)
-  supplier_tax_id: z.string().trim().nullish(),
-  receiver_tax_id: z.string().trim().nullish(),
-  supplier_iban: z.string().trim().toUpperCase().nullish(),
+  supplier_tax_id: z.string()
+    .min(11, 'P.IVA deve essere di 11 cifre')
+    .max(11, 'P.IVA deve essere di 11 cifre')
+    .regex(/^\d{11}$/, 'P.IVA deve contenere solo numeri'),
   
-  // --- NOVITÀ C13: Il Checkbox di Delega ---
-  // Questo campo DEVE essere 'true' per inviare il modulo.
+  receiver_tax_id: z.string()
+    .min(16, 'Codice Fiscale deve essere di 16 caratteri')
+    .max(16, 'Codice Fiscale deve essere di 16 caratteri')
+    .regex(/^[A-Z0-9]{16}$/, 'Codice Fiscale non valido (solo lettere maiuscole e numeri)'),
+  
+  supplier_contract_number: z.string().optional(),
+  
+  supplier_iban: z.string()
+    .optional()
+    .refine(
+      (val) => !val || val.length === 0 || /^IT[0-9]{2}[A-Z][0-9]{22}$/.test(val.replace(/\s/g, '')),
+      'IBAN italiano non valido'
+    ),
+  
   delegaCheckbox: z.boolean().refine(val => val === true, {
-    message: "Devi accettare la delega per poter inviare la PEC."
+    message: 'Devi accettare la delega per procedere'
   })
 })
 

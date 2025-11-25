@@ -4,7 +4,7 @@
  */
 
 import { SupabaseClient } from '@supabase/supabase-js';
-import { Database } from '@/lib/supabase/server';
+import { Database } from '@/lib/supabase/database.types'
 import { NotFoundError, DatabaseError } from '@/lib/errors/AppError';
 
 type ExtractedData = Database['public']['Tables']['extracted_data']['Row'];
@@ -158,6 +158,7 @@ export class DisdettaRepository {
       supplier_tax_id: string | null;
       receiver_tax_id: string | null;
       supplier_iban?: string | null;
+      supplier_contract_number?: string | null;
     }
   ): Promise<ExtractedData> {
     const { data, error } = await this.supabase
@@ -245,6 +246,42 @@ export class DisdettaRepository {
     });
 
     return counts;
+  }
+
+  /**
+   * Controlla se esiste una disdetta duplicata per lo stesso contratto
+   * Una disdetta è duplicata se ha stesso user_id, supplier_tax_id, 
+   * receiver_tax_id E supplier_contract_number con status attivo
+   *
+   * @param userId - ID dell'utente
+   * @param supplierTaxId - Partita IVA del fornitore
+   * @param receiverTaxId - Codice fiscale del destinatario
+   * @param supplierContractNumber - Codice univoco contratto (POD/PDR/Cliente)
+   * @returns Disdetta esistente se trovata, null altrimenti
+   */
+  async checkDuplicate(
+    userId: string,
+    supplierTaxId: string,
+    receiverTaxId: string,
+    supplierContractNumber: string
+  ): Promise<ExtractedData | null> {
+    const { data, error } = await this.supabase
+      .from('extracted_data')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('supplier_tax_id', supplierTaxId)
+      .eq('receiver_tax_id', receiverTaxId)
+      .eq('supplier_contract_number', supplierContractNumber)
+      .in('status', ['PROCESSING', 'PENDING_REVIEW', 'CONFIRMED', 'SENT', 'TEST_SENT'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      throw new DatabaseError('Errore nel controllo duplicati', error);
+    }
+
+    return data;
   }
 
   /**

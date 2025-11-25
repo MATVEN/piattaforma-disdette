@@ -42,22 +42,7 @@ Ogni utente può vedere come vengono usati i suoi dati, quali sono i suoi diritt
 
 ---
 
-### **C20 - Testing & QA Suite** 🧪
-**Effort:** 3-4 giorni  
-**Priorità:** ALTA (Qualità)
-
-**Cosa fa:**  
-Crea test automatici che verificano continuamente che tutto funzioni. Come avere un QA tester robot che controlla login, upload, OCR, invio PEC automaticamente ogni volta che modifichi il codice.
-
-**Perché è importante:**  
-Riduce drasticamente i bug, accelera lo sviluppo futuro, garantisce che nuove feature non rompano quelle esistenti.
-
-**Esempio pratico:**  
-Modifichi qualcosa nel codice → Test automatico controlla che login funzioni ancora → Ti avvisa se hai rotto qualcosa
-
----
-
-### **C21 - Duplicate Detection** ⚡
+### **C20 - Duplicate Detection** ⚡
 **Effort:** 1 giorno  
 **Priorità:** ALTA (Prevenzione errori)
 
@@ -69,6 +54,21 @@ Previene confusione con i provider, spreco di risorse, e possibili problemi lega
 
 **Esempio pratico:**  
 Utente carica bolletta Enel già disdetta → Sistema: "Attenzione! Hai già una disdetta in corso per questo contratto del 15/11/2024"
+
+---
+
+### **C21 - Testing & QA Suite** 🧪
+**Effort:** 3-4 giorni  
+**Priorità:** ALTA (Qualità)
+
+**Cosa fa:**  
+Crea test automatici che verificano continuamente che tutto funzioni. Come avere un QA tester robot che controlla login, upload, OCR, invio PEC automaticamente ogni volta che modifichi il codice.
+
+**Perché è importante:**  
+Riduce drasticamente i bug, accelera lo sviluppo futuro, garantisce che nuove feature non rompano quelle esistenti.
+
+**Esempio pratico:**  
+Modifichi qualcosa nel codice → Test automatico controlla che login funzioni ancora → Ti avvisa se hai rotto qualcosa
 
 ---
 

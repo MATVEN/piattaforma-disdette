@@ -1,18 +1,20 @@
 /**
  * API Route: PATCH /api/confirm-data
  * Conferma i dati estratti dall'OCR e prepara la disdetta per l'invio
- * 
+ *
  * Body:
  * {
  *   id: number,
  *   supplier_tax_id: string,
  *   receiver_tax_id: string,
- *   supplier_iban?: string
+ *   supplier_iban?: string,
+ *   bypassDuplicateCheck?: boolean  // C21: Skip duplicate detection if true
  * }
- * 
+ *
  * Business Logic:
  * - Valida i dati con Zod
  * - Verifica che lo stato sia PENDING_REVIEW
+ * - Check duplicate disdette (C21) - skippabile con bypass flag
  * - Aggiorna a stato CONFIRMED
  * - Verifica che i dati essenziali siano presenti
  */
@@ -38,18 +40,22 @@ export async function PATCH(request: NextRequest) {
       throw new ValidationError("Body JSON non valido o mancante");
     }
 
-    // 3. Business logic delegata al service
+    // 3. Extract bypass flag (C21)
+    const bypassDuplicateCheck = body.bypassDuplicateCheck === true;
+
+    // 4. Business logic delegata al service
     // Il service esegue:
     // - Validazione Zod automatica
     // - Controllo stato (deve essere PENDING_REVIEW)
+    // - Check duplicati (C21) - se non bypassato
     // - Update database con stato CONFIRMED
     // - Verifica dati essenziali
     const repository = new DisdettaRepository(supabase);
     const service = new DisdettaService(repository, user.id);
-    
-    const confirmed = await service.confirmAndPrepareForSend(body.id, body);
 
-    // 4. Response
+    const confirmed = await service.confirmAndPrepareForSend(body.id, body, bypassDuplicateCheck);
+
+    // 5. Response
     return NextResponse.json(confirmed);
   } catch (error) {
     return handleApiError(error);

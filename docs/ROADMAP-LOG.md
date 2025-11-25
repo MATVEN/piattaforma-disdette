@@ -21,8 +21,8 @@
   - Adds `documenti-delega` Storage bucket (Delega) with RLS policies.
   - Implements secure file upload for both files under a user-scoped path (`user.id/...`).
 
-- **Dev Ops:**
-  - Installs and links the Supabase CLI in preparation for Edge Function development.
+  - **Dev Ops:**
+    - Installs and links the Supabase CLI in preparation for Edge Function development.
 
 - **AI/OCR Integration (C4):**
   - Implements the core AI processing logic within a new Supabase Edge Function (`process-document`).
@@ -34,8 +34,8 @@
   - Updates the Edge Function to receive both `path` (Bolletta) and `delegaPath` (Delega).
   - Implements `upsert` (on `file_path` conflict) to save/update both file paths and prevent duplicate errors.
 
-- **Dev Ops:**
-  - Deploys the `process-document` Edge Function to the Supabase project.
+  - **Dev Ops:**
+    - Deploys the `process-document` Edge Function to the Supabase project.
 
 - **Data Persistence & Review (C5):**
   - **Backend:**
@@ -46,9 +46,9 @@
     - Creates the new `/review` page (C5) with Suspense.
     - Creates the `ReviewForm` component to fetch and display the extracted data.
 
-- **Dev Ops:**
-  - Redeploys the `process-document` Edge Function with C5 logic (DB write).
-  - Configures CORS on the Edge Function to allow `http://localhost:3000`.
+  - **Dev Ops:**
+    - Redeploys the `process-document` Edge Function with C5 logic (DB write).
+    - Configures CORS on the Edge Function to allow `http://localhost:3000`.
 
 - **Data Confirmation (C6):**
   - **Frontend:**
@@ -122,18 +122,19 @@
     - Automatically parses 'full_name' into 'nome' and 'cognome' and pre-populates these fields in the 'profiles' table upon a new social login.
 
 - **C11 (Security & Validation Refactor):**
- - **Middleware:** Replaces the client-side C9 (<ProfileRequired>) with a server-side 'src/middleware.ts' for robust route protection (auth + profile completion).
- - * **Validation (Zod):** Introduces 'zod' and a central 'src/domain/schemas.ts' for type-safe validation (using the user's advanced refactored version).
- - * **Edge Functions:** Hardens 'process-document' (v5) and 'send-pec-disdette' with Zod/type-guard validation, timeout/backoff logic, and PII-safe logging.
- - * **API Routes:** Refactors all API routes ('/api/confirm-data', '/api/get-extracted-data', '/api/send-pec') to use Zod schemas.
- - * **Bug Fix (SSR):** Fixes 500 crash across all API Routes by removing the 'NextResponse.next()' pattern and standardizing on the correct 'cookieStore' adapter for SSR auth token refreshes.
- - * **Database:** Applies "least-privilege" select (no 'select(*)') to '/api/get-my-disdette'.
+  - **Middleware:** Replaces the client-side C9 (<ProfileRequired>) with a server-side 'src/middleware.ts' for robust route protection (auth + profile completion).
+  - * **Validation (Zod):** Introduces 'zod' and a central 'src/domain/schemas.ts' for type-safe validation (using the user's advanced refactored version).
+  - * **Edge Functions:** Hardens 'process-document' (v5) and 'send-pec-disdette' with Zod/type-guard validation, timeout/backoff logic, and PII-safe logging.
+  - * **API Routes:** Refactors all API routes ('/api/confirm-data', '/api/get-extracted-data', '/api/send-pec') to use Zod schemas.
+  - * **Bug Fix (SSR):** Fixes 500 crash across all API Routes by removing the 'NextResponse.next()' pattern and standardizing on the correct 'cookieStore' adapter for SSR auth token refreshes.
+  - * **Database:** Applies "least-privilege" select (no 'select(*)') to '/api/get-my-disdette'.
 
 - **Security Hardening (C11.5):**
   - **Edge Function (`send-pec-disdetta`):**
     - Implements "Dual Client Auth" pattern to verify user ownership (RLS) *before* using the `SERVICE_ROLE_KEY`.
     - Implements "State Transition Check" (`.eq('status', 'CONFIRMED')`) to prevent duplicate disdetta sends.
     - Implements "MIME & Size Whitelist" to validate delega and ID files before processing.
+
   - **Frontend (`DashboardList`):**
     - Updates the UI to support the "Invia Disdetta" button.
     - Updates the `StatusBadge` component to render the new `TEST_SENT` and `FAILED` states.
@@ -163,35 +164,41 @@
     - If `status: 'FAILED'` is detected, it displays the `error_message` from the database.
 
 - **Architecture Refactoring (C15):**
-    - **Foundation Layer:**
+  - **Foundation Layer:**
     - Introduces `src/lib/errors/AppError.ts` with error types `(UnauthorizedError, NotFoundError, ValidationError, …)` and code mapping.
     - Adds AuthService `(src/services/auth.service.ts)` to centralize authentication (removes duplication across APIs).
     - Creates Supabase server-side factory `(src/lib/supabase/server.ts)` with proper cookie handling and typing.
+
   - **Data Access Layer:**
     - Adds DisdettaRepository `(src/repositories/disdetta.repository.ts)` for all queries on extracted_data.
     - Implements methods: getById, getByUser, create, updateStatus, confirmData, savePdfPath, countByStatus.
     - Supports pagination with `.range()` and `PaginatedResult` type for future infinite scroll.
     - Handles DB errors with specific codes.
+
   - **Business Logic Layer:**
     - Adds DisdettaService `(src/services/disdetta.service.ts)` with domain rules and orchestration.
     - Validates state transitions `(e.g., confirm only if PENDING_REVIEW, send only if CONFIRMED)`.
     - Key methods: `getDisdettaForReview`, `getMyDisdette`, `confirmAndPrepareForSend`, `prepareForPecSend`, `markAsSent`, `getDashboardStats`.
     - Integrates Zod validations at service level for type-safe operations.
+
   - **API Routes Refactoring:**
     - `GET /api/get-my-disdette`: adds pagination (page, pageSize, status), reduces code, delegates to service/repo.
     - `GET /api/get-extracted-data`: simplifies, adds business checks (e.g., isProcessing, canEdit, errorInfo).
     - `PATCH /api/confirm-data`: automatically validates state/data consistency, reduces duplicate code.
     - `POST /api/send-pec`: correctly passes Authorization to the Edge Function and updates status post-send.
     - All routes use a consistent handleApiError for error serialization.
+
   - **Frontend Updates:**
     - `/upload/[serviceId]`: redirect with id parameter (no longer filePath).
     - `ReviewForm`: uses id query and new response format (direct object).
     - `DashboardList`: handles paginated response { data, count, hasMore } and uniform links with ?id=.
+
   - **Breaking Changes:**
     - APIs now return direct objects (no longer `{ success, data }`).
     - Review page uses `?id= (no longer ?filePath=)`.
     - `get-my-disdette` now responds `{ data, count, hasMore }` (not { disdette }).
     - `tsconfig.json`: excludes `supabase/` to prevent Next from compiling Deno Edge Functions.
+
   - **Results:**
     - ~170 duplicate lines removed overall.
     - Improved maintainability (centralized business logic), services/repositories easily testable.
@@ -208,12 +215,14 @@
     - Implements robust error handling and race-condition protection.
     - Uses `useCallback` for memoized fetch functions.
     - Ensures correct `useEffect` dependencies to avoid infinite loops.
+
   - **Intersection Observer (InfiniteScrollTrigger)**
     - Adds `src/components/InfiniteScrollTrigger.tsx.`
     - Uses the Intersection Observer `API` to detect when the user reaches the bottom area.
     - Automatically triggers `loadMore()` when the element becomes visible.
     - Supports configurable threshold and rootMargin `(e.g., 100px for pre-loading)`.
     - Includes proper cleanup on unmount to avoid memory leaks.
+
   - **Dashboard Refactoring**
     - Refactors the `DashboardList` to fully adopt the infinite scroll pattern.
     - Progressive loading:
@@ -226,12 +235,14 @@
       - `End-of-list message` → “🎉 You’ve reached the end”.
     - Maintains scroll position when new items are appended.
     - Automatically refreshes the list after PEC submission to update statuses.
+
   - **Performance Improvements**
     - Dramatically reduces initial load time by loading only `10 items` at startup.
     - Implements `lazy loading` — next pages load only when needed.
     - Prevents duplicate network calls during pagination.
     - Preloads the next page early via `rootMargin`.
     - Removes the `refresh dependency` in `useEffect` to eliminate infinite rerenders.
+
   - **Bug Fixes & Edge Cases**
     - Fixes infinite loop caused by incorrect `useEffect` dependencies.
     - Ensures proper cleanup of the Intersection Observer.
@@ -240,11 +251,13 @@
       - `Lists with exactly 10 items,`
       - `Network errors, slow responses, or unexpected payloads.`
     - Guarantees stable UX even with rapidly changing data.
+
   - **API Integration (C15)**
     - Fully integrates backend pagination using query parameters: `?page=X&pageSize=Y`.
     - Correctly parses paginated responses: `{ data: [], count: number, hasMore: boolean }`.
     - Uses `DisdettaService.getMyDisdette()` in strict paginated mode.
     - Reduces initial `API payload` and improves scalability for large datasets.
+
   - **Results**
     - Significant performance improvement for users with many disdette.
     - Modern, fluid UX similar to social media feeds.
@@ -368,25 +381,30 @@
     - Creates custom 404 (not-found.tsx) with AlertCircle icon and primary-600 color
     - Creates custom 500 (error.tsx) with XCircle icon, dual action buttons (retry + dashboard), and error logging
     - Creates global error boundary (global-error.tsx) with AlertTriangle icon and page reload functionality
+
   - **Design System Integration:**
     - Applies C17 design system consistently across all error pages
     - Uses glassmorphism cards (bg-white, rounded-xl, shadow-card)
     - Implements gradient primary buttons with hover effects (shadow-glass, hover:scale-105)
     - Mobile-first responsive layout (p-8 sm:p-12, flex-col sm:flex-row)
+
   - **Animation & UX:**
     - Framer Motion entrance animations (fade-in + slide-up)
     - Lucide React icons for visual feedback
     - Clear action paths (dashboard navigation, retry functionality, page reload)
     - Italian localized error messages
+
   - **Technical Implementation:**
     - Proper 'use client' directives where required
     - TypeScript strict compliance with proper error boundary types
     - Console error logging for monitoring
     - Next.js 14 App Router convention (files in src/app/)
+
   - **Files Created:**
     - src/app/not-found.tsx (404 handler)
     - src/app/error.tsx (runtime error boundary)
     - src/app/global-error.tsx (critical error fallback)
+
   - **Results:**
     - Production-ready error handling with consistent brand experience
     - Improved UX during errors with clear messaging and recovery options
@@ -404,6 +422,7 @@
     - Social media icons (GitHub, Twitter, LinkedIn) with rel="noopener noreferrer"
     - Dynamic copyright year with proper accessibility (aria-labels)
     - Mobile-first responsive (grid-cols-1 → sm:grid-cols-2 → lg:grid-cols-4)
+
   - **Legal Pages with Placeholder Content:**
     - Creates /privacy-policy with GDPR-compliant structure placeholder
       - Sections: Titolare, Tipologie Dati, Finalità, Base Giuridica, Diritti Utenti, Contatti
@@ -417,24 +436,29 @@
     - Prose styling with proper typography hierarchy (h1, h2, h3)
     - Clear "in redazione" status with italic disclaimer
     - Contact emails (privacy@disdette.it) for legal inquiries
+
   - **Global Integration:**
     - Footer automatically appears on all pages via layout.tsx integration
     - Positioned after <main>{children}</main> in root layout
     - Consistent with C17 design system (shadow-card, prose-indigo, hover:text-primary-700)
     - Accessible markup with semantic HTML (<footer>, <nav>) and ARIA labels
     - SEO-ready structure for future metadata additions
+
   - **Files Created:**
     - src/components/Footer.tsx (global footer component, 152 lines)
     - src/app/privacy-policy/page.tsx (GDPR placeholder, 102 lines)
     - src/app/terms-of-service/page.tsx (terms placeholder, 86 lines)
     - src/app/cookie-policy/page.tsx (cookie info placeholder, 103 lines)
+
   - **Files Modified:**
     - src/app/layout.tsx (added Footer import and component)
+
   - **Technical Implementation:**
     - Server Components for legal pages (better performance, no client JS)
     - External links with security attributes (target="_blank", rel="noopener noreferrer")
     - Dynamic year calculation for copyright (no hardcoding)
     - Proper TypeScript types and strict mode compliance
+
   - **Results:**
     - Professional site-wide footer with complete navigation structure
     - Legal compliance foundation ready for attorney content insertion (5-minute swap)
@@ -442,3 +466,63 @@
     - Improved SEO structure with semantic HTML
     - Reduced bounce rate with clear navigation paths
     - Foundation for future features (contact form, FAQ, help center)
+
+- **Duplicate Detection System (C20):**
+  - **Data Access Layer:**
+    - Adds `checkDuplicate()` in `src/repositories/disdetta.repository.ts` to detect existing cancellations matching the tuple  
+      `(user_id, supplier_tax_id, receiver_tax_id, supplier_contract_number)`.
+    - Excludes `FAILED` records from duplicate logic to avoid false positives.
+    - Queries optimized for new DB indexes and consistent error handling.
+
+  - **Business Logic Layer:**
+    - Integrates duplicate detection into `confirmAndPrepareForSend()` inside `src/services/disdetta.service.ts`.
+    - Supports intentional override via `bypassDuplicateCheck` flag.
+    - Enriches error output with duplicate metadata: `{ duplicateId, createdAt, status, contractNumber }`.
+    - Logs all duplicate attempts with `[C21]` prefix for traceability.
+    - Maintains domain rules: duplicates allowed *only via bypass*.
+
+  - **API Routes:**
+    - `PATCH /api/confirm-data`: enforces duplicate check before confirmation, serializes ValidationError with structured metadata.
+    - Accepts and forwards `bypassDuplicateCheck` from request body.
+    - All responses use consistent error serialization to match existing API patterns.
+
+  - **Schema & Validation:**
+    - `confirmDataSchema` (Zod): adds `bypassDuplicateCheck?: boolean` for type-safe override at API/service level.
+
+  - **Frontend Updates:**
+    - **Upload Page (`src/app/upload/[serviceId]/page.tsx`):**
+      - Replaces `UPSERT` with strict `INSERT` to prevent silent record overwrites.
+      - Prefixes `file_path` with a timestamp to guarantee uniqueness.
+      - Ensures each upload (even identical files) produces a new record.
+    - **Review Form (`src/components/ReviewForm.tsx`):**
+      - Adds duplicate detection modal using AnimatePresence.
+      - Reads metadata from `errorData.details` (fix for previous mismatch with `metadata`).
+      - Implements `handleBypassDuplicate()` to submit confirmation with override flag.
+      - Adds `isBypassSubmitting` state to prevent double interactions and modal flicker.
+      - Includes styled “Proceed Anyway” button and spinner for consistency with app UX.
+
+  - **Database Changes:**
+    - Removes UNIQUE constraint on `extracted_data.file_path`:
+      ```sql
+      ALTER TABLE extracted_data DROP CONSTRAINT extracted_data_file_path_key;
+      ```
+    - Adds performance indexes:
+      ```sql
+      CREATE INDEX idx_extracted_data_user_created ON extracted_data(user_id, created_at DESC);
+      CREATE INDEX idx_extracted_data_user_status ON extracted_data(user_id, status);
+      CREATE INDEX idx_extracted_data_file_path ON extracted_data(file_path);
+      ```
+    - Performs cleanup of NULL/invalid rows and old `FAILED` / `PROCESSING` data.
+
+  - **Files Involved:**
+    - `src/app/upload/[serviceId]/page.tsx`
+    - `src/components/ReviewForm.tsx`
+    - `src/domain/schemas.ts`
+    - `src/repositories/disdetta.repository.ts`
+    - `src/services/disdetta.service.ts`
+
+  - **Results:**
+    - Prevents accidental creation of duplicate cancellation requests.
+    - Preserves flexibility for legitimate resubmissions (reactivation, corrections).
+    - Improves DB reliability and frontend UX under high-frequency uploads.
+    - Ensures consistent metadata, logging, and type-safety across the entire stack.

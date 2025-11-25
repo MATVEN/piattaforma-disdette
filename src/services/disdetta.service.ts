@@ -73,9 +73,9 @@ export class DisdettaService {
 
   /**
    * Conferma i dati estratti dall'OCR e prepara per l'invio
-   * Implementa validazioni Zod + business rules
+   * Implementa validazioni Zod + business rules + duplicate detection
    */
-  async confirmAndPrepareForSend(id: number, data: ConfirmDataInput) {
+  async confirmAndPrepareForSend(id: number, data: ConfirmDataInput, bypassDuplicateCheck: boolean = false) {
     // 1. Validazione Zod dei dati in input
     const validated = confirmDataSchema.parse(data);
 
@@ -91,21 +91,67 @@ export class DisdettaService {
       );
     }
 
-    // 3. Conferma i dati nel database
-    const confirmed = await this.repository.confirmData(id, this.userId, {
-      supplier_tax_id: validated.supplier_tax_id || null,
-      receiver_tax_id: validated.receiver_tax_id || null,
-      supplier_iban: validated.supplier_iban || null,
-    });
+    // 3. Verifica che i dati essenziali siano presenti PRIMA di confermare
+    const supplierTaxId = validated.supplier_tax_id || disdetta.supplier_tax_id;
+    const receiverTaxId = validated.receiver_tax_id || disdetta.receiver_tax_id;
 
-    // 4. Verifica che i dati essenziali siano presenti
-    if (!confirmed.supplier_tax_id || !confirmed.receiver_tax_id) {
+    if (!supplierTaxId || !receiverTaxId) {
       throw new AppError(
         400,
         'Dati incompleti: Codice Fiscale fornitore e destinatario sono obbligatori.',
         'INCOMPLETE_DATA'
       );
     }
+
+    // 4. Check for duplicates (C21)
+    if (!bypassDuplicateCheck) {
+      // Ottieni supplier_contract_number dai dati validati o esistenti
+      const supplierContractNumber = validated.supplier_contract_number || disdetta.supplier_contract_number;
+      
+      // Verifica che supplier_contract_number sia presente
+      if (!supplierContractNumber) {
+        throw new AppError(
+          400,
+          'Codice contratto mancante: impossibile verificare duplicati. Assicurati che il numero POD/PDR/Cliente sia stato estratto dalla bolletta.',
+          'MISSING_CONTRACT_NUMBER'
+        );
+      }
+
+      const duplicate = await this.repository.checkDuplicate(
+        this.userId,
+        supplierTaxId,
+        receiverTaxId,
+        supplierContractNumber
+      );
+
+      if (duplicate && duplicate.id !== id) {
+        // Log duplicate attempt for monitoring
+        console.warn(`[C21] Duplicate detection: User ${this.userId} attempted duplicate`, {
+          existingId: duplicate.id,
+          attemptedId: id,
+          contractNumber: supplierContractNumber,
+          createdAt: duplicate.created_at
+        });
+
+        throw new ValidationError(
+          `Esiste già una disdetta per questo contratto (${supplierContractNumber}). Creata il ${new Date(duplicate.created_at).toLocaleDateString('it-IT')}.`,
+          {
+            duplicateId: duplicate.id,
+            createdAt: duplicate.created_at,
+            status: duplicate.status,
+            contractNumber: supplierContractNumber
+          }
+        );
+      }
+    }
+
+    // 5. Conferma i dati nel database
+    const confirmed = await this.repository.confirmData(id, this.userId, {
+      supplier_tax_id: validated.supplier_tax_id || null,
+      receiver_tax_id: validated.receiver_tax_id || null,
+      supplier_iban: validated.supplier_iban || null,
+      supplier_contract_number: validated.supplier_contract_number || null,
+    });
 
     return confirmed;
   }

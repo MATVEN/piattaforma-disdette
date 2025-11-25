@@ -309,14 +309,37 @@ serve(async (req: Request) => {
 
     // --- 9. Aggiornamento Stato (MODIFICATO C13) ---
     const newStatus = TEST_MODE ? 'TEST_SENT' : 'SENT'
+
+    const { data: existingRecord, error: fetchError } = await supabaseAdmin
+      .from('extracted_data')
+      .select('supplier_contract_number, supplier_tax_id, receiver_tax_id, supplier_iban')
+      .eq('id', disdettaId)
+      .single()
+
+    if (fetchError) throw new Error(`Errore recupero record: ${fetchError.message}`)
+    if (!existingRecord) throw new Error(`Record ${disdettaId} non trovato`)
+
+    console.log(`[send-pec-disdetta] Record esistente - supplier_contract_number: ${existingRecord.supplier_contract_number}`)
+
+    // 2. Update con MERGE esplicito - preserva supplier_contract_number!
     const { error: updateError, count } = await supabaseAdmin
       .from('extracted_data')
-      .update({ status: newStatus, pdf_path: pdfDisdettaPath })
+      .update({
+        status: newStatus,
+        pdf_path: pdfDisdettaPath,
+        // Preserva esplicitamente i campi critici
+        supplier_contract_number: existingRecord.supplier_contract_number, // ← FIX!
+        supplier_tax_id: existingRecord.supplier_tax_id,
+        receiver_tax_id: existingRecord.receiver_tax_id,
+        supplier_iban: existingRecord.supplier_iban,
+      })
       .eq('id', disdettaId)
       .eq('status', 'CONFIRMED')
+
     if (updateError) throw new Error(`Errore aggiornamento stato: ${updateError.message}`)
     if (count === 0) { console.warn(`[send-pec-disdetta] Doppio invio bloccato per ID: ${disdettaId}`) }
-    
+
+    console.log(`[send-pec-disdetta] Stato aggiornato a '${newStatus}' - supplier_contract_number preservato: ${existingRecord.supplier_contract_number}`)
     console.log(`Stato aggiornato a '${newStatus}'. Flusso C13 (Test) completato.`)
 
     // 10. Risposta

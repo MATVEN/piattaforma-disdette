@@ -1,4 +1,4 @@
-// src/components/ReviewForm.tsx (C17 - Modern Form Styling)
+// src/components/ReviewForm.tsx
 
 'use client'
 
@@ -27,6 +27,7 @@ interface ExtractedData {
   status: 'PROCESSING' | 'PENDING_REVIEW' | 'CONFIRMED' | 'SENT' | 'TEST_SENT' | 'FAILED' | string
   supplier_tax_id: string | null
   receiver_tax_id: string | null
+  supplier_contract_number: string | null
   supplier_iban: string | null
   error_message: string | null
 }
@@ -90,16 +91,29 @@ export default function ReviewForm() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const redirectRef = useRef<number | null>(null)
 
+  // C21: Duplicate detection state  
+  const [duplicateError, setDuplicateError] = useState<{
+    message: string
+    duplicateId: number
+    createdAt: string
+    status: string
+    contractNumber: string
+  } | null>(null)
+
+  const [isBypassSubmitting, setIsBypassSubmitting] = useState(false)
+
   const {
     register,
     handleSubmit,
     reset,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<ReviewFormData>({
     resolver: zodResolver(reviewFormSchema),
     defaultValues: {
       supplier_tax_id: '',
       receiver_tax_id: '',
+      supplier_contract_number: '',
       supplier_iban: '',
       delegaCheckbox: false,
     },
@@ -167,11 +181,13 @@ export default function ReviewForm() {
             reset({
               supplier_tax_id: extracted.supplier_tax_id || '',
               receiver_tax_id: extracted.receiver_tax_id || '',
+              supplier_contract_number: extracted.supplier_contract_number || '',
               supplier_iban: extracted.supplier_iban || '',
               delegaCheckbox: false,
             })
             setCurrentStatus('SUCCESS')
             return
+
 
           default:
             throw new Error(`Stato sconosciuto ricevuto: ${extracted.status}`)
@@ -202,6 +218,7 @@ export default function ReviewForm() {
       const normalized = {
         supplier_tax_id: formData.supplier_tax_id?.trim() || '',
         receiver_tax_id: formData.receiver_tax_id?.trim()?.toUpperCase() || '',
+        supplier_contract_number: formData.supplier_contract_number?.trim() || '',
         supplier_iban: formData.supplier_iban?.replace(/\s+/g, '')?.toUpperCase() || '',
       }
 
@@ -220,7 +237,33 @@ export default function ReviewForm() {
       }
 
       if (!confirmResponse.ok) {
-        const errorData = await safeJson<{ error: string }>(confirmResponse)
+        const errorData = await safeJson<{ 
+          error: string
+          statusCode?: number
+          code?: string
+          details?: {
+            duplicateId?: number
+            createdAt?: string
+            status?: string
+            contractNumber?: string
+          }
+        }>(confirmResponse)
+        
+        // ✅ C21-FIX: Gestione duplicate detection corretta
+        // ValidationError ritorna 400 con details
+        if (errorData?.details?.duplicateId) {
+          // Mostra modal invece di confirm() nativo
+          setDuplicateError({
+            message: errorData.error || 'Disdetta duplicata rilevata',
+            duplicateId: errorData.details.duplicateId,
+            createdAt: errorData.details.createdAt || new Date().toISOString(),
+            status: errorData.details.status || 'UNKNOWN',
+            contractNumber: errorData.details.contractNumber || 'N/A'
+          })
+          return 
+        }
+        
+        // Altri errori → toast normale
         throw new Error(errorData?.error || 'Errore durante il salvataggio dei dati.')
       }
 
@@ -261,6 +304,78 @@ export default function ReviewForm() {
     }
   }
 
+  // C21: Funzione per procedere bypassando il duplicate check
+  const handleBypassDuplicate = async () => {
+    if (!data || !duplicateError || isBypassSubmitting) return
+
+    const formData = getValues()
+    if (!formData.delegaCheckbox) {
+      showError('Devi accettare la delega prima di procedere.')
+      return
+    }
+
+    setIsBypassSubmitting(true)
+
+    try {
+      const normalized = {
+        supplier_tax_id: formData.supplier_tax_id?.trim() || '',
+        receiver_tax_id: formData.receiver_tax_id?.trim()?.toUpperCase() || '',
+        supplier_contract_number: formData.supplier_contract_number?.trim() || '',
+        supplier_iban: formData.supplier_iban?.replace(/\s+/g, '')?.toUpperCase() || '',
+      }
+
+      // Conferma con bypass
+      const confirmResponse = await fetch('/api/confirm-data', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          id: data.id, 
+          ...normalized, 
+          bypassDuplicateCheck: true
+        }),
+      })
+
+      if (!confirmResponse.ok) {
+        const errorData = await safeJson<{ error: string }>(confirmResponse)
+        throw new Error(errorData?.error || 'Errore durante il bypass.')
+      }
+
+      const confirmedData = await safeJson<ExtractedData>(confirmResponse)
+      if (!confirmedData) throw new Error('Dati confermati non validi')
+
+      // Continua con invio PEC
+      const pecResponse = await fetch('/api/send-pec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ id: confirmedData.id }),
+      })
+
+      if (!pecResponse.ok) {
+        const errorData = await safeJson<{ error: string }>(pecResponse)
+        throw new Error(errorData?.error || "Errore durante l'avvio dell'invio PEC.")
+      }
+
+      const pecResult = await safeJson<{ success: boolean }>(pecResponse)
+      if (!pecResult?.success) {
+        throw new Error("Errore durante l'avvio dell'invio PEC.")
+      }
+
+      setDuplicateError(null)
+      setIsBypassSubmitting(false)
+      
+      showSuccess('PEC inviata con successo! Verrai reindirizzato alla dashboard.')
+      
+      redirectRef.current = window.setTimeout(() => router.push('/dashboard'), 2000)
+      
+    } catch (err: unknown) {
+      setIsBypassSubmitting(false)
+      const errorMsg = err instanceof Error ? err.message : 'Errore sconosciuto durante il bypass.'
+      showError(errorMsg)
+    }
+  }
+
   // RENDER
   if (currentStatus === 'LOADING') return <StatusDisplay message="Caricamento dati..." isError={false} />
   if (currentStatus === 'PROCESSING') return <StatusDisplay message="Il tuo documento è in elaborazione..." isError={false} isProcessing />
@@ -284,25 +399,51 @@ export default function ReviewForm() {
           type="text"
           id="supplier_tax_id"
           inputMode="numeric"
+          maxLength={11}
           autoComplete="off"
+          placeholder="es. 15844561009"
           {...register('supplier_tax_id')}
           className={`w-full form-input ${errors.supplier_tax_id ? 'border-danger-300 focus:border-danger-500 focus:ring-danger-500' : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500'}`}
         />
+        <p className="mt-1 text-xs text-gray-500">11 cifre numeriche</p>
       </FormField>
 
-      {/* receiver_tax_id */}
+      {/* receiver_tax_id - CF DESTINATARIO */}
       <FormField
-        label="POD / PDR"
+        label="Codice Fiscale Destinatario"
         icon={<Hash className="h-5 w-5" />}
         error={errors.receiver_tax_id?.message}
       >
         <input
           type="text"
           id="receiver_tax_id"
+          maxLength={16}
           autoComplete="off"
+          placeholder="es. RSSMRA80A01H501U"
           {...register('receiver_tax_id')}
-          className={`w-full form-input ${errors.receiver_tax_id ? 'border-danger-300 focus:border-danger-500 focus:ring-danger-500' : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500'}`}
+          className={`w-full form-input uppercase ${errors.receiver_tax_id ? 'border-danger-300 focus:border-danger-500 focus:ring-danger-500' : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500'}`}
         />
+        <p className="mt-1 text-xs text-gray-500">16 caratteri (lettere e numeri)</p>
+      </FormField>
+
+      {/* supplier_contract_number - POD/PDR/CLIENTE */}
+      <FormField
+        label="POD / PDR / Codice Cliente"
+        icon={<FileCheck className="h-5 w-5" />}
+        error={errors.supplier_contract_number?.message}
+        optional
+      >
+        <input
+          type="text"
+          id="supplier_contract_number"
+          autoComplete="off"
+          placeholder="es. IT001E12345678 o 10205464"
+          {...register('supplier_contract_number')}
+          className={`w-full form-input ${errors.supplier_contract_number ? 'border-danger-300 focus:border-danger-500 focus:ring-danger-500' : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500'}`}
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          <strong>Energia:</strong> POD (IT...) o PDR (14 cifre) · <strong>Telefonia:</strong> Codice Cliente (8-10 cifre)
+        </p>
       </FormField>
 
       {/* supplier_iban */}
@@ -315,11 +456,14 @@ export default function ReviewForm() {
         <input
           type="text"
           id="supplier_iban"
+          maxLength={27}
           autoComplete="off"
           spellCheck={false}
+          placeholder="es. IT60X0542811101000000123456"
           {...register('supplier_iban')}
-          className={`w-full form-input ${errors.supplier_iban ? 'border-danger-300 focus:border-danger-500 focus:ring-danger-500' : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500'}`}
+          className={`w-full form-input uppercase ${errors.supplier_iban ? 'border-danger-300 focus:border-danger-500 focus:ring-danger-500' : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500'}`}
         />
+        <p className="mt-1 text-xs text-gray-500">27 caratteri (IT + 25 caratteri)</p>
       </FormField>
 
       {/* delega checkbox */}
@@ -369,6 +513,103 @@ export default function ReviewForm() {
           </>
         )}
       </motion.button>
+      {/* C21: Duplicate Detection Modal */}
+      <AnimatePresence>
+        {duplicateError && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => setDuplicateError(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-md rounded-2xl border border-yellow-200 bg-white p-6 shadow-2xl"
+            >
+              {/* Header */}
+              <div className="mb-4 flex items-start space-x-3">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-yellow-100">
+                  <AlertCircle className="h-6 w-6 text-yellow-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-900">
+                    Disdetta Duplicata Rilevata
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-600">
+                    Hai già una disdetta attiva per questo contratto
+                  </p>
+                </div>
+              </div>
+
+              {/* Dettagli */}
+              <div className="mb-6 space-y-3 rounded-xl bg-yellow-50 p-4">
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium text-gray-700">Contratto:</span>
+                  <span className="font-mono text-gray-900">{duplicateError.contractNumber}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium text-gray-700">ID Disdetta:</span>
+                  <span className="font-mono text-gray-900">#{duplicateError.duplicateId}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium text-gray-700">Stato:</span>
+                  <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-gray-700">
+                    {duplicateError.status}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium text-gray-700">Creata il:</span>
+                  <span className="text-gray-900">
+                    {new Date(duplicateError.createdAt).toLocaleDateString('it-IT', {
+                      day: '2-digit',
+                      month: 'long',
+                      year: 'numeric'
+                    })}
+                  </span>
+                </div>
+              </div>
+
+              {/* Messaggio */}
+              <p className="mb-6 text-sm leading-relaxed text-gray-700">
+                <strong>Attenzione:</strong> Procedendo, creerai una <strong>seconda disdetta</strong> per lo stesso contratto. 
+                Questo potrebbe causare problemi con il fornitore. Sei sicuro?
+              </p>
+
+              {/* Bottoni */}
+              <div className="flex gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setDuplicateError(null)}
+                  className="flex-1 rounded-xl border-2 border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                >
+                  Annulla
+                </motion.button>
+                <motion.button
+                  whileHover={!isBypassSubmitting ? { scale: 1.02 } : {}}
+                  whileTap={!isBypassSubmitting ? { scale: 0.98 } : {}}
+                  onClick={handleBypassDuplicate}
+                  disabled={isBypassSubmitting}
+                  className="flex-1 rounded-xl bg-gradient-primary px-4 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                >
+                  {isBypassSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Invio in corso...</span>
+                    </>
+                  ) : (
+                    <span>Procedi Comunque</span>
+                  )}
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.form>
   )
 }

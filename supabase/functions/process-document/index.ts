@@ -6,6 +6,7 @@ import { encodeBase64 } from "https://deno.land/std@0.224.0/encoding/base64.ts"
 import { create, getNumericDate } from "https://deno.land/x/djwt@v3.0.1/mod.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import { z } from "https://esm.sh/zod@3.23.8"
+import { extractContractNumber } from "./extractContractNumber.ts"
 
 // -----------------------------
 // 0) COSTANTI & CONFIG
@@ -215,7 +216,7 @@ serve(async (req: Request) => {
       const { document } = aiJson;
       if (!document || !document.text) throw new Error("AI: documento o testo non presenti");
 
-      // 10) Estrazione entità
+      // 10.1) Estrazione entità
       const extracted = new Map<string, string>();
       if (Array.isArray(document.entities)) {
         (document.entities as AiEntity[]).forEach((e) => {
@@ -223,25 +224,68 @@ serve(async (req: Request) => {
         });
       }
 
-      // 11) UPDATE (Successo C14)
+      // 10.2) Estrazione contract number
+      const supplierTaxId = extracted.get("supplier_tax_id") ?? undefined
+      const contractResult = extractContractNumber(aiJson, supplierTaxId)
+
+      // Log per debugging
+      if (contractResult.contractNumber) {
+        console.log(`[C21] Contract number estratto:`, {
+          number: contractResult.contractNumber,
+          method: contractResult.method,
+          confidence: contractResult.confidence
+        })
+      } else {
+        console.warn(`[C21] Contract number NON trovato per record ${recordId}`)
+      }
+
+      // 11) UPDATE
       const successRow = {
         status: "PENDING_REVIEW",
         supplier_tax_id: extracted.get("supplier_tax_id") ?? null,
         receiver_tax_id: extracted.get("receiver_tax_id") ?? null,
         supplier_iban: extracted.get("supplier_iban") ?? null,
+        supplier_contract_number: contractResult.contractNumber ?? null,
         raw_json_response: aiJson,
         error_message: null 
       };
 
-      const { error: updateSuccessError } = await sb
+      console.log(`[C21-DEBUG] Tentativo UPDATE con dati:`, {
+        recordId,
+        supplier_contract_number: successRow.supplier_contract_number,
+        supplier_contract_number_type: typeof successRow.supplier_contract_number,
+        supplier_contract_number_length: successRow.supplier_contract_number?.length
+      })
+
+      const { data: updatedData, error: updateSuccessError } = await sb
         .from("extracted_data")
         .update(successRow)
-        .eq("id", recordId);
-      
+        .eq("id", recordId)
+        .select() // ← AGGIUNTO: ritorna il record aggiornato
+
       if (updateSuccessError) throw new Error(`DB update (success) failed: ${updateSuccessError.message}`);
+
+      // Log DOPO l'update con verifica
+      console.log(`[C21-DEBUG] Record aggiornato nel DB:`, {
+        recordId,
+        returned_supplier_contract_number: updatedData?.[0]?.supplier_contract_number,
+        returned_status: updatedData?.[0]?.status
+      })
+
       console.log(`[C14] Record ${recordId} aggiornato a PENDING_REVIEW.`);
 
-    } catch (workError: unknown) {
+      // --- MONITORING & ANALYTICS ---
+      if (contractResult.method !== 'none') {
+        console.log(`[C21-ANALYTICS]`, {
+          recordId,
+          method: contractResult.method,
+          confidence: contractResult.confidence,
+          lengthContractNumber: contractResult.contractNumber?.length,
+          supplierTaxId: supplierTaxId?.substring(0, 5)
+        })
+      }
+
+    } catch (workError: unknown) {  
       // --- BLOCCO CATCH INTERNO (C14) ---
       const msg = workError instanceof Error ? workError.message : "Errore processo OCR";
       console.error(`[C14] Errore di processo per ID ${recordId}: ${msg}`);
