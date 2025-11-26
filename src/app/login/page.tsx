@@ -3,40 +3,39 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { Mail, Lock, ArrowRight, Loader2 } from 'lucide-react'
+import Link from 'next/link'
+import toast from 'react-hot-toast'
+import { AuthHeader } from '@/components/AuthHeader'
+import { OAuthButton } from '@/components/OAuthButton'
+import { LegalFooter } from '@/components/LegalFooter'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  
+
   const router = useRouter()
 
-  // --- FUNZIONE LOGIN CON GOOGLE (NOVITÀ C10) ---
-  // Aggiunta rispettando la tua logica di 'loading' e 'error'
+  // Google OAuth Login
   const handleLoginWithGoogle = async () => {
-    setLoading(true) // <-- Usa il tuo 'loading'
-    setError('')
+    setLoading(true)
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      // (Supabase gestirà il redirect automaticamente
-      // in base a quanto configurato nel Task 1)
     })
-    
-    // Nota: con OAuth, c'è un reindirizzamento.
-    // Il 'loading' non tornerà a 'false' se il redirect ha successo.
+
     if (error) {
-      setError(error.message)
+      toast.error(error.message)
       setLoading(false)
     }
   }
 
-  // --- LA TUA FUNZIONE DI LOGIN (Invariata) ---
+  // Email/Password Login
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    
+
     setLoading(true)
-    setError('')
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
@@ -46,101 +45,148 @@ export default function LoginPage() {
     setLoading(false)
 
     if (error) {
-      setError(error.message)
+      toast.error(error.message)
     } else if (data.user) {
+      toast.success('Accesso effettuato con successo!')
       router.push('/')
     }
   }
 
-  // --- IL TUO JSX (con aggiunte C10) ---
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
-        <h1 className="mb-6 text-center text-3xl font-bold text-gray-800">
-          Accedi al tuo Account
-        </h1>
-        
-        {/* --- PULSANTE GOOGLE (NOVITÀ C10) --- */}
-        <button
-          onClick={handleLoginWithGoogle}
-          disabled={loading} // <-- Collegato al tuo 'loading'
-          className="mb-4 flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-50"
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center px-4 py-12">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
+        className="w-full max-w-md"
+      >
+        {/* Logo/Header */}
+        <AuthHeader 
+          title="DisdettaFacile"
+          subtitle="Bentornato! 👋"
+        />
+
+        {/* Glassmorphism Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-glass border border-white/20 p-6 sm:p-8"
         >
-          {/* Aggiungi qui un'icona di Google se vuoi */}
-          Accedi con Google
-        </button>
+          {/* Google OAuth Button */}
+          <OAuthButton onClick={handleLoginWithGoogle} disabled={loading}>
+            Accedi con Google
+          </OAuthButton>
 
-        {/* --- DIVISORE (NOVITÀ C10) --- */}
-        <div className="relative mb-4">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-gray-300" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-white px-2 text-gray-500">Oppure continua con</span>
-          </div>
-        </div>
-        
-        {/* --- IL TUO FORM (Invariato) --- */}
-        <form onSubmit={handleLogin} className="space-y-6">
-          {/* Campo Email */}
-          <div>
-            <label 
-              htmlFor="email" 
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-            />
+          {/* Divider */}
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-white/80 px-4 text-gray-500">Oppure continua con</span>
+            </div>
           </div>
 
-          {/* Campo Password */}
-          <div>
-            <label 
-              htmlFor="password" 
-              className="block text-sm font-medium text-gray-700"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-            />
-          </div>
+          {/* Email/Password Form */}
+          <form onSubmit={handleLogin} className="space-y-5">
+            {/* Email Field */}
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Email
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="tua@email.com"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                />
+              </div>
+            </div>
 
-          {/* Pulsante di Invio */}
-          <div>
-            <button
+            {/* Password Field */}
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Forgot Password Link */}
+            <div className="text-right">
+              <Link
+                href="/reset-password"
+                className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+              >
+                Password dimenticata?
+              </Link>
+            </div>
+
+            {/* Submit Button */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={loading}
-              className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+              className="w-full rounded-xl bg-gradient-primary px-6 py-3 text-white font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {loading ? 'Caricamento...' : 'Accedi'}
-            </button>
-          </div>
-        </form>
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span>Accesso in corso...</span>
+                </>
+              ) : (
+                <>
+                  <span>Accedi</span>
+                  <ArrowRight className="h-5 w-5" />
+                </>
+              )}
+            </motion.button>
+          </form>
 
-        {/* Messaggio di errore */}
-        {error && (
-          <p className="mt-4 text-center text-sm text-red-600">
-            {error}
-          </p>
-        )}
-      </div>
+          {/* Register Link */}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Non hai un account?{' '}
+              <Link
+                href="/register"
+                className="text-indigo-600 font-semibold hover:text-indigo-700 transition-colors"
+              >
+                Registrati
+              </Link>
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Footer Links */}
+        <LegalFooter />
+      </motion.div>
     </div>
   )
 }

@@ -559,3 +559,45 @@
     - Guarantees stability of C20 duplicate detection across all layers.
     - Establishes a scalable QA foundation suitable for CI/CD pipelines.
     - Prepares the project for C35 E2E testing and future regression coverage.
+
+- **UI Polish (C22):**
+
+  - **Updated Pages:**
+    - Applies the C17 design system (glassmorphism, gradients, animations) to remaining pages: login, registration, and profile.
+    - Login: glassmorphism card, Google OAuth integration, icon-enhanced inputs, “forgot password” link.
+    - Registration: animated success state, terms acceptance checkbox, fully consistent layout.
+    - Profile: user avatar with initials, modernized file upload UI, icon-based form fields.
+
+  - **Extracted Components:**
+    - `GoogleIcon.tsx`: reusable Google OAuth SVG icon (removes ~120 duplicated lines).
+    - `LegalFooter.tsx`: animated legal footer (removes ~40 lines).
+    - `AuthHeader.tsx`: animated logo header (removes ~50 lines).
+    - `OAuthButton.tsx`: Google OAuth button with loading state and disabled handling (removes ~60 lines).
+
+  - **Design System Applied:**
+    - Gradient backgrounds: `from-indigo-50 via-purple-50 to-pink-50`.
+    - Glassmorphism cards: `bg-white/80 backdrop-blur-xl shadow-glass`.
+    - Modern inputs: `rounded-xl`, Lucide icons, consistent focus states.
+    - Framer Motion animations: page transitions, button interactions, staggered effects.
+
+  - **UX Enhancements:**
+    - Global toast notifications (react-hot-toast) replacing inline form errors.
+    - Animated Lucide spinners for loading states.
+    - File upload validation and visual feedback (max 5MB, PDF/PNG/JPG).
+    - Registration success screens with spring animations.
+    - Auto-generated user avatar (email initials) in profile header.
+
+  - **Code Quality:**
+    - Total lines reduced: 720 → 670 lines (-50 lines, -7%).
+    - Removed duplicated logic across auth pages.
+    - Improved maintainability via extracted reusable components.
+    - Added file-size and file-type validation to prevent UX issues.
+
+  - **Files Involved:**
+    - `src/app/login/page.tsx` (refactored: 230 → 145 lines)
+    - `src/app/register/page.tsx` (refactactored: 260 → 185 lines)
+    - `src/app/profileUser/page.tsx` (updated: 230 → 245 lines)
+    - `src/components/GoogleIcon.tsx` (new)
+    - `src/components/LegalFooter.tsx` (new)
+    - `src/components/AuthHeader.tsx` (new)
+    - `src/components/OAuthButton.tsx` (new)

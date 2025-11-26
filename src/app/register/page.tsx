@@ -1,48 +1,42 @@
-// Indica a Next.js che questo è un "Client Component", 
-// necessario per usare 'useState' e gestire l'interazione dell'utente.
 "use client"
 
-// Importiamo i 'ganci' di React per gestire lo stato del modulo
 import { useState } from 'react'
-// Importiamo il nostro client Supabase
 import { supabase } from '@/lib/supabaseClient'
+import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { Mail, Lock, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react'
+import Link from 'next/link'
+import toast from 'react-hot-toast'
+import { AuthHeader } from '@/components/AuthHeader'
+import { OAuthButton } from '@/components/OAuthButton'
+import { LegalFooter } from '@/components/LegalFooter'
 
 export default function RegisterPage() {
-  // Stati per salvare i valori degli input
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  
-  // Stati per feedback all'utente (invariati)
   const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState('')
-  const [error, setError] = useState('')
+  const [registered, setRegistered] = useState(false)
 
-  // --- FUNZIONE REGISTRAZIONE CON GOOGLE (NOVITÀ C10) ---
+  const router = useRouter()
+
+  // Google OAuth Registration
   const handleLoginWithGoogle = async () => {
     setLoading(true)
-    setMessage('')
-    setError('')
-    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
     })
 
-    // Se il reindirizzamento a Google fallisce, mostriamo un errore
     if (error) {
-      setError(error.message)
+      toast.error(error.message)
       setLoading(false)
     }
-    // Se ha successo, l'utente viene reindirizzato a Google,
-    // quindi non è necessario reimpostare 'loading' a false.
   }
 
-  // --- Funzione di registrazione standard (invariata) ---
+  // Email/Password Registration
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault() 
-    
+    e.preventDefault()
+
     setLoading(true)
-    setMessage('')
-    setError('')
 
     const { data, error } = await supabase.auth.signUp({
       email: email,
@@ -52,107 +46,206 @@ export default function RegisterPage() {
     setLoading(false)
 
     if (error) {
-      setError(error.message)
+      toast.error(error.message)
     } else if (data.user) {
-      setMessage('Registrazione avvenuta! Controlla la tua email per il link di conferma.')
+      setRegistered(true)
+      toast.success('Registrazione avvenuta! Controlla la tua email.')
     }
   }
 
-  // --- JSX (Aggiornato con C10) ---
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
-        <h1 className="mb-6 text-center text-3xl font-bold text-gray-800">
-          Crea il tuo Account
-        </h1>
-
-        {/* --- PULSANTE GOOGLE (NOVITÀ C10) --- */}
-        <button
-          onClick={handleLoginWithGoogle}
-          disabled={loading}
-          className="mb-4 flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-50"
+  // Success state
+  if (registered) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center px-4 py-12">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+          className="w-full max-w-md"
         >
-          {/* Aggiungi qui un'icona di Google se vuoi */}
-          Registrati con Google
-        </button>
-
-        {/* --- DIVISORE (NOVITÀ C10) --- */}
-        <div className="relative mb-4">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-gray-300" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-white px-2 text-gray-500">Oppure registrati con l&aposemail</span>
-          </div>
-        </div>
-        
-        {/* --- Form Email/Password (invariato) --- */}
-        <form onSubmit={handleRegister} className="space-y-6">
-          {/* Campo Email */}
-          <div>
-            <label 
-              htmlFor="email" 
-              className="block text-sm font-medium text-gray-700"
+          <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-glass border border-white/20 p-8 text-center">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring" }}
+              className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-6"
             >
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-            />
+              <CheckCircle2 className="h-10 w-10 text-white" />
+            </motion.div>
+
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Registrazione Completata!
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Abbiamo inviato un'email di conferma a <strong>{email}</strong>.
+              Clicca sul link nell'email per attivare il tuo account.
+            </p>
+
+            <Link href="/login">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full rounded-xl bg-gradient-primary px-6 py-3 text-white font-semibold shadow-lg hover:shadow-xl transition-all"
+              >
+                Vai al Login
+              </motion.button>
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center px-4 py-12">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
+        className="w-full max-w-md"
+      >
+        {/* Logo/Header */}
+        <AuthHeader 
+          title="DisdettaFacile"
+          subtitle="Crea il tuo account gratuito"
+        />
+
+        {/* Glassmorphism Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-glass border border-white/20 p-6 sm:p-8"
+        >
+          {/* Google OAuth Button */}
+          <OAuthButton onClick={handleLoginWithGoogle} disabled={loading}>
+            Registrati con Google
+          </OAuthButton>
+
+          {/* Divider */}
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-white/80 px-4 text-gray-500">Oppure registrati con l'email</span>
+            </div>
           </div>
 
-          {/* Campo Password */}
-          <div>
-            <label 
-              htmlFor="password" 
-              className="block text-sm font-medium text-gray-700"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-              placeholder="Minimo 6 caratteri"
-            />
-          </div>
+          {/* Email/Password Form */}
+          <form onSubmit={handleRegister} className="space-y-5">
+            {/* Email Field */}
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Email
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="tua@email.com"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                />
+              </div>
+            </div>
 
-          {/* Pulsante di Invio */}
-          <div>
-            <button
+            {/* Password Field */}
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Minimo 6 caratteri"
+                  minLength={6}
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                />
+              </div>
+              <p className="mt-2 text-xs text-gray-500">
+                Almeno 6 caratteri
+              </p>
+            </div>
+
+            {/* Terms Checkbox */}
+            <div className="flex items-start">
+              <input
+                id="terms"
+                name="terms"
+                type="checkbox"
+                required
+                className="mt-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              />
+              <label htmlFor="terms" className="ml-3 text-sm text-gray-600">
+                Accetto i{' '}
+                <Link href="/terms-of-service" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                  Termini di Servizio
+                </Link>{' '}
+                e la{' '}
+                <Link href="/privacy-policy" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                  Privacy Policy
+                </Link>
+              </label>
+            </div>
+
+            {/* Submit Button */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={loading}
-              className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+              className="w-full rounded-xl bg-gradient-primary px-6 py-3 text-white font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {loading ? 'Caricamento...' : 'Registrati'}
-            </button>
-          </div>
-        </form>
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span>Registrazione in corso...</span>
+                </>
+              ) : (
+                <>
+                  <span>Registrati</span>
+                  <ArrowRight className="h-5 w-5" />
+                </>
+              )}
+            </motion.button>
+          </form>
 
-        {/* Messaggi di feedback (invariati) */}
-        {message && (
-          <p className="mt-4 text-center text-sm text-green-600">
-            {message}
-          </p>
-        )}
-        {error && (
-          <p className="mt-4 text-center text-sm text-red-600">
-            {error}
-          </p>
-        )}
-      </div>
+          {/* Login Link */}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Hai già un account?{' '}
+              <Link
+                href="/login"
+                className="text-indigo-600 font-semibold hover:text-indigo-700 transition-colors"
+              >
+                Accedi
+              </Link>
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Footer Links */}
+        <LegalFooter />
+      </motion.div>
     </div>
   )
 }
