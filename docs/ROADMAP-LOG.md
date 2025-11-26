@@ -108,7 +108,7 @@
     - Fixes issue where inputs were cleared after saving (adds `.select().single()` to the `upsert`).
     - Adds redirect from `/profileUser` back to `/dashboard` after successful save.
 
-- **Implements Google Social Login (C10)**
+- **Implements Google Social Login (C10):**
   - **Backend (Supabase Config):**
     - Configured Google as an OAuth provider in the Supabase dashboard (requires Client ID and Secret from Google Cloud Console).
 
@@ -121,7 +121,7 @@
     - The new trigger checks 'raw_user_meta_data' for the 'full_name' provided by Google.
     - Automatically parses 'full_name' into 'nome' and 'cognome' and pre-populates these fields in the 'profiles' table upon a new social login.
 
-- **C11 (Security & Validation Refactor):**
+- **Security & Validation Refactor (C11):**
   - **Middleware:** Replaces the client-side C9 (<ProfileRequired>) with a server-side 'src/middleware.ts' for robust route protection (auth + profile completion).
   - * **Validation (Zod):** Introduces 'zod' and a central 'src/domain/schemas.ts' for type-safe validation (using the user's advanced refactored version).
   - * **Edge Functions:** Hardens 'process-document' (v5) and 'send-pec-disdette' with Zod/type-guard validation, timeout/backoff logic, and PII-safe logging.
@@ -204,7 +204,7 @@
     - Improved maintainability (centralized business logic), services/repositories easily testable.
     - Stronger end-to-end types and ready foundation for infinite scroll (C16).
 
-- **C16 — Infinite Scroll Pagination**
+- **Infinite Scroll Pagination (C16):**
   - **Custom Hook (useInfiniteScroll)**
     - Creates `src/hooks/useInfiniteScroll.ts` to centralize all pagination logic.
     - Manages full pagination state: `items, page, isLoading, isLoadingMore, hasMore, error, totalCount.`
@@ -267,7 +267,7 @@
       - `dynamic sorting`.
     - Smooth transitions thanks to skeletons, spinners, and preloading.
 
-- **C17 — Modern Design System & UI Overhaul**
+- **Modern Design System & UI Overhaul (C17):**
   - **Design System Foundation:**
     - Implements comprehensive `tailwind.config.js` with modern color palette:
       - Primary indigo gradient (`#6366F1` → `#4F46E5`)
@@ -376,7 +376,7 @@
     - Enhanced user feedback with toast notifications
     - Scalable design system ready for new features
 
-- **C18 — Custom Error Pages**
+- **Custom Error Pages (C18):**
   - **Error Page Design:**
     - Creates custom 404 (not-found.tsx) with AlertCircle icon and primary-600 color
     - Creates custom 500 (error.tsx) with XCircle icon, dual action buttons (retry + dashboard), and error logging
@@ -411,7 +411,7 @@
     - Enhanced debugging capabilities with error logging
     - Professional polish aligned with modern design system
 
-- **C19 — Footer & Legal Pages (Placeholder)**
+- **Footer & Legal Pages (C19):**
   - **Footer Component:**
     - Creates responsive footer with 4-column layout (Brand, Product, Support, Legal)
     - Dark theme design (bg-gray-900) with consistent hover states (text-primary-400)
@@ -526,3 +526,36 @@
     - Preserves flexibility for legitimate resubmissions (reactivation, corrections).
     - Improves DB reliability and frontend UX under high-frequency uploads.
     - Ensures consistent metadata, logging, and type-safety across the entire stack.
+
+- **Testing & QA Suite (C21):**
+  - **Testing Framework Setup:**
+    - Adds Jest 30.2.0 with full Next.js and TypeScript integration.
+    - Configures React Testing Library, MSW mocks, and global Jest setup.
+    - Adds Playwright configuration for future E2E coverage (C35).
+    - Provides reusable mock factories and shared test utilities (`testHelpers.ts`).
+
+  - **Unit Test Coverage (62 tests, ~3s):**
+    - **Repository:** validates `checkDuplicate`, status filtering, pagination, and CRUD behaviors.
+    - **Service:** tests `confirmAndPrepareForSend`, bypass logic, state transitions, and business rules.
+    - **Schema:** Zod validation for `bypassDuplicateCheck` and domain fields across 30 schema tests.
+
+  - **C20 Duplicate Detection Validation:**
+    - Full cross-layer coverage (repository → service → schema).
+    - Ensures correct metadata generation: `{ duplicateId, status, createdAt, contractNumber }`.
+    - Enforces bypass mechanism, multi-tenant isolation, and prevents false positives from FAILED records.
+
+  - **Testing Best Practices:**
+    - Fully mocked dependencies (no real DB calls) for fast and reliable execution.
+    - Uses AAA pattern (Arrange–Act–Assert) and descriptive test naming.
+    - Validates error serialization and consistency with service-layer logic.
+
+  - **Files Added:**
+    - Config: `jest.config.js`, `jest.setup.js`, `playwright.config.ts`
+    - Tests: `src/__tests__/repositories/*`, `services/*`, `domain/*`
+    - Utils: `src/__tests__/utils/testHelpers.ts`
+    - Docs: `docs/TESTING.md`
+
+  - **Results:**
+    - Guarantees stability of C20 duplicate detection across all layers.
+    - Establishes a scalable QA foundation suitable for CI/CD pipelines.
+    - Prepares the project for C35 E2E testing and future regression coverage.

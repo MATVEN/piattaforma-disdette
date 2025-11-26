@@ -267,13 +267,31 @@ Compili disdetta a metà → Browser crasha → Riapri → "Hai una bozza salvat
 
 ---
 
+### **C35 - E2E Testing Suite** 🧪
+**Effort:** 3-4 ore  
+**Priorità:** ALTA (Qualità)
+
+**Cosa fa:**  
+Implementa una suite completa di test end-to-end con Playwright che valida tutti i flussi critici dell’applicazione: registrazione, upload bolletta, revisione dati, conferma, invio in modalità test, salvataggio e ripresa del wizard, rilevamento duplicati e interazioni della dashboard (scroll infinito, stati, errori).
+
+**Perché è importante:**  
+Assicura che l’intero percorso utente funzioni correttamente da inizio a fine. È un passaggio obbligatorio prima della PEC reale (C36), poiché l’invio PEC è irreversibile e può essere attivato solo quando tutti i flussi fondamentali sono certificati tramite test E2E affidabili.
+
+**Quando farlo:**  
+Subito dopo il completamento di C34 (Wizard Save & Resume) e prima di qualunque feature di produzione. In questo modo si garantisce la stabilità end-to-end della piattaforma prima del lancio.
+
+**Esempio pratico:**  
+L’utente crea un account → carica la bolletta → attende l’OCR → rivede i dati → conferma → invia in modalità test → torna in dashboard e visualizza lo stato aggiornato, con test che verificano ogni passaggio.
+
+---
+
 ## 💰 FEATURE CON COSTI (Post-Test / Lancio Reale)
 
 Queste feature richiedono servizi a pagamento o hanno senso solo con il servizio reale attivo.
 
 ---
 
-### **C35 - PEC Real Send** 🔴 CRITICO (Post-Test)
+### **C36 - PEC Real Send** 🔴 CRITICO (Post-Test)
 **Effort:** 0.5-1 giorno  
 **Costo:** Casella PEC certificata (~€50-100/anno) + SMTP
 
@@ -288,7 +306,7 @@ Quando sei pronto a mandare PEC vere ai provider. Fino ad allora, test mode simu
 
 ---
 
-### **C36 - Email Notifications** 🔴 CRITICO (Post-Test)
+### **C37 - Email Notifications** 🔴 CRITICO (Post-Test)
 **Effort:** 2-3 giorni  
 **Costo:** Resend/SendGrid (gratis fino a ~10k email/mese, poi a pagamento)
 
@@ -303,7 +321,7 @@ Pre-launch o subito dopo, quando hai utenti reali. In test, le notifiche in-app 
 
 ---
 
-### **C37 - Payment Integration** 🔴 CRITICO (Monetizzazione)
+### **C38 - Payment Integration** 🔴 CRITICO (Monetizzazione)
 **Effort:** 5-6 giorni  
 **Costo:** Stripe (commissione ~2% + €0.25 per transazione)
 
@@ -318,7 +336,7 @@ Quando decidi il pricing e sei pronto a monetizzare. Prima testa tutto gratis co
 
 ---
 
-### **C38 - Guest Checkout Flow** 🎯 (Post-Payment)
+### **C39 - Guest Checkout Flow** 🎯 (Post-Payment)
 **Effort:** 5-6 giorni  
 **Costo:** Nessuno diretto, ma richiede C37 (Payment)
 
@@ -333,7 +351,7 @@ Dopo C37, quando vedi che molti utenti abbandonano alla registrazione.
 
 ---
 
-### **C39 - Admin Dashboard** 🎯 (Post-Launch)
+### **C40 - Admin Dashboard** 🎯 (Post-Launch)
 **Effort:** 6-8 giorni  
 **Costo:** Nessuno diretto
 
@@ -348,7 +366,7 @@ Dopo lancio, quando hai traffico reale e serve supporto operativo avanzato.
 
 ---
 
-### **C40 - Analytics & Tracking** ✨ (Pre-Launch)
+### **C41 - Analytics & Tracking** ✨ (Pre-Launch)
 **Effort:** 1-2 giorni  
 **Costo:** Google Analytics 4 (gratis), Sentry per errors (gratis fino a soglia)
 
@@ -363,7 +381,7 @@ Dati per capire cosa funziona e cosa no. Ma inutile in test senza traffico reale
 
 ---
 
-### **C41 - Performance Optimization** ✨ (Pre-Launch)
+### **C42 - Performance Optimization** ✨ (Pre-Launch)
 **Effort:** 2-3 giorni  
 **Costo:** Nessuno diretto
 
