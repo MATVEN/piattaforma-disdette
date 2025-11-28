@@ -52,6 +52,88 @@ function atLeastOne<T extends Record<string, unknown>>(obj: T, keys: (keyof T)[]
 }
 
 /* -------------------------------------------
+ * File Upload Validation (C23)
+ * ------------------------------------------- */
+
+// Dimensione massima file: 5MB
+export const MAX_FILE_SIZE = 5 * 1024 * 1024
+
+// Tipi MIME consentiti per documenti di identità e generali
+export const ALLOWED_ID_DOCUMENT_TYPES = [
+  'application/pdf',
+  'image/png',
+  'image/jpeg',
+  'image/jpg',
+] as const
+
+// Tipi MIME consentiti per documenti aziendali (visura, delega)
+export const ALLOWED_BUSINESS_DOCUMENT_TYPES = [
+  'application/pdf',
+] as const
+
+// Tipi MIME consentiti per bollette/fatture
+export const ALLOWED_BILL_TYPES = [
+  'application/pdf',
+  'image/png',
+  'image/jpeg',
+  'image/jpg',
+] as const
+
+/**
+ * Valida dimensione file
+ * @param file - File da validare
+ * @returns true se valido, stringa di errore altrimenti
+ */
+export function validateFileSize(file: File): true | string {
+  if (file.size > MAX_FILE_SIZE) {
+    return `Il file deve essere inferiore a ${Math.round(MAX_FILE_SIZE / 1024 / 1024)}MB`
+  }
+  return true
+}
+
+/**
+ * Valida tipo MIME file
+ * @param file - File da validare
+ * @param allowedTypes - Array di tipi MIME consentiti
+ * @returns true se valido, stringa di errore altrimenti
+ */
+export function validateFileType(
+  file: File,
+  allowedTypes: readonly string[]
+): true | string {
+  if (!allowedTypes.includes(file.type)) {
+    const extensions = allowedTypes
+      .map(type => type.split('/')[1].toUpperCase())
+      .join(', ')
+    return `Formato non supportato. Usa: ${extensions}`
+  }
+  return true
+}
+
+/**
+ * Valida file completo (dimensione + tipo)
+ * @param file - File da validare
+ * @param allowedTypes - Array di tipi MIME consentiti
+ * @returns { valid: boolean, error?: string }
+ */
+export function validateFile(
+  file: File,
+  allowedTypes: readonly string[]
+): { valid: boolean; error?: string } {
+  const sizeCheck = validateFileSize(file)
+  if (sizeCheck !== true) {
+    return { valid: false, error: sizeCheck }
+  }
+
+  const typeCheck = validateFileType(file, allowedTypes)
+  if (typeCheck !== true) {
+    return { valid: false, error: typeCheck }
+  }
+
+  return { valid: true }
+}
+
+/* -------------------------------------------
  * Schemi per Edge Functions
  * ------------------------------------------- */
 
@@ -190,30 +272,83 @@ export const profileFormSchema = z.object({
 
 export type ProfileFormData = z.infer<typeof profileFormSchema>
 
-// Schema per il form /review (C13)
-export const reviewFormSchema = z.object({
+// Schema per il form /review (C13, C23 - B2B Support)
+// Base schema: campi comuni a B2C e B2B
+const reviewFormBaseSchema = z.object({
+  // Dati fornitore (azienda a cui si fa disdetta)
+  supplier_name: z.string().trim().min(1, 'Nome fornitore obbligatorio').optional(),
   supplier_tax_id: z.string()
-    .min(11, 'P.IVA deve essere di 11 cifre')
-    .max(11, 'P.IVA deve essere di 11 cifre')
+    .min(11, 'P.IVA fornitore deve essere di 11 cifre')
+    .max(11, 'P.IVA fornitore deve essere di 11 cifre')
     .regex(/^\d{11}$/, 'P.IVA deve contenere solo numeri'),
-  
-  receiver_tax_id: z.string()
-    .min(16, 'Codice Fiscale deve essere di 16 caratteri')
-    .max(16, 'Codice Fiscale deve essere di 16 caratteri')
-    .regex(/^[A-Z0-9]{16}$/, 'Codice Fiscale non valido (solo lettere maiuscole e numeri)'),
-  
-  supplier_contract_number: z.string().optional(),
-  
+  supplier_contract_number: z.string().trim().min(1).optional(),
   supplier_iban: z.string()
     .optional()
     .refine(
       (val) => !val || val.length === 0 || /^IT[0-9]{2}[A-Z][0-9]{22}$/.test(val.replace(/\s/g, '')),
       'IBAN italiano non valido'
     ),
-  
+
+  // Accettazione delega auto-generata
   delegaCheckbox: z.boolean().refine(val => val === true, {
     message: 'Devi accettare la delega per procedere'
   })
 })
 
+// Schema B2C: intestatario privato
+const reviewFormSchemaB2C = reviewFormBaseSchema.extend({
+  tipo_intestatario: z.literal('privato'),
+
+  // Dati anagrafici privato
+  nome: z.string().trim().min(1, 'Nome obbligatorio'),
+  cognome: z.string().trim().min(1, 'Cognome obbligatorio'),
+  codice_fiscale: z.string()
+    .min(16, 'Codice Fiscale deve essere di 16 caratteri')
+    .max(16, 'Codice Fiscale deve essere di 16 caratteri')
+    .regex(/^[A-Z0-9]{16}$/i, 'Codice Fiscale non valido'),
+  indirizzo_residenza: z.string().trim().min(1, 'Indirizzo residenza obbligatorio'),
+})
+
+// Schema B2B: intestatario azienda
+const reviewFormSchemaB2B = reviewFormBaseSchema.extend({
+  tipo_intestatario: z.literal('azienda'),
+
+  // Dati azienda
+  ragione_sociale: z.string().trim().min(1, 'Ragione sociale obbligatoria'),
+  partita_iva: z.string()
+    .min(11, 'Partita IVA azienda deve essere di 11 cifre')
+    .max(11, 'Partita IVA azienda deve essere di 11 cifre')
+    .regex(/^\d{11}$/, 'Partita IVA deve contenere solo numeri'),
+  sede_legale: z.string().trim().min(1, 'Sede legale obbligatoria'),
+
+  // Dati Legale Rappresentante
+  lr_nome: z.string().trim().min(1, 'Nome legale rappresentante obbligatorio'),
+  lr_cognome: z.string().trim().min(1, 'Cognome legale rappresentante obbligatorio'),
+  lr_codice_fiscale: z.string()
+    .min(16, 'Codice Fiscale LR deve essere di 16 caratteri')
+    .max(16, 'Codice Fiscale LR deve essere di 16 caratteri')
+    .regex(/^[A-Z0-9]{16}$/i, 'Codice Fiscale LR non valido'),
+
+  // Indirizzi
+  indirizzo_fornitura: z.string().trim().min(1, 'Indirizzo fornitura obbligatorio'),
+  indirizzo_fatturazione: z.string().trim().min(1, 'Indirizzo fatturazione obbligatorio'),
+
+  // Ruolo richiedente
+  richiedente_ruolo: z.enum(['legale_rappresentante', 'delegato'], {
+    errorMap: () => ({ message: 'Seleziona il ruolo del richiedente' })
+  }),
+
+  // File uploads (paths opzionali - gestiti separatamente)
+  visura_camerale_path: z.string().optional(),
+  delega_firma_path: z.string().optional(),
+})
+
+// Discriminated Union: scelta basata su tipo_intestatario
+export const reviewFormSchema = z.discriminatedUnion('tipo_intestatario', [
+  reviewFormSchemaB2C,
+  reviewFormSchemaB2B,
+])
+
 export type ReviewFormData = z.infer<typeof reviewFormSchema>
+export type ReviewFormDataB2C = z.infer<typeof reviewFormSchemaB2C>
+export type ReviewFormDataB2B = z.infer<typeof reviewFormSchemaB2B>

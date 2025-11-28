@@ -87,18 +87,21 @@ Login page passa da semplice form bianco a design moderno con gradienti, animazi
 
 ---
 
-### **C23 - PDF Template System** 🔴 CRITICO
-**Effort:** 4-6 giorni  
+### **C23 - PDF Generator & B2B Support** 🔴 CRITICO
+**Effort:** 3-4 giorni  
 **Priorità:** MASSIMA
 
 **Cosa fa:**  
-Ogni operatore (Enel, ENI, Fastweb) ha il proprio modulo ufficiale per le disdette. Attualmente il sistema genera una lettera standard uguale per tutti. Con questa feature, il sistema carica i moduli PDF ufficiali di ogni provider e li compila automaticamente con i dati estratti dalla bolletta.
+Sistema completo di generazione PDF per lettere di disdetta con supporto sia B2C (privati) che B2B (aziende/P.IVA). Il sistema genera un PDF standard della piattaforma (legalmente valido senza bisogno di moduli provider-specific) compilato automaticamente con i dati estratti dalla bolletta. Per le aziende, gestisce anche documenti obbligatori come Visura Camerale e deleghe. Include form condizionale che mostra campi diversi per privati (Nome, Cognome, CF) vs aziende (Ragione Sociale, P.IVA, Legale Rappresentante).
 
 **Perché è importante:**  
-Senza questa feature, rischi che i provider rifiutino le disdette perché non usano il loro modulo ufficiale. È il gap più critico scoperto nell'analisi.
+Senza questa feature, il sistema supporterebbe solo privati perdendo tutto il mercato B2B. I provider aziendali rifiuterebbero le disdette senza Visura Camerale (prova dei poteri di firma) e delega se necessaria. È il gap più critico per validità legale e per aprire il mercato aziendale. La scoperta chiave: ricerca legale ha confermato che NON servono moduli provider-specific, basta un template standard con tutti i campi obbligatori - questo riduce effort da 4-6 giorni a 3-4 includendo tutto il B2B.
 
-**Esempio pratico:**  
-Utente vuole disdire Enel → Sistema scarica modulo Enel → Compila automaticamente con nome, codice POD, indirizzo → Allega alla PEC
+**Esempio pratico B2C:**  
+Mario Rossi (privato) vuole disdire Enel → Compila form con nome, CF, indirizzo → Upload documento identità → Sistema genera PDF standard con tutti i dati → Pronto per invio PEC
+
+**Esempio pratico B2B:**  
+Rossi SRL (azienda) vuole disdire ENI → Compila form con Ragione Sociale, P.IVA, dati Legale Rappresentante → Upload Visura Camerale + documento LR (+ eventuale delega se richiedente ≠ LR) → Sistema genera PDF B2B con sezione azienda completa → Include Visura negli allegati → Pronto per invio PEC
 
 ---
 
