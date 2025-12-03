@@ -601,3 +601,4 @@
     - `src/components/LegalFooter.tsx` (new)
     - `src/components/AuthHeader.tsx` (new)
     - `src/components/OAuthButton.tsx` (new)
+
