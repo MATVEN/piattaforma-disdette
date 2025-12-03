@@ -150,15 +150,43 @@ export class DisdettaRepository {
   /**
    * Conferma i dati estratti dall'OCR
    * Usato nella Review page quando l'utente conferma i dati
+   * C23: Supporta tutti i campi B2C e B2B
    */
   async confirmData(
     id: number,
     userId: string,
     confirmedData: {
-      supplier_tax_id: string | null;
-      receiver_tax_id: string | null;
+      // Existing fields
+      supplier_tax_id?: string | null;
+      receiver_tax_id?: string | null;
       supplier_iban?: string | null;
       supplier_contract_number?: string | null;
+      supplier_name?: string | null;
+      customer_code?: string | null;
+      pod_pdr?: string | null;
+
+      // B2C/B2B discriminator
+      tipo_intestatario?: 'privato' | 'azienda' | null;
+
+      // B2C fields
+      nome?: string | null;
+      cognome?: string | null;
+      codice_fiscale?: string | null;
+      indirizzo_residenza?: string | null;
+      telefono?: string | null;
+
+      // B2B fields
+      ragione_sociale?: string | null;
+      partita_iva?: string | null;
+      sede_legale?: string | null;
+      lr_nome?: string | null;
+      lr_cognome?: string | null;
+      lr_codice_fiscale?: string | null;
+      indirizzo_fornitura?: string | null;
+      indirizzo_fatturazione?: string | null;
+      richiedente_ruolo?: 'legale_rappresentante' | 'delegato' | null;
+      visura_camerale_path?: string | null;
+      delega_firma_path?: string | null;
     }
   ): Promise<ExtractedData> {
     const { data, error } = await this.supabase

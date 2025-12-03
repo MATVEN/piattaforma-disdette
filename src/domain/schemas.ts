@@ -191,16 +191,48 @@ export const parseSendPec = (input: unknown) => sendPecSchema.parse(input)
  * ma NON impone il formato P.IVA/IBAN. Utile quando vuoi salvare campi parziali
  * e demandare la rigorosità ad una validazione successiva/UX.
  */
-export const confirmDataSchema = z
-  .object({
-    id: z.number(),
-    supplier_tax_id: z.string().nullable().optional(),
-    receiver_tax_id: z.string().nullable().optional(),
-    supplier_iban: z.string().nullable().optional(),
-    supplier_contract_number: z.string().nullable().optional(),
-    bypassDuplicateCheck: z.boolean().optional(),
-  })
-  .strict()
+// Schema per API /api/confirm-data - Esteso per B2C/B2B (C23)
+export const confirmDataSchema = z.object({
+  id: z.number(),
+  
+  // Campi fornitore (esistenti)
+  supplier_name: z.string().nullable().optional(),
+  supplier_tax_id: z.string().nullable().optional(),
+  receiver_tax_id: z.string().nullable().optional(),
+  supplier_iban: z.string().nullable().optional(),
+  supplier_contract_number: z.string().nullable().optional(),
+  customer_code: z.string().nullable().optional(),
+  pod_pdr: z.string().nullable().optional(),
+  
+  // Tipo intestatario (discriminator)
+  tipo_intestatario: z.enum(['privato', 'azienda']).optional(),
+  
+  // Campi B2C (privato)
+  nome: z.string().nullable().optional(),
+  cognome: z.string().nullable().optional(),
+  codice_fiscale: z.string().nullable().optional(),
+  indirizzo_residenza: z.string().nullable().optional(),
+  telefono: z.string().nullable().optional(),
+  
+  // Campi B2B (azienda)
+  ragione_sociale: z.string().nullable().optional(),
+  partita_iva: z.string().nullable().optional(),
+  sede_legale: z.string().nullable().optional(),
+  lr_nome: z.string().nullable().optional(),
+  lr_cognome: z.string().nullable().optional(),
+  lr_codice_fiscale: z.string().nullable().optional(),
+  indirizzo_fornitura: z.string().nullable().optional(),
+  indirizzo_fatturazione: z.string().nullable().optional(),
+  richiedente_ruolo: z.enum(['legale_rappresentante', 'delegato']).nullable().optional(),
+  visura_camerale_path: z.string().nullable().optional(),
+  delega_firma_path: z.string().nullable().optional(),
+  
+  // Checkbox delega
+  delegaCheckbox: z.boolean().optional(),
+  
+  // Bypass duplicate check
+  bypassDuplicateCheck: z.boolean().optional(),
+})
   .refine(
     (v) => atLeastOne(v, ['supplier_tax_id', 'receiver_tax_id', 'supplier_iban']),
     { message: 'Almeno uno tra supplier_tax_id, receiver_tax_id, supplier_iban deve essere valorizzato' }

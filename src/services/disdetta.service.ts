@@ -146,11 +146,34 @@ export class DisdettaService {
     }
 
     // 5. Conferma i dati nel database
+    // C23: Pass ALL validated fields to repository (not just 4)
+    // This includes B2C fields (nome, cognome, etc.) and B2B fields (ragione_sociale, etc.)
     const confirmed = await this.repository.confirmData(id, this.userId, {
+      // Spread all validated fields except 'id' and 'bypassDuplicateCheck'
+      supplier_name: validated.supplier_name || null,
       supplier_tax_id: validated.supplier_tax_id || null,
       receiver_tax_id: validated.receiver_tax_id || null,
       supplier_iban: validated.supplier_iban || null,
       supplier_contract_number: validated.supplier_contract_number || null,
+      customer_code: validated.customer_code || null,
+      pod_pdr: validated.pod_pdr || null,
+      tipo_intestatario: validated.tipo_intestatario || null,
+      nome: validated.nome || null,
+      cognome: validated.cognome || null,
+      codice_fiscale: validated.codice_fiscale || null,
+      indirizzo_residenza: validated.indirizzo_residenza || null,
+      telefono: validated.telefono || null,
+      ragione_sociale: validated.ragione_sociale || null,
+      partita_iva: validated.partita_iva || null,
+      sede_legale: validated.sede_legale || null,
+      lr_nome: validated.lr_nome || null,
+      lr_cognome: validated.lr_cognome || null,
+      lr_codice_fiscale: validated.lr_codice_fiscale || null,
+      indirizzo_fornitura: validated.indirizzo_fornitura || null,
+      indirizzo_fatturazione: validated.indirizzo_fatturazione || null,
+      richiedente_ruolo: validated.richiedente_ruolo || null,
+      visura_camerale_path: validated.visura_camerale_path || null,
+      delega_firma_path: validated.delega_firma_path || null,
     });
 
     return confirmed;
