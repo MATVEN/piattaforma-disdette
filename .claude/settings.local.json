@@ -8,7 +8,9 @@
       "Bash(npm test:coverage:*)",
       "Bash(npm run test:coverage:*)",
       "Bash(npx tsc:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(where:*)",
+      "Bash(deno check:*)"
     ],
     "deny": [],
     "ask": []
