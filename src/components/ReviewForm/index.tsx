@@ -5,6 +5,7 @@
 
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Loader2, XCircle } from 'lucide-react'
 import { TipoIntestatarioSelector } from './components/TipoIntestatarioSelector'
@@ -15,9 +16,12 @@ import { B2BLegalRepFields } from './components/B2BLegalRepFields'
 import { B2BDocumentsSection } from './components/B2BDocumentsSection'
 import { DelegationCheckbox } from './components/DelegationCheckbox'
 import { SubmitButton } from './components/SubmitButton'
+import { ProgressModal } from './components/ProgressModal'
+import { DuplicateDetectionModal } from './components/DuplicateDetectionModal'
 import { useReviewForm } from './hooks/useReviewForm'
 import { useFileUploads } from './hooks/useFileUploads'
 import { useFormSubmission } from './hooks/useFormSubmission'
+import type { ReviewFormData } from '@/domain/schemas'
 
 // Status Display Component
 function StatusDisplay({
@@ -74,7 +78,12 @@ export default function ReviewForm() {
 
   const { files, handleFileChange } = useFileUploads()
 
-  const { onSubmit, loading: submitting } = useFormSubmission({ files })
+  const { onSubmit, loading: submitting, progress } = useFormSubmission({ files })
+
+  // ✅ NEW: Duplicate Detection State
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false)
+  const [duplicateData, setDuplicateData] = useState<any>(null)
+  const [isBypassSubmitting, setIsBypassSubmitting] = useState(false)
 
   // Form methods
   const {
@@ -85,6 +94,38 @@ export default function ReviewForm() {
     watch,
     getValues,
   } = form
+
+  // ✅ NEW: Handle form submission with duplicate detection
+  const handleFormSubmit = async (data: ReviewFormData) => {
+    const result = await onSubmit(data, false) // bypassDuplicate = false
+
+    // Check if duplicate detected
+    if (result?.isDuplicate && result.duplicateData) {
+      setDuplicateData(result.duplicateData)
+      setShowDuplicateModal(true)
+    }
+  }
+
+  // ✅ NEW: Handle bypass duplicate
+  const handleBypassDuplicate = async () => {
+    setIsBypassSubmitting(true)
+    setShowDuplicateModal(false)
+
+    const formData = form.getValues()
+    await onSubmit(formData, true) // bypassDuplicate = true
+
+    setIsBypassSubmitting(false)
+    setDuplicateData(null)
+  }
+
+  // ✅ NEW: Handle close duplicate modal
+  const handleCloseDuplicateModal = () => {
+    setShowDuplicateModal(false)
+    setDuplicateData(null)
+  }
+
+  // Loading states
+  if (currentStatus === 'LOADING')
 
   // Loading states
   if (currentStatus === 'LOADING')
@@ -99,7 +140,7 @@ export default function ReviewForm() {
     <motion.form
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(handleFormSubmit)}
       className="space-y-6"
     >
       {/* Tipo Intestatario Selector */}
@@ -143,6 +184,20 @@ export default function ReviewForm() {
         loading={submitting}
         disabled={submitting || currentStatus !== 'SUCCESS'}
         currentStatus={currentStatus}
+      />
+
+      {/* Progress Modal (C23 Day 4 - Phase 2.1) */}
+      {progress.step !== 'idle' && !showDuplicateModal && (
+        <ProgressModal progress={progress} />
+      )}
+
+      {/* Duplicate Detection Modal - z-60 (above Progress!) */}
+      <DuplicateDetectionModal
+        isOpen={showDuplicateModal}
+        duplicateData={duplicateData}
+        isSubmitting={isBypassSubmitting}
+        onClose={handleCloseDuplicateModal}
+        onProceed={handleBypassDuplicate}
       />
     </motion.form>
   )

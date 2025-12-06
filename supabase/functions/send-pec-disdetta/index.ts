@@ -1,5 +1,6 @@
 // supabase/functions/send-pec-disdetta/index.ts
 // C23 - Updated for B2C/B2B PDF Generation
+// C23 Day 4 - Enhanced error handling and logging
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
@@ -51,7 +52,47 @@ function isRequestBody(x: unknown): x is RequestBody {
   return typeof rec.id === 'number'
 }
 
-console.log("Funzione 'send-pec-disdetta' (C23 - PDF Generator) avviata.")
+// ==========================
+// ERROR HANDLING (C23 Day 4)
+// ==========================
+
+/** Structured error response for better client-side error handling */
+interface ErrorResponse {
+  error: string
+  code: string
+  details?: string
+  retryable: boolean
+}
+
+/** Create structured error response with proper logging */
+function errorResponse(
+  headers: Record<string, string>,
+  error: string,
+  code: string,
+  details?: string,
+  retryable = true
+): Response {
+  const response: ErrorResponse = {
+    error,
+    code,
+    details,
+    retryable
+  }
+
+  const status = code.startsWith('CLIENT_') ? 400 : 500
+
+  console.error(`❌ [${code}] ${error}`, details ? { details } : '')
+
+  return new Response(
+    JSON.stringify(response),
+    {
+      status,
+      headers: { ...headers, 'Content-Type': 'application/json' },
+    }
+  )
+}
+
+console.log("✅ Funzione 'send-pec-disdetta' (C23 Day 4 - Enhanced Error Handling) avviata.")
 
 // ==========================
 // 2) TIPI (B2C/B2B Support)
