@@ -105,7 +105,10 @@ export function useFormSubmission({ files }: UseFormSubmissionProps): UseFormSub
 
       // ===== STEP 0: Authentication Check =====
       if (!user) {
-        toast.error('Sessione scaduta. Effettua nuovamente il login.', { duration: 5000 })
+        toast.error('🔒 Sessione scaduta. Effettua nuovamente il login per continuare.', { 
+          duration: 7000,
+          id: 'session-expired'
+        })
         setLoading(false)
         setProgress({ step: 'idle', message: '', progress: 0 })
         router.push('/login')
@@ -115,7 +118,10 @@ export function useFormSubmission({ files }: UseFormSubmissionProps): UseFormSub
       // Verify session is still valid
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
-        toast.error('Sessione scaduta. Effettua nuovamente il login.', { duration: 5000 })
+        toast.error('🔒 Sessione scaduta. Effettua nuovamente il login per continuare.', { 
+          duration: 7000,
+          id: 'session-expired-verify'
+        })
         setLoading(false)
         setProgress({ step: 'idle', message: '', progress: 0 })
         router.push('/login')
@@ -135,13 +141,19 @@ export function useFormSubmission({ files }: UseFormSubmissionProps): UseFormSub
 
       // ===== STEP 1: Validate Required Fields =====
       if (!receiver_tax_id) {
-        toast.error('Codice Fiscale obbligatorio per procedere', { duration: 5000 })
+        toast.error('⚠️ Codice Fiscale obbligatorio per procedere', { 
+          duration: 6000,
+          id: 'cf-required' // Previene duplicati
+        })
         setLoading(false)
         return { success: false }
       }
 
       if (!data.supplier_tax_id) {
-        toast.error('Partita IVA fornitore obbligatoria', { duration: 5000 })
+        toast.error('⚠️ Partita IVA fornitore obbligatoria per procedere', { 
+          duration: 6000,
+          id: 'piva-required'
+        })
         setLoading(false)
         return { success: false }
       }
@@ -156,21 +168,30 @@ export function useFormSubmission({ files }: UseFormSubmissionProps): UseFormSub
 
         // Validate required files exist
         if (!files.visuraCamerale) {
-          toast.error('Visura Camerale obbligatoria per aziende', { duration: 5000 })
+          toast.error('📄 Visura Camerale obbligatoria per aziende. Carica il documento per procedere.', { 
+            duration: 6000,
+            id: 'visura-required'
+          })
           setLoading(false)
           setProgress({ step: 'idle', message: '', progress: 0 })
           return { success: false }
         }
 
         if (!files.documentoLR) {
-          toast.error("Documento d'identità del Legale Rappresentante obbligatorio", { duration: 5000 })
+          toast.error("📄 Documento d'identità del Legale Rappresentante obbligatorio. Carica il documento per procedere.", { 
+            duration: 6000,
+            id: 'documento-lr-required'
+          })
           setLoading(false)
           setProgress({ step: 'idle', message: '', progress: 0 })
           return { success: false }
         }
 
         if (data.richiedente_ruolo === 'delegato' && !files.delegaFirma) {
-          toast.error('Delega firmata obbligatoria per delegati', { duration: 5000 })
+          toast.error('📄 Delega firmata obbligatoria per delegati. Carica il documento per procedere.', { 
+            duration: 6000,
+            id: 'delega-required'
+          })
           setLoading(false)
           setProgress({ step: 'idle', message: '', progress: 0 })
           return { success: false }
@@ -310,7 +331,11 @@ export function useFormSubmission({ files }: UseFormSubmissionProps): UseFormSub
 
       // Success
       console.log('✅ Confirm data successful')
-      toast.success('✅ Dati confermati con successo!', { duration: 3000 })
+      toast.success('✅ Dati confermati!', { 
+        duration: 2500,
+        id: 'data-confirmed'
+      })
+
       // ===== STEP 4: Invio PEC (Automatico) =====
       setProgress({ step: 'sending', message: 'Generazione PDF e invio PEC...', progress: 75 })
       try {
@@ -326,7 +351,10 @@ export function useFormSubmission({ files }: UseFormSubmissionProps): UseFormSub
         }
 
         setProgress({ step: 'success', message: 'PEC inviata con successo!', progress: 100 })
-        toast.success('🎉 PEC inviata con successo! Reindirizzamento...', { duration: 3000 })
+        toast.success('🎉 PEC inviata! Verrai reindirizzato alla Dashboard...', { 
+          duration: 2500,
+          id: 'pec-success'
+        })
 
         // ===== Redirect to Dashboard =====
         setTimeout(() => {
@@ -338,7 +366,8 @@ export function useFormSubmission({ files }: UseFormSubmissionProps): UseFormSub
         console.error('❌ Errore invio PEC:', error)
         // Don't setLoading(false) - keep loading for redirect
         // Data is already saved, user can retry from Dashboard
-        const errorMsg = "Dati salvati! Errore durante l'invio della PEC. Puoi ritentare dalla Dashboard."
+        const errorMsg = "✅ Dati salvati correttamente!\n⚠️ Errore invio PEC. Riprova dalla Dashboard (pulsante 'Riprova Invio')."
+        toast.error(errorMsg, { duration: 8000 })
         setProgress({ step: 'error', message: errorMsg, progress: 70 })
         toast.error(errorMsg, { duration: 8000 })
 

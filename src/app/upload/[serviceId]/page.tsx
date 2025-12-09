@@ -4,6 +4,7 @@ import { useState, useEffect, type FormEvent } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter, useParams } from 'next/navigation'
+import toast from 'react-hot-toast'
 
 export default function UploadPage() {
   const { user, isAuthLoading } = useAuth()
@@ -32,11 +33,19 @@ export default function UploadPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (!file) {
-      setError('Per favore, seleziona un file da caricare.')
+      toast.error('📁 Seleziona un file prima di procedere', {
+        duration: 4000,
+        id: 'no-file'
+      })
       return
     }
+
     if (!user) {
-      setError('Utente non trovato.')
+      toast.error('🔒 Sessione non valida. Rieffettua il login.', {
+        duration: 5000,
+        id: 'no-user'
+      })
+      router.push('/login')
       return
     }
 
@@ -110,45 +119,47 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl p-8">
-      {/* ... (resto del JSX invariato) ... */}
-      <h1 className="mb-6 text-3xl font-bold">
-        Carica il tuo documento
-      </h1>
-      <p className="mb-4 text-gray-600">
-        Stai per avviare la disdetta per il servizio (ID: {serviceId}). Carica il
-        documento richiesto (es. bolletta, contratto, modulo).
-      </p>
+    <div className="bg-white">
+      <div className="mx-auto max-w-2xl p-8">
+        {/* ... (resto del JSX invariato) ... */}
+        <h1 className="mb-6 text-3xl font-bold">
+          Carica il tuo documento
+        </h1>
+        <p className="mb-4 text-gray-600">
+          Stai per avviare la disdetta per il servizio (ID: {serviceId}). Carica il
+          documento richiesto (es. bolletta, contratto, modulo).
+        </p>
 
-      <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border bg-white p-6 shadow-sm">
-        <div>
-          <label htmlFor="documento_bolletta" className="block text-sm font-medium text-gray-700">
-            Documento Bolletta
-          </label>
-          <input
-            type="file" id="documento_bolletta"
-            onChange={handleFileChange}
-            accept="application/pdf, image/png, image/jpeg"
-            className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100"
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border bg-white p-6 shadow-sm">
+          <div>
+            <label htmlFor="documento_bolletta" className="block text-sm font-medium text-gray-700">
+              Documento Bolletta
+            </label>
+            <input
+              type="file" id="documento_bolletta"
+              onChange={handleFileChange}
+              accept="application/pdf, image/png, image/jpeg"
+              className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100"
+            />
+          </div>
 
-        <div>
-          <button
-            type="submit"
-            disabled={isSubmitting || !file}
-            className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-          >
-            {isSubmitting ? 'Caricamento e analisi...' : 'Avanti'}
-          </button>
-        </div>
+          <div>
+            <button
+              type="submit"
+              disabled={isSubmitting || !file}
+              className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+            >
+              {isSubmitting ? 'Caricamento e analisi...' : 'Avanti'}
+            </button>
+          </div>
 
-        {error && (
-          <p className="mt-4 rounded-md bg-red-100 p-3 text-center text-sm text-red-700">
-            {error}
-          </p>
-        )}
-      </form>
+          {error && (
+            <p className="mt-4 rounded-md bg-red-100 p-3 text-center text-sm text-red-700">
+              {error}
+            </p>
+          )}
+        </form>
+      </div>
     </div>
   )
 }

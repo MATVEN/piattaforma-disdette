@@ -1,7 +1,4 @@
 // src/components/ReviewForm/index.tsx
-//
-// Main orchestrator for ReviewForm - composes all sub-components
-// Refactored from 1243-line monolith into modular architecture
 
 'use client'
 
@@ -22,6 +19,7 @@ import { useReviewForm } from './hooks/useReviewForm'
 import { useFileUploads } from './hooks/useFileUploads'
 import { useFormSubmission } from './hooks/useFormSubmission'
 import type { ReviewFormData } from '@/domain/schemas'
+import toast from 'react-hot-toast'
 
 // Status Display Component
 function StatusDisplay({
@@ -122,6 +120,10 @@ export default function ReviewForm() {
   const handleCloseDuplicateModal = () => {
     setShowDuplicateModal(false)
     setDuplicateData(null)
+    toast('ℹ️ Puoi modificare i dati e riprovare', {
+      duration: 3000,
+      id: 'duplicate-cancel'
+    })
   }
 
   // Loading states

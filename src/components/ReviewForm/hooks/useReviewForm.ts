@@ -8,6 +8,10 @@ import { useSearchParams } from 'next/navigation'
 import { useForm, UseFormReturn } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { reviewFormSchema, type ReviewFormData } from '@/domain/schemas'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/context/AuthContext'
+import toast from 'react-hot-toast'
+import { supabase } from '@/lib/supabaseClient'
 
 interface ExtractedData {
   id: number
@@ -41,12 +45,18 @@ export interface UseReviewFormReturn {
 }
 
 export function useReviewForm(): UseReviewFormReturn {
+
+  const router = useRouter()
+  const { user } = useAuth()
+  const [loading, setLoading] = useState(true)
+
   const searchParams = useSearchParams()
   const id = parseInt(searchParams.get('id') || '0')
 
   const [data, setData] = useState<ExtractedData | null>(null)
   const [currentStatus, setCurrentStatus] = useState<'LOADING' | 'PROCESSING' | 'FAILED' | 'SUCCESS'>('LOADING')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [tipoIntestatario, setTipoIntestatario] = useState<'privato' | 'azienda'>('privato')
 
   const form = useForm<ReviewFormData>({
@@ -69,103 +79,148 @@ export function useReviewForm(): UseReviewFormReturn {
 
   // Data fetching + polling
   useEffect(() => {
-    if (!id) {
-      setErrorMessage('ID mancante. Impossibile caricare i dati.')
-      setCurrentStatus('FAILED')
-      return
-    }
-
-    let attempts = 0
-    const maxAttempts = 20
-    const ac = new AbortController()
-    let visible = true
-
-    const onVisibility = () => {
-      visible = document.visibilityState === 'visible'
-    }
-    document.addEventListener('visibilitychange', onVisibility)
-
-    const fetchOnce = async () => {
-      try {
-        const res = await fetch(`/api/get-extracted-data?id=${id}`, {
-          credentials: 'include',
-          signal: ac.signal,
-          headers: { Accept: 'application/json' },
+    const fetchAndPollData = async () => {
+      // ===== CHECK 1: No ID in URL =====
+      if (!id || id === 0) {
+        toast.error('📋 Nessun documento da revisionare. Carica prima una bolletta.', {
+          duration: 5000,
+          id: 'no-id'
         })
+        router.push('/new-disdetta')
+        return
+      }
 
-        if (!res.ok) {
-          const errorData = await safeJson<{ error: string }>(res)
-          throw new Error(errorData?.error || `Errore ${res.status}`)
+      // ===== CHECK 2: ID non valido =====
+      if (isNaN(id) || id < 0) {
+        toast.error('⚠️ Link non valido. Riprova dalla dashboard.', {
+          duration: 5000,
+          id: 'invalid-id'
+        })
+        router.push('/dashboard')
+        return
+      }
+
+      setCurrentStatus('LOADING')
+
+      try {
+        // Fetch disdetta data
+        const { data: disdettaData, error: fetchError } = await supabase
+          .from('extracted_data')
+          .select('*')
+          .eq('id', id) // ← Usa direttamente id (già number)
+          .single()
+
+        // ===== CHECK 3: Record non trovato =====
+        if (fetchError || !disdettaData) {
+          console.error('❌ Disdetta non trovata:', fetchError)
+          toast.error('📋 Documento non trovato. Controlla nella Dashboard.', {
+            duration: 6000,
+            id: 'not-found'
+          })
+          router.push('/dashboard')
+          return
         }
 
-        const extracted = await safeJson<ExtractedData>(res)
-
-        if (!extracted) {
-          throw new Error('Dati non validi ricevuti dal server')
+        // ===== CHECK 4: User non autorizzato =====
+        if (disdettaData.user_id !== user?.id) {
+          console.error('❌ Accesso negato - user_id mismatch')
+          toast.error('🔒 Non sei autorizzato a visualizzare questo documento.', {
+            duration: 6000,
+            id: 'unauthorized'
+          })
+          router.push('/dashboard')
+          return
         }
 
-        switch (extracted.status) {
-          case 'FAILED':
-            setErrorMessage(
-              `Elaborazione fallita: ${extracted.error_message || 'Errore sconosciuto.'}`
-            )
-            setCurrentStatus('FAILED')
-            return
+        // Store data
+        setData(disdettaData)
 
-          case 'PROCESSING':
-            setCurrentStatus('PROCESSING')
-            attempts++
-            if (attempts < maxAttempts && visible) {
-              await sleep(3000)
-              return fetchOnce()
-            } else {
-              setErrorMessage('Tempo di elaborazione superato. Riprova più tardi.')
-              setCurrentStatus('FAILED')
-              return
-            }
+        // ===== HANDLE STATUS =====
+        const status = disdettaData.status
 
-          case 'PENDING_REVIEW':
-          case 'CONFIRMED':
-          case 'SENT':
-          case 'TEST_SENT':
-            setData(extracted)
-            // C23: Map extracted data to B2C form (default)
-            reset({
-              tipo_intestatario: 'privato' as const,
-              supplier_tax_id: extracted.supplier_tax_id || '',
-              supplier_contract_number: extracted.supplier_contract_number || '',
-              supplier_iban: extracted.supplier_iban || '',
-              delegaCheckbox: false,
-              // B2C: receiver_tax_id maps to codice_fiscale for privato
-              codice_fiscale: extracted.receiver_tax_id || '',
-              nome: '',
-              cognome: '',
-              indirizzo_residenza: '',
+        if (status === 'FAILED') {
+          setCurrentStatus('FAILED')
+          setErrorMessage(disdettaData.error_message || 'Errore elaborazione documento')
+          setLoading(false)
+          return
+        }
+
+        if (status === 'PROCESSING') {
+          setCurrentStatus('PROCESSING')
+          // Poll again after 2 seconds
+          await sleep(2000)
+          fetchAndPollData() // Recursive call for polling
+          return
+        }
+
+        if (status === 'PENDING_REVIEW' || status === 'CONFIRMED' || status === 'SENT') {
+          // ===== CHECK 5: Dati incompleti =====
+          if (!disdettaData.supplier_tax_id) {
+            toast.error('⚠️ Dati estratti incompleti. Ricarica il documento.', {
+              duration: 6000,
+              id: 'incomplete-data'
             })
-            setCurrentStatus('SUCCESS')
+            router.push('/new-disdetta')
             return
+          }
 
-          default:
-            throw new Error(`Stato sconosciuto ricevuto: ${extracted.status}`)
+          // ===== ALL CHECKS PASSED - Populate form =====
+          setCurrentStatus('SUCCESS')
+          
+          // Determine tipo intestatario from database
+          const tipoFromDb = disdettaData.tipo_intestatario || 'privato'
+          setTipoIntestatario(tipoFromDb as 'privato' | 'azienda')
+
+          // Populate form with extracted data
+          const formData: any = {
+            tipo_intestatario: tipoFromDb,
+            supplier_tax_id: disdettaData.supplier_tax_id || '',
+            supplier_contract_number: disdettaData.supplier_contract_number || '',
+            supplier_iban: disdettaData.supplier_iban || '',
+            delegaCheckbox: false,
+          }
+
+          // Add B2C or B2B specific fields
+          if (tipoFromDb === 'privato') {
+            formData.nome = disdettaData.nome || ''
+            formData.cognome = disdettaData.cognome || ''
+            formData.codice_fiscale = disdettaData.codice_fiscale || ''
+            formData.indirizzo_residenza = disdettaData.indirizzo_residenza || ''
+            formData.luogo_nascita = disdettaData.luogo_nascita || ''
+            formData.data_nascita = disdettaData.data_nascita || ''
+          } else {
+            formData.ragione_sociale = disdettaData.ragione_sociale || ''
+            formData.partita_iva = disdettaData.partita_iva || ''
+            formData.sede_legale = disdettaData.sede_legale || ''
+            formData.lr_nome = disdettaData.lr_nome || ''
+            formData.lr_cognome = disdettaData.lr_cognome || ''
+            formData.lr_codice_fiscale = disdettaData.lr_codice_fiscale || ''
+            formData.richiedente_ruolo = disdettaData.richiedente_ruolo || 'legale_rappresentante'
+          }
+
+          reset(formData)
+          setLoading(false)
+          return
         }
-      } catch (err) {
-        if (ac.signal.aborted) return
-        const msg =
-          err instanceof Error
-            ? err.message
-            : 'Si è verificato un errore sconosciuto.'
-        setErrorMessage(msg)
+
+        // Unknown status - treat as success
+        setCurrentStatus('SUCCESS')
+        setLoading(false)
+
+      } catch (error) {
+        console.error('❌ Errore caricamento dati:', error)
+        toast.error('⚠️ Errore di connessione. Riprova o contatta il supporto.', {
+          duration: 6000,
+          id: 'fetch-error'
+        })
         setCurrentStatus('FAILED')
+        setErrorMessage('Errore di connessione')
+        router.push('/dashboard')
       }
     }
 
-    fetchOnce()
-
-    return () => {
-      ac.abort()
-      document.removeEventListener('visibilitychange', onVisibility)
-    }
-  }, [id, reset])
+    fetchAndPollData()
+  }, [id, user, router, reset])
 
   return {
     form,

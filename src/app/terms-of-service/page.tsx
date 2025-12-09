@@ -6,7 +6,7 @@ import { ChevronRight } from 'lucide-react'
 
 export default function TermsOfServicePage() {
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="bg-gray-50 py-12">
       <div className="max-w-4xl mx-auto px-4">
         {/* Breadcrumb */}
         <nav className="flex items-center text-sm text-gray-500 mb-8" aria-label="Breadcrumb">

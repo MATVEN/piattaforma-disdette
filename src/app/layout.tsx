@@ -21,11 +21,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="it">
-      <body className={inter.className}>
+      <body className={`${inter.className} min-h-screen flex flex-col`}>
         <AuthProvider>
           <Navbar />
-          {/* 'children' sono le pagine (login, register, home...) */}
-          <main>{children}</main>
+          <main className="flex-1">{children}</main>
           <Footer />
           <ToastProvider />
         </AuthProvider>

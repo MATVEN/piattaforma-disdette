@@ -3,7 +3,7 @@ import { Suspense } from 'react'
 
 export default function ReviewPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="bg-gray-50">
       <div className="container mx-auto max-w-2xl px-4 py-6 sm:py-12">
         <h1 className="text-3xl font-bold mb-4 text-gray-900">Revisiona Dati Estratti</h1>
         <p className="text-gray-600 mb-8">

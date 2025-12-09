@@ -157,74 +157,76 @@ export default function NewDisdettaPage() {
 
     // Mostra il wizard solo se l'utente è loggato
     return (
-        <div className="mx-auto max-w-2xl p-8">
-            <h1 className="mb-6 text-3xl font-bold">Inizia la tua disdetta</h1>
+        <div className="bg-white">
+            <div className="mx-auto max-w-2xl p-8">
+                <h1 className="mb-6 text-3xl font-bold">Inizia la tua disdetta</h1>
 
-            {/* Pulsante Indietro (mostrato da step 2 in poi) */}
-            {step > 1 && (
-                <button
-                    onClick={handleBack}
-                    className="mb-4 text-sm text-indigo-600 hover:underline"
-                >
-                    &larr; Torna indietro
-                </button>
-            )}
+                {/* Pulsante Indietro (mostrato da step 2 in poi) */}
+                {step > 1 && (
+                    <button
+                        onClick={handleBack}
+                        className="mb-4 text-sm text-indigo-600 hover:underline"
+                    >
+                        &larr; Torna indietro
+                    </button>
+                )}
 
-            {/* Messaggi di errore o caricamento */}
-            {isLoading && <p className="text-center">Caricamento...</p>}
-            {error && <p className="text-center text-red-500">{error}</p>}
+                {/* Messaggi di errore o caricamento */}
+                {isLoading && <p className="text-center">Caricamento...</p>}
+                {error && <p className="text-center text-red-500">{error}</p>}
 
-            {/* --- STEP 1: CATEGORIE --- */}
-            {step === 1 && (
-                <div className="space-y-3">
-                    <h2 className="text-xl font-semibold">1. Scegli la categoria</h2>
-                    {categories.map((category) => (
-                        <button
-                            key={category.id}
-                            onClick={() => setSelectedCategory(category)}
-                            className="block w-full rounded-lg border p-4 text-left text-lg hover:bg-gray-50"
-                        >
-                            {category.name}
-                        </button>
-                    ))}
-                </div>
-            )}
+                {/* --- STEP 1: CATEGORIE --- */}
+                {step === 1 && (
+                    <div className="space-y-3">
+                        <h2 className="text-xl font-semibold">1. Scegli la categoria</h2>
+                        {categories.map((category) => (
+                            <button
+                                key={category.id}
+                                onClick={() => setSelectedCategory(category)}
+                                className="block w-full rounded-lg border p-4 text-left text-lg hover:bg-gray-50"
+                            >
+                                {category.name}
+                            </button>
+                        ))}
+                    </div>
+                )}
 
-            {/* --- STEP 2: OPERATORI --- */}
-            {step === 2 && (
-                <div className="space-y-3">
-                    <h2 className="text-xl font-semibold">
-                        2. Scegli l&apos;operatore (per {selectedCategory?.name})
-                    </h2>
-                    {operators.map((operator) => (
-                        <button
-                            key={operator.id}
-                            onClick={() => setSelectedOperator(operator)}
-                            className="block w-full rounded-lg border p-4 text-left text-lg hover:bg-gray-50"
-                        >
-                            {operator.name}
-                        </button>
-                    ))}
-                </div>
-            )}
+                {/* --- STEP 2: OPERATORI --- */}
+                {step === 2 && (
+                    <div className="space-y-3">
+                        <h2 className="text-xl font-semibold">
+                            2. Scegli l&apos;operatore (per {selectedCategory?.name})
+                        </h2>
+                        {operators.map((operator) => (
+                            <button
+                                key={operator.id}
+                                onClick={() => setSelectedOperator(operator)}
+                                className="block w-full rounded-lg border p-4 text-left text-lg hover:bg-gray-50"
+                            >
+                                {operator.name}
+                            </button>
+                        ))}
+                    </div>
+                )}
 
-            {/* --- STEP 3: TIPO SERVIZIO --- */}
-            {step === 3 && (
-                <div className="space-y-3">
-                    <h2 className="text-xl font-semibold">
-                        3. Scegli il tipo di servizio (per {selectedOperator?.name})
-                    </h2>
-                    {serviceTypes.map((service) => (
-                        <button
-                            key={service.id}
-                            onClick={() => handleSelectService(service)}
-                            className="block w-full rounded-lg border p-4 text-left text-lg hover:bg-gray-50"
-                        >
-                            {service.name}
-                        </button>
-                    ))}
-                </div>
-            )}
+                {/* --- STEP 3: TIPO SERVIZIO --- */}
+                {step === 3 && (
+                    <div className="space-y-3">
+                        <h2 className="text-xl font-semibold">
+                            3. Scegli il tipo di servizio (per {selectedOperator?.name})
+                        </h2>
+                        {serviceTypes.map((service) => (
+                            <button
+                                key={service.id}
+                                onClick={() => handleSelectService(service)}
+                                className="block w-full rounded-lg border p-4 text-left text-lg hover:bg-gray-50"
+                            >
+                                {service.name}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     )
 }

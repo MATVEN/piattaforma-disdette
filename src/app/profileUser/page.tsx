@@ -182,7 +182,7 @@ export default function ProfilePage() {
   // Loading State
   if (isAuthLoading || !user || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center">
+      <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -196,7 +196,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+    <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-12">
         {/* Header with Avatar */}
         <motion.div
