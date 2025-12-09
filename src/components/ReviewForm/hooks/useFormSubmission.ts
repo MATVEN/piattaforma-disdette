@@ -80,6 +80,23 @@ interface UseFormSubmissionProps {
     visuraCamerale: File | null
     delegaFirma: File | null
   }
+  uploadControls?: {
+    startUpload: {
+      startDocumentoLRUpload: () => void
+      startVisuraCameraleUpload: () => void
+      startDelegaFirmaUpload: () => void
+    }
+    setUploadProgress: {
+      setDocumentoLRProgress: (progress: number) => void
+      setVisuraCameraleProgress: (progress: number) => void
+      setDelegaFirmaProgress: (progress: number) => void
+    }
+    completeUpload: {
+      completeDocumentoLRUpload: () => void
+      completeVisuraCameraleUpload: () => void
+      completeDelegaFirmaUpload: () => void
+    }
+  }
 }
 
 export interface UseFormSubmissionReturn {
@@ -88,7 +105,10 @@ export interface UseFormSubmissionReturn {
   progress: SubmissionProgress
 }
 
-export function useFormSubmission({ files }: UseFormSubmissionProps): UseFormSubmissionReturn {
+export function useFormSubmission({ 
+  files, 
+  uploadControls,
+}: UseFormSubmissionProps): UseFormSubmissionReturn {
   const router = useRouter()
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
@@ -97,6 +117,35 @@ export function useFormSubmission({ files }: UseFormSubmissionProps): UseFormSub
     message: '',
     progress: 0,
   })
+
+  // ✅ NEW: Helper to simulate upload progress
+  const simulateFileProgress = (
+    startFn: () => void,
+    progressFn: (p: number) => void,
+    completeFn: () => void,
+    durationMs: number = 1500
+  ) => {
+    if (!uploadControls) return Promise.resolve()
+
+    return new Promise<void>((resolve) => {
+      startFn()
+      
+      let progress = 0
+      const steps = 10
+      const interval = durationMs / steps
+
+      const timer = setInterval(() => {
+        progress += 10
+        progressFn(progress)
+
+        if (progress >= 100) {
+          clearInterval(timer)
+          completeFn()
+          resolve()
+        }
+      }, interval)
+    })
+  }
 
   const onSubmit = async (data: ReviewFormData, bypassDuplicate = false): Promise<SubmissionResult> => {
     try {
@@ -201,9 +250,22 @@ export function useFormSubmission({ files }: UseFormSubmissionProps): UseFormSub
         setProgress({ step: 'uploading', message: 'Caricamento Visura Camerale...', progress: 25 })
         try {
           const visuraFilePath = `${user.id}/${Date.now()}_visura.pdf`
+          
+          // ✅ Start fake progress
+          const progressPromise = uploadControls ? simulateFileProgress(
+            uploadControls.startUpload.startVisuraCameraleUpload,
+            uploadControls.setUploadProgress.setVisuraCameraleProgress,
+            uploadControls.completeUpload.completeVisuraCameraleUpload,
+            1500 // 1.5 seconds
+          ) : Promise.resolve()
+          
+          // Upload file (parallel with progress animation)
           const { error: visuraError } = await supabase.storage
             .from('documenti-identita')
             .upload(visuraFilePath, files.visuraCamerale, { upsert: true })
+
+          // Wait for progress animation to complete
+          await progressPromise
 
           if (visuraError) throw visuraError
           visuraPath = visuraFilePath
@@ -218,11 +280,22 @@ export function useFormSubmission({ files }: UseFormSubmissionProps): UseFormSub
 
         // Upload Documento LR
         setProgress({ step: 'uploading', message: 'Caricamento Documento LR...', progress: 35 })
-        try{
+        try {
           const docFilePath = `${user.id}/${Date.now()}_documento_lr.pdf`
+          
+          // ✅ Start fake progress
+          const progressPromise = uploadControls ? simulateFileProgress(
+            uploadControls.startUpload.startDocumentoLRUpload,
+            uploadControls.setUploadProgress.setDocumentoLRProgress,
+            uploadControls.completeUpload.completeDocumentoLRUpload,
+            1500
+          ) : Promise.resolve()
+          
           const { error: docError } = await supabase.storage
             .from('documenti-identita')
             .upload(docFilePath, files.documentoLR, { upsert: true })
+
+          await progressPromise
 
           if (docError) throw docError
           documentoPath = docFilePath
@@ -232,7 +305,7 @@ export function useFormSubmission({ files }: UseFormSubmissionProps): UseFormSub
           toast.error(errorMsg, { duration: 6000 })
           setLoading(false)
           setProgress({ step: 'error', message: errorMsg, progress: 0 })
-          return { success: true }
+          return { success: false }
         }
 
         // Upload Delega (if delegato)
@@ -240,9 +313,20 @@ export function useFormSubmission({ files }: UseFormSubmissionProps): UseFormSub
           setProgress({ step: 'uploading', message: 'Caricamento Delega...', progress: 45 })
           try {
             const delegaFilePath = `${user.id}/${Date.now()}_delega.pdf`
+            
+            // ✅ Start fake progress
+            const progressPromise = uploadControls ? simulateFileProgress(
+              uploadControls.startUpload.startDelegaFirmaUpload,
+              uploadControls.setUploadProgress.setDelegaFirmaProgress,
+              uploadControls.completeUpload.completeDelegaFirmaUpload,
+              1500
+            ) : Promise.resolve()
+            
             const { error: delegaError } = await supabase.storage
               .from('documenti-identita')
               .upload(delegaFilePath, files.delegaFirma, { upsert: true })
+
+            await progressPromise
 
             if (delegaError) throw delegaError
             delegaPath = delegaFilePath

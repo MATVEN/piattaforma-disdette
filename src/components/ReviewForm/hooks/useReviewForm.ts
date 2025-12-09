@@ -1,5 +1,4 @@
 // hooks/useReviewForm.ts
-//
 // Manages form setup, data fetching, and status polling for ReviewForm
 // Handles OCR status states: LOADING → PROCESSING → PENDING_REVIEW → SUCCESS
 

@@ -1,7 +1,6 @@
 // src/components/DashboardList.tsx
 
 'use client'
-
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
@@ -329,66 +328,91 @@ function StatusBadgeAndAction({
   const badgeClass = "flex items-center justify-center gap-2 rounded-full px-3 py-1.5 text-xs sm:text-sm font-medium whitespace-nowrap w-full sm:w-auto max-w-full";
   const buttonClass = "flex items-center justify-center gap-2 rounded-lg px-3 py-1.5 text-xs sm:text-sm font-medium whitespace-nowrap w-full sm:w-auto max-w-full";
 
+  // ✅ Sending state
   if (isSending) {
     return (
       <div className={`${badgeClass} bg-primary-50 text-primary-700`}>
         <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
-        <span className="hidden sm:inline">Invio...</span>
+        <span className="hidden sm:inline">Invio in corso...</span>
+        <span className="sm:hidden">⏳</span>
       </div>
     )
   }
 
+  // ✅ FAILED - RETRY BUTTON (NEW!)
+  if (status === 'FAILED') {
+    return (
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+        {/* Error Badge */}
+        <div className={`${badgeClass} bg-danger-50 text-danger-700`}>
+          <XCircle className="h-4 w-4 flex-shrink-0" />
+          <span className="hidden sm:inline">Errore invio</span>
+          <span className="sm:hidden">✗</span>
+        </div>
+        
+        {/* Retry Button */}
+        <button
+          onClick={onSend}
+          className={`${buttonClass} bg-gradient-primary text-white shadow-glass transition-all hover:shadow-glass-hover hover:scale-105 active:scale-95`}
+          title="Riprova invio PEC"
+        >
+          <Send className="h-4 w-4 flex-shrink-0" />
+          <span>Riprova</span>
+        </button>
+      </div>
+    )
+  }
+
+  // ✅ CONFIRMED - SEND BUTTON
   if (status === 'CONFIRMED') {
     return (
       <button
         onClick={onSend}
-        className={`${buttonClass} bg-gradient-success text-white shadow-glass transition-all hover:shadow-glass-hover hover:scale-105`}
+        className={`${buttonClass} bg-gradient-success text-white shadow-glass transition-all hover:shadow-glass-hover hover:scale-105 active:scale-95`}
+        title="Invia PEC"
       >
         <Send className="h-4 w-4 flex-shrink-0" />
-        <span>Invia</span>
+        <span>Invia PEC</span>
       </button>
     )
   }
   
+  // ✅ SENT - SUCCESS BADGE
   if (status === 'SENT' || status === 'TEST_SENT') {
     return (
       <div className={`${badgeClass} bg-success-50 text-success-700`}>
         <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
-        <span className="hidden sm:inline">{status === 'TEST_SENT' ? 'Test' : 'Inviato'}</span>
+        <span className="hidden sm:inline">
+          {status === 'TEST_SENT' ? '✓ Test inviata' : '✓ PEC inviata'}
+        </span>
         <span className="sm:hidden">✓</span>
       </div>
     )
   }
 
+  // ✅ PENDING_REVIEW - WARNING BADGE
   if (status === 'PENDING_REVIEW') {
     return (
       <div className={`${badgeClass} bg-warning-50 text-warning-700`}>
         <Clock className="h-4 w-4 flex-shrink-0" />
-        <span className="hidden sm:inline">Revisione</span>
-        <span className="sm:hidden">⏱</span>
+        <span className="hidden sm:inline">📝 In revisione</span>
+        <span className="sm:hidden">📝</span>
       </div>
     )
   }
 
+  // ✅ PROCESSING - LOADING BADGE
   if (status === 'PROCESSING') {
     return (
       <div className={`${badgeClass} bg-primary-50 text-primary-700`}>
         <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
-        <span className="hidden sm:inline">Elaborazione...</span>
-      </div>
-    )
-  }
-  
-  if (status === 'FAILED') {
-     return (
-      <div className={`${badgeClass} bg-danger-50 text-danger-700`}>
-        <XCircle className="h-4 w-4 flex-shrink-0" />
-        <span className="hidden sm:inline">Fallito</span>
-        <span className="sm:hidden">✗</span>
+        <span className="hidden sm:inline">🔄 Elaborazione...</span>
+        <span className="sm:hidden">🔄</span>
       </div>
     )
   }
 
+  // ✅ UNKNOWN STATUS - FALLBACK
   return (
     <div className={`${badgeClass} bg-gray-100 text-gray-600`}>
       <span className="truncate max-w-[120px]">{status}</span>

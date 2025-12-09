@@ -1,5 +1,4 @@
 // src/components/ReviewForm/index.tsx
-
 'use client'
 
 import { useState } from 'react'
@@ -74,9 +73,23 @@ export default function ReviewForm() {
     errorMessage,
   } = useReviewForm()
 
-  const { files, handleFileChange } = useFileUploads()
+  const { 
+    files, 
+    handleFileChange, 
+    uploadStates,
+    startUpload,
+    setUploadProgress,
+    completeUpload,
+  } = useFileUploads()
 
-  const { onSubmit, loading: submitting, progress } = useFormSubmission({ files })
+  const { onSubmit, loading: submitting, progress } = useFormSubmission({
+    files,
+    uploadControls: {
+      startUpload,
+      setUploadProgress,
+      completeUpload,
+    },
+  })
 
   // ✅ NEW: Duplicate Detection State
   const [showDuplicateModal, setShowDuplicateModal] = useState(false)
@@ -172,6 +185,7 @@ export default function ReviewForm() {
           <B2BDocumentsSection
             files={files}
             onFileChange={handleFileChange}
+            uploadStates={uploadStates}
             richiedenteRuolo={watch('richiedente_ruolo')}
             errors={errors}
           />

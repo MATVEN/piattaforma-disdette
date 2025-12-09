@@ -15,7 +15,7 @@ import {
   ALLOWED_BUSINESS_DOCUMENT_TYPES,
 } from '@/domain/schemas'
 
-export interface B2BDocumentsSectionProps {
+interface B2BDocumentsSectionProps {
   files: {
     documentoLR: File | null
     visuraCamerale: File | null
@@ -26,13 +26,19 @@ export interface B2BDocumentsSectionProps {
     handleVisuraCameraleChange: (file: File | null) => void
     handleDelegaFirmaChange: (file: File | null) => void
   }
-  richiedenteRuolo: 'legale_rappresentante' | 'delegato' | undefined
-  errors: FieldErrors<ReviewFormData>
+  uploadStates: {
+    documentoLR: { uploading: boolean; progress: number }
+    visuraCamerale: { uploading: boolean; progress: number }
+    delegaFirma: { uploading: boolean; progress: number }
+  }
+  richiedenteRuolo: 'legale_rappresentante' | 'delegato' | null
+  errors: any
 }
 
 export function B2BDocumentsSection({
   files,
   onFileChange,
+  uploadStates, // ← ADD THIS
   richiedenteRuolo,
   errors,
 }: B2BDocumentsSectionProps) {
@@ -53,8 +59,11 @@ export function B2BDocumentsSection({
           accept={ALLOWED_ID_DOCUMENT_TYPES.join(',')}
           onChange={onFileChange.handleDocumentoLRChange}
           currentFile={files.documentoLR}
+          uploading={uploadStates.documentoLR.uploading}
+          uploadProgress={uploadStates.documentoLR.progress}
           helpText="PDF, PNG o JPG - Max 5MB"
           required
+          error={errors.documento_lr_path?.message}
         />
       </div>
 
@@ -65,8 +74,11 @@ export function B2BDocumentsSection({
           accept={ALLOWED_BUSINESS_DOCUMENT_TYPES.join(',')}
           onChange={onFileChange.handleVisuraCameraleChange}
           currentFile={files.visuraCamerale}
+          uploading={uploadStates.visuraCamerale.uploading}
+          uploadProgress={uploadStates.visuraCamerale.progress}
           helpText="PDF - Max 5MB - Necessaria per provare i poteri di firma (max 30 giorni)"
           required
+          error={errors.visura_camerale_path?.message}
         />
       </div>
 
@@ -98,8 +110,11 @@ export function B2BDocumentsSection({
               accept={ALLOWED_BUSINESS_DOCUMENT_TYPES.join(',')}
               onChange={onFileChange.handleDelegaFirmaChange}
               currentFile={files.delegaFirma}
+              uploading={uploadStates.delegaFirma.uploading}
+              uploadProgress={uploadStates.delegaFirma.progress}
               helpText="PDF firmato dal Legale Rappresentante - Max 5MB"
               required
+              error={errors.delega_firma_path?.message}
             />
           </div>
         </>
