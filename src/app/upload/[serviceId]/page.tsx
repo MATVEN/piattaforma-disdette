@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter, useParams } from 'next/navigation'
 import toast from 'react-hot-toast'
+import { logger } from '@/lib/logger'
 
 export default function UploadPage() {
   const { user, isAuthLoading } = useAuth()
@@ -63,7 +64,11 @@ export default function UploadPage() {
         .upload(filePath, file, { upsert: true })
 
       if (uploadError) throw uploadError
-      console.log('C14: File bolletta caricato:', uploadData.path)
+      logger.info('File bolletta uploaded', {
+        path: uploadData.path,
+        serviceId,
+        userId: user.id
+      })
 
       // --- 2. CREAZIONE RECORD DB (C14) ---
       // Creiamo il record 'placeholder' con stato 'PROCESSING'
@@ -77,20 +82,28 @@ export default function UploadPage() {
         })
         .select('id')
         .single()
-      
+
       if (insertError) throw new Error(`Errore creazione record: ${insertError.message}`)
       if (!recordData) throw new Error("Impossibile recuperare l'ID del record creato.")
 
       recordId = recordData.id
-      console.log(`C21-FIX: Record creato. ID: ${recordId}, Path: ${filePath}`)
+      logger.info('Database record created', {
+        recordId,
+        filePath,
+        userId: user.id,
+        status: 'PROCESSING'
+      })
 
       // --- 3. Invocazione Edge Function (C4 - Modificato) ---
       // Ora passiamo l'ID, non il payload
       const payload = {
-        id: recordId 
+        id: recordId
       }
-      console.log("C14: Invocazione 'process-document' con ID...", payload)
-      
+      logger.debug('Invoking process-document Edge Function', {
+        recordId,
+        userId: user.id
+      })
+
       const { error: invokeError } = await supabase.functions.invoke(
         'process-document',
         { body: payload }
@@ -101,7 +114,10 @@ export default function UploadPage() {
       // L'utente viene reindirizzato. La pagina /review
       // mostrerà "Caricamento..." finché lo stato non cambia
       // da 'PROCESSING' a 'PENDING_REVIEW' o 'FAILED'.
-      console.log("C14: Invocazione riuscita. Reindirizzamento a /review...")
+      logger.info('Edge Function invoked successfully, redirecting to review', {
+        recordId,
+        userId: user.id
+      })
       router.push(`/review?id=${recordId}`)
 
     } catch (error: unknown) {

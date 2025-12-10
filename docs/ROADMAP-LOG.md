@@ -602,3 +602,55 @@
     - `src/components/AuthHeader.tsx` (new)
     - `src/components/OAuthButton.tsx` (new)
 
+- **PDF Generator & B2B Support (C23):**
+
+  - **Form Architecture & Implementation:**
+    - Complete implementation of the conditional B2C/B2B review form using a `tipo_intestatario` discriminator.
+    - B2C fields: nome, cognome, codice_fiscale, indirizzo_residenza, luogo/data di nascita, telefono.
+    - B2B fields: ragione sociale, partita IVA, sede legale, contatti aziendali, dati Legale Rappresentante e Delegato.
+    - File uploads fully supported: Visura Camerale, Documento LR, Delega firmata.
+    - Critical fix: correct `receiver_tax_id` mapping (B2C → codice_fiscale, B2B → lr_codice_fiscale).
+
+  - **Modular Refactoring (Day 2.5):**
+    - `ReviewForm.tsx` refactored from a 1234-line monolithic component into 12 modular files.
+    - Clear separation into components, hooks, utilities, and schema definitions.
+    - Each component kept under ~150 lines for maintainability.
+    - Improvements include easier testing, cleaner logic boundaries, and significantly reduced cognitive load.
+
+  - **PDF Generation System:**
+    - New Edge Function (800+ lines) using **pdf-lib** for runtime PDF generation.
+    - B2C template: standard cancellation letter for private users.
+    - B2B template: company cancellation letter with support for multiple attachments.
+    - Automatic data population from database records.
+    - Generated PDFs stored in `lettere-disdetta` bucket and automatically attached to PEC workflow.
+
+  - **Duplicate Detection & Error Handling:**
+    - Restores duplicate detection logic lost during refactoring.
+    - Adds `DuplicateDetectionModal.tsx` with complete bypass flow via `bypassDuplicateCheck`.
+    - Fixes “Body already consumed” regression by ensuring single JSON parsing.
+    - Improved handling of 400 (validation) vs 409 (duplicate) errors.
+    - UX flow now supports Proceed Anyway / Cancel with contextual metadata.
+
+  - **UX Enhancements & Polish:**
+    - Progress modal with multi-step visual indicators and Framer Motion animations.
+    - Toast system improved with icons, severity-based durations, and actionable guidance.
+    - File upload progress bars for Visura, Documento LR, Delega.
+    - Dashboard retry button for FAILED cancellations.
+    - Redirect and error-feedback mechanisms strengthened (missing/invalid ID, unauthorized access, incomplete data).
+
+  - **Code Quality & Logging:**
+    - Replaced 16 console statements with a structured `logger` utility (info, debug, warn, error).
+    - TypeScript build fully clean (0 errors).
+    - Stronger architecture with typed schemas (Zod), typed services, and safer repository calls.
+    - Performance unchanged, but maintainability improved dramatically.
+
+  - **Files Involved:**
+    - `src/components/ReviewForm/index.tsx` (orchestrator)
+    - `src/components/ReviewForm/components/*` (12 new modular components)
+    - `src/components/ReviewForm/hooks/*` (useReviewForm, useFormSubmission, useFileUploads)
+    - `supabase/functions/send-pec-disdetta/index.ts` (PDF generator + PEC workflow)
+    - `src/domain/schemas.ts` (extended confirmDataSchema)
+    - `src/repositories/disdetta.repository.ts` (field mapping + saving)
+    - `src/services/disdetta.service.ts` (data validation, submission flow)
+    - `src/components/ReviewForm/components/DuplicateDetectionModal.tsx`
+    - `docs/TESTING_CHECKLIST.md` (150+ test cases documented)

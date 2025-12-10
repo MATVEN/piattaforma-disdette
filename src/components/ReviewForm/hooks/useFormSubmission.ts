@@ -15,6 +15,7 @@ import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabaseClient'
 import toast from 'react-hot-toast'
 import { type SubmissionProgress } from '../components/ProgressModal'
+import { logger } from '@/lib/logger'
 
 // ===== ERROR HANDLING HELPERS (C23 Day 4 - Phase 1) =====
 
@@ -270,7 +271,11 @@ export function useFormSubmission({
           if (visuraError) throw visuraError
           visuraPath = visuraFilePath
         } catch (error) {
-          console.error('❌ Errore upload Visura:', error)
+          logger.error('Errore upload Visura Camerale', {
+            error: error instanceof Error ? error.message : String(error),
+            userId: user?.id,
+            step: 'upload-visura'
+          })
           const errorMsg = getErrorMessage(error, 'Visura Camerale')
           toast.error(errorMsg, { duration: 6000 })
           setLoading(false)
@@ -300,7 +305,11 @@ export function useFormSubmission({
           if (docError) throw docError
           documentoPath = docFilePath
         } catch (error) {
-          console.error('❌ Errore upload Documento LR:', error)
+          logger.error('Errore upload Documento Legale Rappresentante', {
+            error: error instanceof Error ? error.message : String(error),
+            userId: user?.id,
+            step: 'upload-documento-lr'
+          })
           const errorMsg = getErrorMessage(error, 'Documento Legale Rappresentante')
           toast.error(errorMsg, { duration: 6000 })
           setLoading(false)
@@ -331,7 +340,11 @@ export function useFormSubmission({
             if (delegaError) throw delegaError
             delegaPath = delegaFilePath
           } catch (error) {
-            console.error('❌ Errore upload Delega:', error)
+            logger.error('Errore upload Delega Firmata', {
+              error: error instanceof Error ? error.message : String(error),
+              userId: user?.id,
+              step: 'upload-delega'
+            })
             const errorMsg = getErrorMessage(error, 'Delega Firmata')
             toast.error(errorMsg, { duration: 6000 })
             setLoading(false)
@@ -366,15 +379,27 @@ export function useFormSubmission({
         body: JSON.stringify(updateData),
       })
 
-      console.log('🔍 Response status:', response.status)
+      logger.debug('API response received', {
+        status: response.status,
+        endpoint: '/api/confirm-data',
+        userId: user?.id
+      })
 
       // Parse response ONCE
       let responseData: any
       try {
         responseData = await response.json()
-        console.log('🔍 Response data:', responseData)
+        logger.debug('Response data parsed', {
+          hasError: !!responseData.error,
+          isDuplicate: !!responseData.details,
+          userId: user?.id
+        })
       } catch (parseError) {
-        console.error('❌ Failed to parse response:', parseError)
+        logger.error('Failed to parse API response', {
+          error: parseError instanceof Error ? parseError.message : String(parseError),
+          endpoint: '/api/confirm-data',
+          userId: user?.id
+        })
         toast.error('Errore di comunicazione con il server', { duration: 6000 })
         setLoading(false)
         setProgress({ step: 'idle', message: '', progress: 0 })
@@ -389,7 +414,12 @@ export function useFormSubmission({
           (response.status === 400 && responseData.details && responseData.code === 'VALIDATION_ERROR')
         
         if (isDuplicateError && responseData.details) {
-          console.log('🎯 Duplicate detected! Showing duplicate modal...')
+          logger.info('Duplicate disdetta detected', {
+            duplicateId: responseData.details.duplicateId,
+            contractNumber: responseData.details.contractNumber,
+            userId: user?.id,
+            step: 'duplicate-detection'
+          })
           setProgress({ step: 'idle', message: '', progress: 0 })
           setLoading(false)
 
@@ -399,13 +429,16 @@ export function useFormSubmission({
             isDuplicate: true,
             duplicateData: responseData.details
           }
-          
-          console.log('🔍 Returning duplicate result:', duplicateResult)
+
           return duplicateResult
         }
-        
+
         // Not a duplicate - regular error
-        console.log('❌ Not a duplicate error, showing error toast')
+        logger.warn('API request failed (not duplicate)', {
+          status: response.status,
+          error: responseData.error,
+          userId: user?.id
+        })
         const errorMsg = responseData.error || 'Errore conferma dati'
         toast.error(`Errore salvataggio dati: ${errorMsg}`, { duration: 6000 })
         setLoading(false)
@@ -414,8 +447,12 @@ export function useFormSubmission({
       }
 
       // Success
-      console.log('✅ Confirm data successful')
-      toast.success('✅ Dati confermati!', { 
+      logger.info('Data confirmed successfully', {
+        id,
+        userId: user?.id,
+        tipoIntestatario: data.tipo_intestatario
+      })
+      toast.success('✅ Dati confermati!', {
         duration: 2500,
         id: 'data-confirmed'
       })
@@ -435,7 +472,12 @@ export function useFormSubmission({
         }
 
         setProgress({ step: 'success', message: 'PEC inviata con successo!', progress: 100 })
-        toast.success('🎉 PEC inviata! Verrai reindirizzato alla Dashboard...', { 
+        logger.info('PEC sent successfully', {
+          id,
+          userId: user?.id,
+          step: 'pec-sent'
+        })
+        toast.success('🎉 PEC inviata! Verrai reindirizzato alla Dashboard...', {
           duration: 2500,
           id: 'pec-success'
         })
@@ -447,7 +489,12 @@ export function useFormSubmission({
         return { success: true }
 
       } catch (error) {
-        console.error('❌ Errore invio PEC:', error)
+        logger.error('PEC sending failed', {
+          error: error instanceof Error ? error.message : String(error),
+          id,
+          userId: user?.id,
+          step: 'pec-send'
+        })
         // Don't setLoading(false) - keep loading for redirect
         // Data is already saved, user can retry from Dashboard
         const errorMsg = "✅ Dati salvati correttamente!\n⚠️ Errore invio PEC. Riprova dalla Dashboard (pulsante 'Riprova Invio')."
@@ -464,7 +511,12 @@ export function useFormSubmission({
       }
     } catch (error) {
       // Catch-all for unexpected errors
-      console.error('❌ Errore inatteso durante submission:', error)
+      logger.error('Unexpected error during submission', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        userId: user?.id,
+        step: 'unknown'
+      })
       const errorMsg = getErrorMessage(error)
       toast.error(errorMsg, { duration: 6000 })
       setLoading(false)

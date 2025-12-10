@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import toast from 'react-hot-toast'
 import { supabase } from '@/lib/supabaseClient'
+import { logger } from '@/lib/logger'
 
 interface ExtractedData {
   id: number
@@ -111,7 +112,11 @@ export function useReviewForm(): UseReviewFormReturn {
 
         // ===== CHECK 3: Record non trovato =====
         if (fetchError || !disdettaData) {
-          console.error('❌ Disdetta non trovata:', fetchError)
+          logger.error('Disdetta not found', {
+            id,
+            error: fetchError?.message || 'Record not found',
+            userId: user?.id
+          })
           toast.error('📋 Documento non trovato. Controlla nella Dashboard.', {
             duration: 6000,
             id: 'not-found'
@@ -122,7 +127,11 @@ export function useReviewForm(): UseReviewFormReturn {
 
         // ===== CHECK 4: User non autorizzato =====
         if (disdettaData.user_id !== user?.id) {
-          console.error('❌ Accesso negato - user_id mismatch')
+          logger.warn('Unauthorized access attempt', {
+            id,
+            requestingUserId: user?.id,
+            ownerUserId: disdettaData.user_id
+          })
           toast.error('🔒 Non sei autorizzato a visualizzare questo documento.', {
             duration: 6000,
             id: 'unauthorized'

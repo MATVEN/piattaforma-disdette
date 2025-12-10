@@ -1,7 +1,5 @@
 // src/lib/logger.ts
-//
 // Structured logging utility for consistent logging across the application
-// C23 Day 4 - Phase 3.1: Improved Logging
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 

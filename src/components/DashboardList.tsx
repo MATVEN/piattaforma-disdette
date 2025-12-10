@@ -334,7 +334,6 @@ function StatusBadgeAndAction({
       <div className={`${badgeClass} bg-primary-50 text-primary-700`}>
         <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
         <span className="hidden sm:inline">Invio in corso...</span>
-        <span className="sm:hidden">⏳</span>
       </div>
     )
   }
@@ -347,7 +346,6 @@ function StatusBadgeAndAction({
         <div className={`${badgeClass} bg-danger-50 text-danger-700`}>
           <XCircle className="h-4 w-4 flex-shrink-0" />
           <span className="hidden sm:inline">Errore invio</span>
-          <span className="sm:hidden">✗</span>
         </div>
         
         {/* Retry Button */}
@@ -383,9 +381,8 @@ function StatusBadgeAndAction({
       <div className={`${badgeClass} bg-success-50 text-success-700`}>
         <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
         <span className="hidden sm:inline">
-          {status === 'TEST_SENT' ? '✓ Test inviata' : '✓ PEC inviata'}
+          {status === 'TEST_SENT' ? 'Test inviata' : 'PEC inviata'}
         </span>
-        <span className="sm:hidden">✓</span>
       </div>
     )
   }
@@ -395,8 +392,7 @@ function StatusBadgeAndAction({
     return (
       <div className={`${badgeClass} bg-warning-50 text-warning-700`}>
         <Clock className="h-4 w-4 flex-shrink-0" />
-        <span className="hidden sm:inline">📝 In revisione</span>
-        <span className="sm:hidden">📝</span>
+        <span className="hidden sm:inline">In revisione</span>
       </div>
     )
   }
@@ -406,8 +402,7 @@ function StatusBadgeAndAction({
     return (
       <div className={`${badgeClass} bg-primary-50 text-primary-700`}>
         <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
-        <span className="hidden sm:inline">🔄 Elaborazione...</span>
-        <span className="sm:hidden">🔄</span>
+        <span className="hidden sm:inline">Elaborazione...</span>
       </div>
     )
   }
