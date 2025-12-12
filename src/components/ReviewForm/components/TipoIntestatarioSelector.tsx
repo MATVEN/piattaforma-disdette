@@ -28,7 +28,7 @@ export function TipoIntestatarioSelector({
   return (
     <div className="mb-8">
       <label className="block text-sm font-medium text-gray-700 mb-3">
-        Tipo intestatario contratto *
+        Tipo intestatario contratto<span className="text-red-500">*</span>
       </label>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <button

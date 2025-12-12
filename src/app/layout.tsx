@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/context/AuthContext'
 import { OnboardingProvider } from '@/context/OnboardingContext'
+import { TooltipProvider } from '@/context/TooltipContext'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import ToastProvider from '@/components/ToastProvider'
@@ -27,12 +28,14 @@ export default function RootLayout({
       <body className={`${inter.className} min-h-screen flex flex-col`}>
         <AuthProvider>
           <OnboardingProvider>
-            <WelcomeModal />
-            <HelpButton />
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
-            <ToastProvider />
+            <TooltipProvider>
+              <WelcomeModal />
+              <HelpButton />
+              <Navbar />
+              <main className="flex-1">{children}</main>
+              <Footer />
+              <ToastProvider />
+            </TooltipProvider>
           </OnboardingProvider>
         </AuthProvider>
       </body>

@@ -9,6 +9,8 @@ import { useState } from 'react'
 import { UseFormRegister, UseFormSetValue, UseFormGetValues, FieldErrors } from 'react-hook-form'
 import { type ReviewFormData } from '@/domain/schemas'
 import { Building2, MapPin, Home, FileText } from 'lucide-react'
+import { Tooltip } from '@/components/onboarding/Tooltip'
+import { TOOLTIP_CONTENT, TOOLTIP_IDS } from '@/constants/tooltipContent'
 
 export interface B2BCompanyFieldsProps {
   register: UseFormRegister<ReviewFormData>
@@ -21,10 +23,10 @@ export function B2BCompanyFields({ register, errors, setValue, getValues }: B2BC
   const [indirizzoFatturazioneUguale, setIndirizzoFatturazioneUguale] = useState(true)
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t-2 border-gray-100 pt-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t-2 border-gray-100 pt-6 mb-4">
       {/* Section Header */}
       <div className="md:col-span-2">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
           <Building2 className="h-5 w-5 text-primary-600" />
           Dati Azienda
         </h3>
@@ -32,9 +34,18 @@ export function B2BCompanyFields({ register, errors, setValue, getValues }: B2BC
 
       {/* Ragione Sociale */}
       <div>
-        <label htmlFor="ragione_sociale" className="block text-sm font-medium text-gray-700 mb-2">
-          Ragione Sociale *
-        </label>
+        <Tooltip
+          id={TOOLTIP_IDS.ragioneSociale}
+          content={TOOLTIP_CONTENT.ragioneSociale}
+          placement="right"
+          trigger="hover"
+          dismissable={true}
+          className="mb-2"
+        >
+          <label htmlFor="ragione_sociale" className="block text-sm font-medium text-gray-700">
+            Ragione Sociale<span className="text-red-500">*</span>
+          </label>
+        </Tooltip>
         <input
           type="text"
           id="ragione_sociale"
@@ -49,9 +60,18 @@ export function B2BCompanyFields({ register, errors, setValue, getValues }: B2BC
 
       {/* Partita IVA */}
       <div>
-        <label htmlFor="partita_iva" className="block text-sm font-medium text-gray-700 mb-2">
-          Partita IVA *
-        </label>
+        <Tooltip
+          id={TOOLTIP_IDS.partitaIva}
+          content={TOOLTIP_CONTENT.partitaIva}
+          placement="right"
+          trigger="hover"
+          dismissable={true}
+          className="mb-2"
+        >
+          <label htmlFor="partita_iva" className="block text-sm font-medium text-gray-700">
+            Partita IVA<span className="text-red-500">*</span>
+          </label>
+        </Tooltip>
         <input
           type="text"
           id="partita_iva"
@@ -67,9 +87,18 @@ export function B2BCompanyFields({ register, errors, setValue, getValues }: B2BC
 
       {/* Sede Legale */}
       <div className="md:col-span-2">
-        <label htmlFor="sede_legale" className="block text-sm font-medium text-gray-700 mb-2">
-          Sede Legale *
-        </label>
+        <Tooltip
+          id={TOOLTIP_IDS.sedeLegale}
+          content={TOOLTIP_CONTENT.sedeLegale}
+          placement="right"
+          trigger="hover"
+          dismissable={true}
+          className="mb-2"
+        >
+          <label htmlFor="sede_legale" className="block text-sm font-medium text-gray-700">
+            Sede Legale<span className="text-red-500">*</span>
+          </label>
+        </Tooltip>
         <div className="relative">
           <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
@@ -92,12 +121,21 @@ export function B2BCompanyFields({ register, errors, setValue, getValues }: B2BC
       </div>
 
       {/* Indirizzo Fornitura */}
-      <div className="md:col-span-2">
-        <label htmlFor="indirizzo_fornitura" className="block text-sm font-medium text-gray-700 mb-2">
-          Indirizzo Fornitura *
-          <span className="ml-2 text-xs text-gray-500">(dove si trova il contatore/linea)</span>
-        </label>
-        <div className="relative">
+      <div className="md:col-span-2 mb-4">
+        <Tooltip
+          id={TOOLTIP_IDS.indirizzoFornitura}
+          content={TOOLTIP_CONTENT.indirizzoFornitura}
+          placement="right"
+          trigger="hover"
+          dismissable={true}
+          className="mb-2"
+        >
+          <label htmlFor="indirizzo_fornitura" className="block text-sm font-medium text-gray-700">
+            Indirizzo Fornitura<span className="text-red-500">*</span>
+            <span className="ml-2 text-xs text-gray-500">(dove si trova il contatore/linea)</span>
+          </label>
+        </Tooltip>
+        <div className="relative mb-2">
           <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
             type="text"
@@ -110,31 +148,30 @@ export function B2BCompanyFields({ register, errors, setValue, getValues }: B2BC
         {(errors as any).indirizzo_fornitura && (
           <p className="mt-1 text-sm text-red-600">{(errors as any).indirizzo_fornitura.message}</p>
         )}
-      </div>
+        {/* Checkbox: Indirizzo Fatturazione uguale a Sede Legale */}
+        <div className="md:col-span-2">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={indirizzoFatturazioneUguale}
+              onChange={(e) => {
+                const isChecked = e.target.checked
+                setIndirizzoFatturazioneUguale(isChecked)
 
-      {/* Checkbox: Indirizzo Fatturazione uguale a Sede Legale */}
-      <div className="md:col-span-2">
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={indirizzoFatturazioneUguale}
-            onChange={(e) => {
-              const isChecked = e.target.checked
-              setIndirizzoFatturazioneUguale(isChecked)
-
-              if (isChecked) {
-                // Copy sede_legale to indirizzo_fatturazione
-                const sedeLegale = getValues('sede_legale')
-                setValue('indirizzo_fatturazione', sedeLegale || '')
-              } else {
-                // Clear the field if unchecked
-                setValue('indirizzo_fatturazione', '')
-              }
-            }}
-            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-          />
-          <span className="text-sm text-gray-700">Indirizzo fatturazione uguale a sede legale</span>
-        </label>
+                if (isChecked) {
+                  // Copy sede_legale to indirizzo_fatturazione
+                  const sedeLegale = getValues('sede_legale')
+                  setValue('indirizzo_fatturazione', sedeLegale || '')
+                } else {
+                  // Clear the field if unchecked
+                  setValue('indirizzo_fatturazione', '')
+                }
+              }}
+              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+            />
+            <span className="text-sm text-gray-700">Indirizzo fatturazione uguale a sede legale</span>
+          </label>
+        </div>
       </div>
 
       {/* Indirizzo Fatturazione (conditional) */}
@@ -144,7 +181,7 @@ export function B2BCompanyFields({ register, errors, setValue, getValues }: B2BC
             htmlFor="indirizzo_fatturazione"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Indirizzo Fatturazione *
+            Indirizzo Fatturazione<span className="text-red-500">*</span>
           </label>
           <div className="relative">
             <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />

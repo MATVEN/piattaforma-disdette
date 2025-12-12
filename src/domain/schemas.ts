@@ -313,7 +313,10 @@ const reviewFormBaseSchema = z.object({
     .min(11, 'P.IVA fornitore deve essere di 11 cifre')
     .max(11, 'P.IVA fornitore deve essere di 11 cifre')
     .regex(/^\d{11}$/, 'P.IVA deve contenere solo numeri'),
-  supplier_contract_number: z.string().trim().min(1).optional(),
+  supplier_contract_number: z.string()
+    .min(1, 'POD, PDR o Codice Cliente obbligatorio')
+    .max(50, 'Valore troppo lungo')
+    .transform(val => val.trim()),
   supplier_iban: z.string()
     .optional()
     .refine(

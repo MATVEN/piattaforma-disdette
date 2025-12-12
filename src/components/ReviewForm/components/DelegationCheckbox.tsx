@@ -28,7 +28,7 @@ export function DelegationCheckbox({ register, errors }: DelegationCheckboxProps
             className="flex items-center space-x-2 font-medium text-gray-900 cursor-pointer"
           >
             <FileCheck className="h-5 w-5 text-primary-600" />
-            <span>Delega e Autorizzazione alla Piattaforma *</span>
+            <span>Delega e Autorizzazione alla Piattaforma<span className="text-red-500">*</span></span>
           </label>
           <p className="text-xs text-gray-500 mt-1">
             Autorizzo DisdettaFacile ad agire come mio mandatario nell'invio della PEC di

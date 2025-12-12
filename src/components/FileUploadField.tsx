@@ -6,7 +6,7 @@ import toast from 'react-hot-toast'
 import { validateFile } from '@/domain/schemas'
 
 interface FileUploadFieldProps {
-  label: string
+  label: string | React.ReactNode
   accept: string
   onChange: (file: File | null) => void
   currentFile: File | null
@@ -84,7 +84,7 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-2">
-        {label} {required && <span className="text-red-500">*</span>}
+        {label} {required}
       </label>
 
       <div className="relative">

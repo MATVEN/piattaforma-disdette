@@ -8,6 +8,8 @@
 import { UseFormRegister, FieldErrors } from 'react-hook-form'
 import { type ReviewFormData } from '@/domain/schemas'
 import { Users, User, CreditCard, MapPin } from 'lucide-react'
+import { Tooltip } from '@/components/onboarding/Tooltip'
+import { TOOLTIP_CONTENT, TOOLTIP_IDS } from '@/constants/tooltipContent'
 
 export interface B2CFieldsProps {
   register: UseFormRegister<ReviewFormData>
@@ -18,7 +20,7 @@ export function B2CFields({ register, errors }: B2CFieldsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t-2 border-gray-100 pt-6">
       <div className="md:col-span-2">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
           <Users className="h-5 w-5 text-primary-600" />
           Dati Intestatario Privato
         </h3>
@@ -26,7 +28,7 @@ export function B2CFields({ register, errors }: B2CFieldsProps) {
 
       <div>
         <label htmlFor="nome" className="block text-sm font-medium text-gray-700 mb-2">
-          Nome *
+          Nome<span className="text-red-500">*</span>
         </label>
         <div className="relative">
           <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -45,7 +47,7 @@ export function B2CFields({ register, errors }: B2CFieldsProps) {
 
       <div>
         <label htmlFor="cognome" className="block text-sm font-medium text-gray-700 mb-2">
-          Cognome *
+          Cognome<span className="text-red-500">*</span>
         </label>
         <div className="relative">
           <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -63,9 +65,18 @@ export function B2CFields({ register, errors }: B2CFieldsProps) {
       </div>
 
       <div className="md:col-span-2">
-        <label htmlFor="codice_fiscale" className="block text-sm font-medium text-gray-700 mb-2">
-          Codice Fiscale *
-        </label>
+        <Tooltip
+          id={TOOLTIP_IDS.codiceFiscale}
+          content={TOOLTIP_CONTENT.codiceFiscale}
+          placement="right"
+          trigger="hover"
+          dismissable={true}
+          className="mb-2"
+        >
+          <label htmlFor="codice_fiscale" className="block text-sm font-medium text-gray-700">
+            Codice Fiscale<span className="text-red-500">*</span>
+          </label>
+        </Tooltip>
         <div className="relative">
           <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
@@ -83,9 +94,18 @@ export function B2CFields({ register, errors }: B2CFieldsProps) {
       </div>
 
       <div className="md:col-span-2">
-        <label htmlFor="indirizzo_residenza" className="block text-sm font-medium text-gray-700 mb-2">
-          Indirizzo di Residenza *
-        </label>
+        <Tooltip
+          id={TOOLTIP_IDS.indirizzo}
+          content={TOOLTIP_CONTENT.indirizzo}
+          placement="right"
+          trigger="hover"
+          dismissable={true}
+          className="mb-2"
+        >
+          <label htmlFor="indirizzo_residenza" className="block text-sm font-medium text-gray-700">
+            Indirizzo di Residenza<span className="text-red-500">*</span>
+          </label>
+        </Tooltip>
         <div className="relative">
           <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input

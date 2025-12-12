@@ -2,17 +2,87 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { HelpCircle, Sparkles, BookOpen, Mail, X } from 'lucide-react'
+import { Sparkles, BookOpen, Mail, X, Lightbulb } from 'lucide-react'
 import { useOnboarding } from '@/context/OnboardingContext'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+
+// Contenuti guida contestuale per ogni pagina
+const contextualHelp: Record<string, { title: string; tips: string[] }> = {
+  '/': {
+    title: 'Benvenuto su DisdettaFacile!',
+    tips: [
+      '📄 Carica la tua bolletta per iniziare',
+      '🤖 L\'AI estrae automaticamente i dati',
+      '✅ Verifica e invia la disdetta in pochi click',
+    ],
+  },
+  '/upload': {
+    title: 'Caricamento Documento',
+    tips: [
+      '📸 Accettiamo PDF, JPG e PNG fino a 10MB',
+      '📋 La bolletta deve essere leggibile e recente',
+      '🔍 L\'AI estrae automaticamente POD/PDR e dati fornitore',
+    ],
+  },
+  '/review': {
+    title: 'Verifica Dati',
+    tips: [
+      '✏️ Controlla attentamente i dati estratti dall\'AI',
+      '🏢 Scegli "Privato" o "Azienda" in base all\'intestatario',
+      '📝 I campi obbligatori sono contrassegnati con *',
+      '❓ Passa il mouse sui "?" per aiuto su ogni campo',
+    ],
+  },
+  '/dashboard': {
+    title: 'Le Tue Disdette',
+    tips: [
+      '📊 Qui trovi tutte le tue richieste di disdetta',
+      '🔄 Stato "In attesa" = in lavorazione',
+      '✅ Stato "Inviata" = PEC inviata con successo',
+      '🔁 Puoi provare a inviare nuovamente le richieste fallite',
+    ],
+  },
+  '/new-disdetta': {
+    title: 'Nuova Disdetta',
+    tips: [
+      '⚡ Scegli il tipo di servizio (Luce/Gas/Telefonia)',
+      '📄 Avrai bisogno della bolletta più recente',
+      '🚀 Il processo richiede circa 2-3 minuti',
+    ],
+  },
+}
+
+const defaultHelp = {
+  title: 'Guida Generale',
+  tips: [
+    '📄 Carica una bolletta per creare una disdetta',
+    '🤖 L\'AI estrae automaticamente i dati importanti',
+    '✅ Verifica i dati e invia in pochi click',
+    '📧 Riceverai conferma via email',
+  ],
+}
 
 export function HelpButton() {
   const [isOpen, setIsOpen] = useState(false)
+  const [showContextualHelp, setShowContextualHelp] = useState(false)
   const { startTour } = useOnboarding()
+  const pathname = usePathname()
+
+  // Get contextual help for current page
+  const currentHelp = contextualHelp[pathname] || defaultHelp
 
   const handleStartTour = () => {
     setIsOpen(false)
     startTour()
+  }
+
+  const handleShowContextualHelp = () => {
+    setShowContextualHelp(true)
+  }
+
+  const handleCloseContextualHelp = () => {
+    setShowContextualHelp(false)
   }
 
   return (
@@ -43,23 +113,8 @@ export function HelpButton() {
               animate={{ rotate: 0, opacity: 1 }}
               exit={{ rotate: -90, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="relative"
             >
-              <HelpCircle className="h-6 w-6" />
-              
-              {/* Pulse animation */}
-              <motion.div
-                animate={{
-                  scale: [1, 1.5, 1],
-                  opacity: [0.5, 0, 0.5],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
-                className="absolute inset-0 rounded-full bg-white"
-              />
+              <span className="text-2xl font-semibold">?</span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -99,7 +154,6 @@ export function HelpButton() {
               {/* Header */}
               <div className="bg-gradient-to-r from-indigo-600 to-pink-500 px-5 py-4">
                 <h3 className="text-white font-semibold flex items-center gap-2">
-                  <HelpCircle className="h-5 w-5" />
                   Come possiamo aiutarti?
                 </h3>
               </div>
@@ -114,11 +168,10 @@ export function HelpButton() {
                 />
 
                 <MenuItem
-                  icon={<BookOpen className="h-5 w-5 text-indigo-600" />}
-                  title="FAQ e Guide"
-                  description="Trova risposte alle domande comuni"
-                  href="/faq"
-                  onClick={() => setIsOpen(false)}
+                  icon={<Lightbulb className="h-5 w-5 text-indigo-600" />}
+                  title="Guida Contestuale"
+                  description="Aiuto specifico per questa pagina"
+                  onClick={handleShowContextualHelp}
                 />
 
                 <MenuItem
@@ -136,6 +189,68 @@ export function HelpButton() {
                 <p className="text-xs text-gray-500 text-center">
                   Siamo qui per aiutarti! 💙
                 </p>
+              </div>
+            </motion.div>
+          </>
+        )}
+
+        {/* Contextual Help Modal */}
+        {showContextualHelp && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={handleCloseContextualHelp}
+              className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50"
+            />
+
+            {/* Modal */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: 'spring', duration: 0.3 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100"
+            >
+              {/* Header */}
+              <div className="bg-gradient-to-r from-indigo-600 to-pink-500 px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="h-5 w-5 text-white" />
+                  <h3 className="text-white font-semibold">{currentHelp.title}</h3>
+                </div>
+                <button
+                  onClick={handleCloseContextualHelp}
+                  className="text-white/80 hover:text-white transition-colors"
+                  aria-label="Chiudi"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <ul className="space-y-3">
+                  {currentHelp.tips.map((tip, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <span className="text-lg leading-none mt-0.5">{tip.split(' ')[0]}</span>
+                      <span className="text-gray-700 text-sm flex-1">
+                        {tip.split(' ').slice(1).join(' ')}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* CTA Button */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleCloseContextualHelp}
+                  className="w-full mt-6 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-pink-500 text-white font-medium rounded-lg hover:shadow-lg transition-shadow"
+                >
+                  Ho capito!
+                </motion.button>
               </div>
             </motion.div>
           </>
