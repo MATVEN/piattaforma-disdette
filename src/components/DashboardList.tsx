@@ -162,7 +162,7 @@ export default function DashboardList() {
 
   // --- RENDER LISTA CON INFINITE SCROLL ---
   return (
-    <div className="space-y-6 w-full max-w-full overflow-hidden">
+    <div id="disdette-list" className="space-y-6 w-full max-w-full overflow-hidden">
       {/* Header con conteggio */}
       <motion.div 
         initial={{ opacity: 0, y: -10 }}

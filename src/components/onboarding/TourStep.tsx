@@ -23,7 +23,6 @@ interface Position {
 }
 
 export function TourStepComponent({ step, currentStep, totalSteps, onNext, onPrevious, onSkip }: TourStepProps) {
-  console.log('💬 TourStepComponent render:', { step, currentStep, totalSteps })
   const [position, setPosition] = useState<Position>({ top: 0, left: 0 })
   const [isPositioned, setIsPositioned] = useState(false) // ← ADD
   const tooltipRef = useRef<HTMLDivElement>(null)
@@ -113,7 +112,7 @@ export function TourStepComponent({ step, currentStep, totalSteps, onNext, onPre
       window.removeEventListener('resize', updatePosition)
       window.removeEventListener('scroll', updatePosition, true)
     }
-  }, [step.target, step.placement]) // ✅ Fixed: Only depend on primitive values
+  }, [step.target, step.placement])
 
   const progressPercentage = ((currentStep + 1) / totalSteps) * 100
   const showPrevious = step.showPrevious !== false && currentStep > 0

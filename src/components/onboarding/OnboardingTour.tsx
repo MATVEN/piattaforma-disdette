@@ -4,61 +4,58 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { useOnboarding } from '@/context/OnboardingContext'
 import { TourSpotlight } from './TourSpotlight'
 import { TourStepComponent } from './TourStep'
 import type { TourStep } from '@/types/tour'
+import {
+  homepageTour,
+  uploadTour,
+  reviewTour,
+  dashboardTour,
+  defaultTour,
+} from '@/config/tourSteps'
 
 export function OnboardingTour() {
   const { tourActive, currentStep, totalSteps, nextStep, previousStep, skipTour, stopTour, completeStep } = useOnboarding()
   const [tourSteps, setTourSteps] = useState<TourStep[]>([])
+  const pathname = usePathname()
 
-  // ← ADD DEBUG
-  console.log('🎯 OnboardingTour render:', {
-    tourActive,
-    currentStep,
-    totalSteps,
-    tourStepsLength: tourSteps.length
-  })
+  // Get tour steps based on current page
+  const getTourForCurrentPage = (): TourStep[] => {
+    
+    // Homepage
+    if (pathname === '/') {
+      return homepageTour
+    }
+    
+    // Upload page (dynamic route)
+    if (pathname.startsWith('/upload/')) {
+      return uploadTour
+    }
+    
+    // Review page
+    if (pathname === '/review') {
+      return reviewTour
+    }
+    
+    // Dashboard page
+    if (pathname === '/dashboard') {
+      return dashboardTour
+    }
+    
+    // Default fallback
+    return defaultTour
+  }
 
-  // Default tour steps (can be customized)
+  // Set tour steps based on current page when tour becomes active
   useEffect(() => {
     if (tourActive && tourSteps.length === 0) {
-      // Set default tour steps
-      const defaultSteps: TourStep[] = [
-      {
-        id: 'welcome',
-        title: '👋 Benvenuto su DisdettaFacile!',
-        content: 'Ti guideremo attraverso i passaggi per creare la tua prima disdetta.',
-        target: 'body',
-        placement: 'bottom',
-        showPrevious: false,
-      },
-      {
-        id: 'navbar',
-        title: '🧭 La Barra di Navigazione',
-        content: 'Qui in alto trovi i link per navigare: Dashboard, Profilo e altro.',
-        target: 'nav',
-        placement: 'bottom',
-      },
-      {
-        id: 'help-button',
-        title: '❓ Pulsante Aiuto',
-        content: 'Clicca questo pulsante in qualsiasi momento per rivedere il tour o contattare il supporto.',
-        target: 'button[aria-label="Aiuto"]',
-        placement: 'left',
-      },
-      {
-        id: 'complete',
-        title: '🎉 Tutto Pronto!',
-        content: 'Ora sei pronto per creare la tua prima disdetta. Clicca "Nuova Disdetta" nella barra in alto per iniziare!',
-        target: 'body',
-        placement: 'bottom',
-      },
-    ]
-      setTourSteps(defaultSteps)
+      const pageTour = getTourForCurrentPage()
+      setTourSteps(pageTour)
     }
-  }, [tourActive, tourSteps.length])
+  }, [tourActive, pathname, tourSteps.length])
 
   // Scroll target into view when step changes
   useEffect(() => {
@@ -71,10 +68,12 @@ export function OnboardingTour() {
     const targetEl = document.querySelector(currentStepData.target)
 
     if (targetEl && currentStepData.target !== 'body') {
+      // Scroll into view
       targetEl.scrollIntoView({
         behavior: 'smooth',
         block: 'center',
       })
+      
     }
   }, [currentStep, tourActive, tourSteps])
 
@@ -159,46 +158,34 @@ export function OnboardingTour() {
 
   // Check 1: Tour attivo e steps disponibili
   if (!tourActive || tourSteps.length === 0) {
-    console.log('❌ Tour not rendering:', { tourActive, tourStepsLength: tourSteps.length })
     return null
   }
 
   // Check 2: Calcola step index
   const stepIndex = currentStep - 1
-  console.log('📍 Step index:', stepIndex, 'currentStep:', currentStep, 'totalSteps:', tourSteps.length)
 
   // Check 3: Verifica step index valido
   if (stepIndex < 0 || stepIndex >= tourSteps.length) {
-    console.log('❌ Invalid step index:', { stepIndex, tourStepsLength: tourSteps.length })
     return null
   }
 
   // Check 4: Get current step data
   const currentStepData = tourSteps[stepIndex]
-  console.log('✅ Rendering tour step:', currentStepData)
 
   // Check 5: Verifica target element exists
   const targetEl = document.querySelector(currentStepData.target)
-  console.log('🎯 Looking for target:', currentStepData.target)
-  console.log('✅ Target element found:', targetEl)
 
   if (!targetEl && currentStepData.target !== 'body') {
-    console.error('❌ Target element not found:', currentStepData.target)
     // Auto-skip to next step
     setTimeout(() => {
       if (currentStep < totalSteps) {
-        console.log('⏭️ Skipping to next step...')
         nextStep()
       } else {
-        console.log('✅ Completing tour...')
         handleComplete()
       }
     }, 100)
     return null
   }
-
-  // Render tour
-  console.log('🎨 Rendering TourSpotlight and TourStepComponent')
 
   return (
     <>

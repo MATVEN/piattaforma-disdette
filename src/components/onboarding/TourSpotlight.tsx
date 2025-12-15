@@ -14,7 +14,6 @@ interface TourSpotlightProps {
 }
 
 export function TourSpotlight({ target, isActive, onClickOutside }: TourSpotlightProps) {
-  console.log('🎭 TourSpotlight render:', { target, isActive })
 
   const [spotlight, setSpotlight] = useState<SpotlightPosition | null>(null)
 

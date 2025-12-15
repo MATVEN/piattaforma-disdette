@@ -147,7 +147,7 @@ export default function UploadPage() {
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border bg-white p-6 shadow-sm">
-          <div>
+          <div id="file-upload-area">
             <label htmlFor="documento_bolletta" className="block text-sm font-medium text-gray-700">
               Documento Bolletta
             </label>

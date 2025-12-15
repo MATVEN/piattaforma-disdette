@@ -153,6 +153,7 @@ export default function ReviewForm() {
   // Main Form
   return (
     <motion.form
+      id="review-form"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       onSubmit={handleSubmit(handleFormSubmit)}
@@ -182,13 +183,15 @@ export default function ReviewForm() {
             getValues={getValues}
           />
           <B2BLegalRepFields register={register} errors={errors} />
-          <B2BDocumentsSection
-            files={files}
-            onFileChange={handleFileChange}
-            uploadStates={uploadStates}
-            richiedenteRuolo={watch('richiedente_ruolo')}
-            errors={errors}
-          />
+            <div id="b2b-documents-section">
+              <B2BDocumentsSection
+                files={files}
+                onFileChange={handleFileChange}
+                uploadStates={uploadStates}
+                richiedenteRuolo={watch('richiedente_ruolo')}
+                errors={errors}
+              />
+            </div>
         </div>
       )}
 

@@ -654,3 +654,61 @@
     - `src/services/disdetta.service.ts` (data validation, submission flow)
     - `src/components/ReviewForm/components/DuplicateDetectionModal.tsx`
     - `docs/TESTING_CHECKLIST.md` (150+ test cases documented)
+
+- **User Onboarding (C24):**
+
+  - **Core Infrastructure:**
+    - Global onboarding state managed via `OnboardingContext` with `localStorage` persistence.
+    - First-visit detection, tour state tracking, dismissed tooltips, and returning user handling.
+    - Loading guard to prevent FOUC during hydration.
+    - Centralized orchestration for welcome modal, tours, tooltips, and contextual help.
+
+  - **Welcome & Entry Experience:**
+    - First-visit welcome modal with glassmorphism design and animated gradient header.
+    - Feature preview cards (Upload, Verify, Send) to set user expectations.
+    - User-controlled persistence via “don’t show again” checkbox.
+    - Multiple entry paths: start guided tour, skip onboarding, or close.
+    - Fully animated with Framer Motion and click-outside handling.
+
+  - **Always-Available Help System:**
+    - Floating HelpButton fixed in bottom-right, visible across the entire app.
+    - Contextual dropdown actions: restart tour, contextual page help, contact support.
+    - Icon animations, glassmorphism menu, tooltip on hover.
+    - Page-aware contextual help using pathname detection.
+
+  - **Tooltip System & Form Guidance:**
+    - Global tooltip provider with viewport-aware positioning and auto-flip.
+    - Reusable animated Tooltip component with hover/click triggers.
+    - Centralized tooltip content library (15+ entries).
+    - Integrated 13+ contextual tooltips across B2C and B2B ReviewForm fields.
+    - Persistence of dismissed tooltips via `localStorage`.
+
+  - **Guided Tour System (Spotlight):**
+    - Interactive multi-step onboarding tour with SVG spotlight overlay.
+    - Step navigation (Next, Previous, Skip) with progress indicator.
+    - Keyboard navigation support and mobile-friendly layout.
+    - Smooth animations and auto-scroll to highlighted elements.
+  - **Page-Specific Tours:**
+    - Centralized tour configuration with dynamic route-based loading.
+    - Dedicated tours for homepage, upload flow, review form, and dashboard.
+    - Target element IDs added across pages for precise spotlight positioning.
+    - Smart fallback tour for unsupported routes.
+
+  - **UX & Validation Improvements:**
+    - OCR-safe validation for supplier contract number.
+    - Default Legal Representative selection.
+    - Simplified HelpButton icon to reduce visual noise.
+    - Clear separation between conceptual tooltips and technical help text.
+
+  - **Code Quality & Architecture:**
+    - Modular onboarding components (context, tooltip, tour, helpers).
+    - Strong TypeScript typing across contexts, hooks, and configs.
+    - Framer Motion used consistently for animations.
+    - Clean z-index layering and event propagation handling.
+
+  - **Outcome:**
+    - Complete, production-ready onboarding system.
+    - Clear guidance for first-time users without blocking expert users.
+    - Scalable foundation for future onboarding iterations and testing.
+    - Fully tested, mobile responsive, and persisted across sessions.
+
