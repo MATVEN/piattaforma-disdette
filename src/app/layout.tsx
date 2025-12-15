@@ -10,6 +10,7 @@ import Footer from '@/components/Footer'
 import ToastProvider from '@/components/ToastProvider'
 import { WelcomeModal } from '@/components/onboarding/WelcomeModal'
 import { HelpButton } from '@/components/onboarding/HelpButton'
+import { OnboardingTour } from '@/components/onboarding/OnboardingTour'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -31,6 +32,7 @@ export default function RootLayout({
             <TooltipProvider>
               <WelcomeModal />
               <HelpButton />
+              <OnboardingTour />
               <Navbar />
               <main className="flex-1">{children}</main>
               <Footer />

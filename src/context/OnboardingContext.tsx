@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import type { TourStep } from '@/types/tour'
 
 interface OnboardingState {
     isFirstVisit: boolean
@@ -9,7 +10,8 @@ interface OnboardingState {
     totalSteps: number
     completedSteps: string[]
     dismissedTooltips: string[]
-    isLoading: boolean // ← ADD THIS
+    isLoading: boolean
+    tourSteps: TourStep[] // NEW: Tour step configuration
 }
 
 interface OnboardingContextType extends OnboardingState {
@@ -22,6 +24,7 @@ interface OnboardingContextType extends OnboardingState {
     dismissTooltip: (tooltipId: string) => void
     resetOnboarding: () => void
     markAsReturningUser: () => void
+    setTourSteps: (steps: TourStep[]) => void // NEW: Set tour steps
 }
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined)
@@ -36,7 +39,8 @@ const defaultState: OnboardingState = {
   totalSteps: TOTAL_TOUR_STEPS,
   completedSteps: [],
   dismissedTooltips: [],
-  isLoading: true, // ← ADD THIS: Start as loading
+  isLoading: true,
+  tourSteps: [], // NEW: Initialize empty tour steps
 }
 
 export function OnboardingProvider({ children }: { children: ReactNode }) {
@@ -180,6 +184,14 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     }))
   }
 
+  const setTourSteps = (steps: TourStep[]) => {
+    setState(prev => ({
+      ...prev,
+      tourSteps: steps,
+      totalSteps: steps.length,
+    }))
+  }
+
   const value: OnboardingContextType = {
     ...state,
     startTour,
@@ -191,6 +203,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     dismissTooltip,
     resetOnboarding,
     markAsReturningUser,
+    setTourSteps,
   }
 
   return (

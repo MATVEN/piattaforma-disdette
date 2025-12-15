@@ -69,7 +69,6 @@ src\app\review\page.tsx
 src\app\terms-of-service
 src\app\terms-of-service\page.tsx
 src\app\test-tooltip
-src\app\test-tooltip\page.tsx
 src\app\upload
 src\app\upload\[serviceId]
 src\app\upload\[serviceId]\page.tsx
@@ -86,7 +85,10 @@ src\components\OAuthButton.tsx
 src\components\onboarding
 src\components\onboarding\FormFieldWithTooltip.tsx
 src\components\onboarding\HelpButton.tsx
+src\components\onboarding\OnboardingTour.tsx
 src\components\onboarding\Tooltip.tsx
+src\components\onboarding\TourSpotlight.tsx
+src\components\onboarding\TourStep.tsx
 src\components\onboarding\WelcomeModal.tsx
 src\components\ReviewForm
 src\components\ReviewForm\components
@@ -131,6 +133,8 @@ src\repositories\disdetta.repository.ts
 src\services
 src\services\auth.service.ts
 src\services\disdetta.service.ts
+src\types
+src\types\tour.ts
 supabase
 supabase\.branches
 supabase\.branches\_current_branch

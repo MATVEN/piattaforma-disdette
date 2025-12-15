@@ -132,7 +132,6 @@ export function B2BCompanyFields({ register, errors, setValue, getValues }: B2BC
         >
           <label htmlFor="indirizzo_fornitura" className="block text-sm font-medium text-gray-700">
             Indirizzo Fornitura<span className="text-red-500">*</span>
-            <span className="ml-2 text-xs text-gray-500">(dove si trova il contatore/linea)</span>
           </label>
         </Tooltip>
         <div className="relative mb-2">
