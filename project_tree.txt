@@ -41,6 +41,8 @@ src\app\api\get-extracted-data
 src\app\api\get-extracted-data\route.ts
 src\app\api\get-my-disdette
 src\app\api\get-my-disdette\route.ts
+src\app\api\get-status-history
+src\app\api\get-status-history\route.ts
 src\app\api\send-pec
 src\app\api\send-pec\route.ts
 src\app\cookie-policy
@@ -68,7 +70,6 @@ src\app\review
 src\app\review\page.tsx
 src\app\terms-of-service
 src\app\terms-of-service\page.tsx
-src\app\test-tooltip
 src\app\upload
 src\app\upload\[serviceId]
 src\app\upload\[serviceId]\page.tsx
@@ -107,7 +108,12 @@ src\components\ReviewForm\hooks\useFileUploads.ts
 src\components\ReviewForm\hooks\useFormSubmission.ts
 src\components\ReviewForm\hooks\useReviewForm.ts
 src\components\ReviewForm\index.tsx
+src\components\StatusTimeline.tsx
+src\components\StatusTimelineExpanded.tsx
+src\components\StatusTimelineExpandedSkeleton.tsx
 src\components\ToastProvider.tsx
+src\config
+src\config\tourSteps.ts
 src\constants
 src\constants\tooltipContent.ts
 src\context
@@ -130,10 +136,13 @@ src\lib\toast.ts
 src\middleware.ts
 src\repositories
 src\repositories\disdetta.repository.ts
+src\repositories\statusHistory.repository.ts
 src\services
 src\services\auth.service.ts
 src\services\disdetta.service.ts
+src\services\statusHistory.service.ts
 src\types
+src\types\statusHistory.ts
 src\types\tour.ts
 supabase
 supabase\.branches

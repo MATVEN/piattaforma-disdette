@@ -139,14 +139,32 @@ export function isStatusCompleted(currentStatus: DisdettaStatus, targetStatus: D
 }
 
 export function formatDuration(seconds: number | null): string {
-    if (!seconds) return '-'
-    
-    if (seconds < 60) return `${seconds}s`
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m`
-    
-    const hours = Math.floor(seconds / 3600)
-    const mins = Math.floor((seconds % 3600) / 60)
-    return `${hours}h ${mins}m`
+  // Null or undefined
+  if (seconds === null || seconds === undefined) return '-'
+  
+  // Zero or negative (shouldn't happen, but handle it)
+  if (seconds <= 0) return '-'
+  
+  // Less than 1 minute
+  if (seconds < 60) {
+    return `${seconds}s`
+  }
+  
+  // Less than 1 hour
+  if (seconds < 3600) {
+    const mins = Math.floor(seconds / 60)
+    return `${mins}m`
+  }
+  
+  // Hours and minutes
+  const hours = Math.floor(seconds / 3600)
+  const mins = Math.floor((seconds % 3600) / 60)
+  
+  if (mins === 0) {
+    return `${hours}h`
+  }
+  
+  return `${hours}h ${mins}m`
 }
 
 export function formatTimestamp(timestamp: string): string {

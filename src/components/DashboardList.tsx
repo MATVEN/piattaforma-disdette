@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { showSuccess, showError } from '@/lib/toast'
 import { StatusTimeline } from '@/components/StatusTimeline'
 import { StatusTimelineExpanded } from '@/components/StatusTimelineExpanded'
+import { StatusTimelineExpandedSkeleton } from '@/components/StatusTimelineExpandedSkeleton'
 import type { StatusTimelineData } from '@/types/statusHistory'
 import {
   FileText,
@@ -42,6 +43,7 @@ export default function DashboardList() {
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set())
   const [historyData, setHistoryData] = useState<Record<number, StatusTimelineData>>({})
   const [loadingHistory, setLoadingHistory] = useState<Record<number, boolean>>({})
+   const [historyErrors, setHistoryErrors] = useState<Record<number, boolean>>({})
 
   // --- FUNZIONE FETCH per l'infinite scroll ---
   const fetchDisdette = useCallback(async (page: number, pageSize: number) => {
@@ -116,22 +118,24 @@ export default function DashboardList() {
   const fetchHistory = async (disdettaId: number) => {
     // Skip if already loaded
     if (historyData[disdettaId]) return
-
+    
     setLoadingHistory(prev => ({ ...prev, [disdettaId]: true }))
-
+    setHistoryErrors(prev => ({ ...prev, [disdettaId]: false })) // ← ADD: Reset error
+    
     try {
       const response = await fetch(`/api/get-status-history?id=${disdettaId}`, {
         credentials: 'include'
       })
-
+      
       if (!response.ok) {
         throw new Error('Failed to fetch history')
       }
-
+      
       const data: StatusTimelineData = await response.json()
       setHistoryData(prev => ({ ...prev, [disdettaId]: data }))
     } catch (error) {
       console.error('Error fetching history:', error)
+      setHistoryErrors(prev => ({ ...prev, [disdettaId]: true })) // ← ADD: Mark error
       showError('Impossibile caricare la cronologia')
     } finally {
       setLoadingHistory(prev => ({ ...prev, [disdettaId]: false }))
@@ -253,6 +257,7 @@ export default function DashboardList() {
               onToggleExpand={() => toggleExpand(item.id)}
               historyData={historyData[item.id]}
               loadingHistory={loadingHistory[item.id] || false}
+              historyErrors={historyErrors[item.id] || false}  // ← ADD
             />
           )
         })}
@@ -298,6 +303,7 @@ function DisdettaCard({
   onToggleExpand,
   historyData,
   loadingHistory,
+  historyErrors,
 }: {
   item: DisdettaData
   isSending: boolean
@@ -306,6 +312,7 @@ function DisdettaCard({
   onToggleExpand: () => void
   historyData: StatusTimelineData | undefined
   loadingHistory: boolean
+  historyErrors: boolean
 }) {
   const fileName = item.file_path.split('/').pop() || 'Documento'
   const date = new Date(item.created_at).toLocaleDateString('it-IT', {
@@ -391,9 +398,26 @@ function DisdettaCard({
             >
               <div className="mt-4 pt-4 border-t border-gray-100">
                 {loadingHistory ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
-                    <span className="ml-2 text-sm text-gray-600">Caricamento cronologia...</span>
+                  <StatusTimelineExpandedSkeleton />
+                ) : historyErrors ? (
+                  <div className="py-8 text-center">
+                    <div className="mx-auto w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-3">
+                      <XCircle className="h-6 w-6 text-red-500" />
+                    </div>
+                    <p className="text-sm font-medium text-gray-900 mb-1">
+                      Errore nel caricamento
+                    </p>
+                    <p className="text-xs text-gray-500 mb-3">
+                      Impossibile recuperare la cronologia
+                    </p>
+                    <button
+                      onClick={() => {
+                        onToggleExpand() // This will trigger fetchHistory again via toggleExpand
+                      }}
+                      className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                    >
+                      Riprova
+                    </button>
                   </div>
                 ) : historyData ? (
                   <StatusTimelineExpanded timeline={historyData} />
