@@ -5,17 +5,22 @@ import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 import InfiniteScrollTrigger from '@/components/InfiniteScrollTrigger'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { showSuccess, showError } from '@/lib/toast'
-import { 
-  FileText, 
-  Calendar, 
-  Send, 
-  Clock, 
-  CheckCircle2, 
+import { StatusTimeline } from '@/components/StatusTimeline'
+import { StatusTimelineExpanded } from '@/components/StatusTimelineExpanded'
+import type { StatusTimelineData } from '@/types/statusHistory'
+import {
+  FileText,
+  Calendar,
+  Send,
+  Clock,
+  CheckCircle2,
   XCircle,
   Loader2,
-  Sparkles
+  Sparkles,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react'
 
 // --- Tipi ---
@@ -32,6 +37,11 @@ interface DisdettaData {
 export default function DashboardList() {
   // Stato per l'invio PEC
   const [sendingState, setSendingState] = useState<Record<number, boolean>>({})
+
+  // Stato per timeline expansion e history data
+  const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set())
+  const [historyData, setHistoryData] = useState<Record<number, StatusTimelineData>>({})
+  const [loadingHistory, setLoadingHistory] = useState<Record<number, boolean>>({})
 
   // --- FUNZIONE FETCH per l'infinite scroll ---
   const fetchDisdette = useCallback(async (page: number, pageSize: number) => {
@@ -90,7 +100,7 @@ export default function DashboardList() {
 
       // Success toast
       showSuccess('PEC inviata con successo! 🎉')
-      
+
       // Ricarica la lista per mostrare il nuovo stato
       refresh()
 
@@ -100,6 +110,47 @@ export default function DashboardList() {
     } finally {
       setSendingState((prev) => ({ ...prev, [disdettaId]: false }))
     }
+  }
+
+  // --- FUNZIONE FETCH HISTORY ---
+  const fetchHistory = async (disdettaId: number) => {
+    // Skip if already loaded
+    if (historyData[disdettaId]) return
+
+    setLoadingHistory(prev => ({ ...prev, [disdettaId]: true }))
+
+    try {
+      const response = await fetch(`/api/get-status-history?id=${disdettaId}`, {
+        credentials: 'include'
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch history')
+      }
+
+      const data: StatusTimelineData = await response.json()
+      setHistoryData(prev => ({ ...prev, [disdettaId]: data }))
+    } catch (error) {
+      console.error('Error fetching history:', error)
+      showError('Impossibile caricare la cronologia')
+    } finally {
+      setLoadingHistory(prev => ({ ...prev, [disdettaId]: false }))
+    }
+  }
+
+  // --- FUNZIONE TOGGLE EXPAND ---
+  const toggleExpand = (disdettaId: number) => {
+    setExpandedCards(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(disdettaId)) {
+        newSet.delete(disdettaId)
+      } else {
+        newSet.add(disdettaId)
+        // Fetch history when expanding
+        fetchHistory(disdettaId)
+      }
+      return newSet
+    })
   }
 
   // Carica la prima pagina al mount
@@ -191,13 +242,17 @@ export default function DashboardList() {
       <div className="flex flex-col gap-4 w-full max-w-full">
         {disdette.map((item) => {
           const isSending = sendingState[item.id] || false
-          
+
           return (
             <DisdettaCard
               key={item.id}
               item={item}
               isSending={isSending}
               onSend={() => handleSendPec(item.id)}
+              expanded={expandedCards.has(item.id)}
+              onToggleExpand={() => toggleExpand(item.id)}
+              historyData={historyData[item.id]}
+              loadingHistory={loadingHistory[item.id] || false}
             />
           )
         })}
@@ -239,10 +294,18 @@ function DisdettaCard({
   item,
   isSending,
   onSend,
+  expanded,
+  onToggleExpand,
+  historyData,
+  loadingHistory,
 }: {
   item: DisdettaData
   isSending: boolean
   onSend: () => void
+  expanded: boolean
+  onToggleExpand: () => void
+  historyData: StatusTimelineData | undefined
+  loadingHistory: boolean
 }) {
   const fileName = item.file_path.split('/').pop() || 'Documento'
   const date = new Date(item.created_at).toLocaleDateString('it-IT', {
@@ -255,7 +318,7 @@ function DisdettaCard({
     <div className="group relative w-full max-w-full rounded-xl border border-gray-200 bg-white shadow-card transition-all hover:shadow-card-hover hover:border-primary-200 overflow-hidden">
       {/* Gradient accent */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-primary" />
-      
+
       <div className="p-3 sm:p-5 w-full max-w-full">
         {/* Layout mobile: stack verticale, desktop: orizzontale */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 w-full max-w-full">
@@ -265,7 +328,7 @@ function DisdettaCard({
               <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center group-hover:bg-primary-100 transition-colors">
                 <FileText className="h-5 w-5 text-primary-600" />
               </div>
-              
+
               <div className="flex-1 min-w-0 max-w-full overflow-hidden">
                 <h3 className="font-semibold text-gray-900 break-words sm:truncate group-hover:text-primary-600 transition-colors max-w-full">
                   {fileName}
@@ -287,6 +350,62 @@ function DisdettaCard({
             />
           </div>
         </div>
+      </div>
+
+      {/* Timeline Section */}
+      <div className="px-3 sm:px-5 pb-3 sm:pb-5">
+        {/* Compact Timeline (always visible) */}
+        <StatusTimeline
+          currentStatus={item.status as any}
+          history={historyData?.history || []}
+          compact
+        />
+
+        {/* Expand/Collapse Button */}
+        <button
+          onClick={onToggleExpand}
+          className="mt-3 text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1 transition-colors"
+        >
+          {expanded ? (
+            <>
+              <ChevronUp className="h-4 w-4" />
+              <span>Nascondi dettagli</span>
+            </>
+          ) : (
+            <>
+              <ChevronDown className="h-4 w-4" />
+              <span>Mostra cronologia completa</span>
+            </>
+          )}
+        </button>
+
+        {/* Expanded Detail View */}
+        <AnimatePresence>
+          {expanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden"
+            >
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                {loadingHistory ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
+                    <span className="ml-2 text-sm text-gray-600">Caricamento cronologia...</span>
+                  </div>
+                ) : historyData ? (
+                  <StatusTimelineExpanded timeline={historyData} />
+                ) : (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    Nessuna cronologia disponibile
+                  </p>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )
@@ -361,17 +480,13 @@ function StatusBadgeAndAction({
     )
   }
 
-  // ✅ CONFIRMED - SEND BUTTON
+  // ✅ CONFIRMED - IN SENDING (intermediate state)
   if (status === 'CONFIRMED') {
     return (
-      <button
-        onClick={onSend}
-        className={`${buttonClass} bg-gradient-success text-white shadow-glass transition-all hover:shadow-glass-hover hover:scale-105 active:scale-95`}
-        title="Invia PEC"
-      >
-        <Send className="h-4 w-4 flex-shrink-0" />
-        <span>Invia PEC</span>
-      </button>
+      <div className={`${badgeClass} bg-indigo-50 text-indigo-700`}>
+        <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
+        <span>In invio...</span>
+      </div>
     )
   }
   
