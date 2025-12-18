@@ -712,3 +712,41 @@
     - Scalable foundation for future onboarding iterations and testing.
     - Fully tested, mobile responsive, and persisted across sessions.
 
+- **Advanced Status Tracking (C25):**
+
+  - **Core Infrastructure:**
+    - Introduced full status audit trail via `status_history` table with triggers, RLS policies, and optimized indexes.
+    - Automatic duration calculation and backfill for existing records.
+    - Secure repository + service layer with ownership verification and dedicated API endpoint.
+
+  - **Status Timeline UI:**
+    - New `StatusTimeline` component (compact + expanded modes) with horizontal/vertical layouts.
+    - Clear progress visualization: Upload → Review → Sent, with color-coded states and animations.
+    - CONFIRMED abstracted as “In invio…” to simplify user mental model.
+    - Helper utilities for timestamps, durations, and relative time.
+
+  - **Dashboard Integration:**
+    - Lazy-loaded, expandable timelines per card with intelligent caching.
+    - Loading, empty, and error states with retry support.
+    - No impact on initial dashboard render performance.
+
+  - **Real-time Updates & Progress Indicators:**
+    - Smart polling for non-terminal states only, network-aware and memory-safe.
+    - Animated progress indicators with percentage mapping per status.
+    - Estimated time remaining display for long-running steps.
+
+  - **Performance & Reliability Improvements:**
+    - Critical index and trigger optimizations (query time reduced from seconds to milliseconds).
+    - Fixed RLS trigger execution via `SECURITY DEFINER`.
+    - Dashboard load time reduced from timeout to sub-second.
+
+  - **User Experience Impact:**
+    - Transparent, self-explanatory status tracking reduces uncertainty and support requests.
+    - Auto-updating UI removes need for manual refresh.
+    - Mobile-responsive, accessible, and visually consistent with the design system.
+
+  - **Files Involved:**
+    - Database migrations and triggers for `status_history`.
+    - `StatusTimeline` and `StatusTimelineExpanded` components.
+    - `useStatusPolling` hook.
+    - Dashboard integration and repository updates.

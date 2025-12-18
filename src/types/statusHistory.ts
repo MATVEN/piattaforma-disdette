@@ -111,11 +111,11 @@ export function isStatusCompleted(currentStatus: DisdettaStatus, targetStatus: D
     // Special case: FAILED is terminal but not "completed"
     if (currentStatus === 'FAILED') return false
     if (targetStatus === 'FAILED') return false
-    
+
     // Special case: TEST_SENT is treated as SENT
     const effectiveCurrentStatus = currentStatus === 'TEST_SENT' ? 'SENT' : currentStatus
     const effectiveTargetStatus = targetStatus === 'TEST_SENT' ? 'SENT' : targetStatus
-    
+
     // Special case: CONFIRMED is intermediate state before SENT
     // For timeline: CONFIRMED means "in progress" towards SENT
     // So PENDING_REVIEW is completed, but SENT is not yet
@@ -124,18 +124,35 @@ export function isStatusCompleted(currentStatus: DisdettaStatus, targetStatus: D
         if (effectiveTargetStatus === 'PENDING_REVIEW') return true // Previous steps completed
         if (effectiveTargetStatus === 'PROCESSING') return true // Previous steps completed
     }
-    
+
     // If checking against SENT while we're at CONFIRMED, it's in progress (not completed)
     if (currentStatus === 'CONFIRMED' && targetStatus === 'SENT') return false
-    
+
     // Normal progression check
     const currentIndex = getStatusIndex(effectiveCurrentStatus)
     const targetIndex = getStatusIndex(effectiveTargetStatus)
-    
+
     // If either status not in order, can't compare
     if (currentIndex === -1 || targetIndex === -1) return false
-    
+
     return currentIndex >= targetIndex
+}
+
+/**
+ * Calculate progress percentage for a given status
+ * Returns number 0-100
+ */
+export function getStatusProgress(status: DisdettaStatus): number {
+  const progressMap: Record<DisdettaStatus, number> = {
+    PROCESSING: 25,      // OCR in progress
+    PENDING_REVIEW: 50,  // Awaiting user action
+    CONFIRMED: 75,       // PEC generation
+    SENT: 100,           // Complete
+    TEST_SENT: 100,      // Complete (test)
+    FAILED: 0,           // Error (no progress)
+  }
+
+  return progressMap[status] || 0
 }
 
 export function formatDuration(seconds: number | null): string {

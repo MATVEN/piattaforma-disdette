@@ -13,6 +13,7 @@ import { StatusTimelineExpanded } from '@/components/StatusTimelineExpanded'
 import { StatusTimelineExpandedSkeleton } from '@/components/StatusTimelineExpandedSkeleton'
 import type { StatusTimelineData } from '@/types/statusHistory'
 import type { DisdettaStatus } from '@/types/statusHistory'
+import { getStatusProgress } from '@/types/statusHistory'
 import {
   FileText,
   Calendar,
@@ -416,6 +417,7 @@ function DisdettaCard({
               status={item.status}
               isSending={isSending}
               onSend={onSend}
+              estimatedCompletion={historyData?.estimatedCompletion}
             />
           </div>
         </div>
@@ -524,14 +526,39 @@ function StatusBadgeAndAction({
   status,
   isSending,
   onSend,
+  estimatedCompletion,
 }: {
   status: string
   isSending: boolean
   onSend: () => void
+  estimatedCompletion?: string | null
 }) {
   // Stili condivisi per evitare overflow
   const badgeClass = "flex items-center justify-center gap-2 rounded-full px-3 py-1.5 text-xs sm:text-sm font-medium whitespace-nowrap w-full sm:w-auto max-w-full";
   const buttonClass = "flex items-center justify-center gap-2 rounded-lg px-3 py-1.5 text-xs sm:text-sm font-medium whitespace-nowrap w-full sm:w-auto max-w-full";
+
+  // Helper: Format time remaining
+  const getTimeRemaining = (): string | null => {
+    if (!estimatedCompletion) return null
+
+    const now = new Date()
+    const estimated = new Date(estimatedCompletion)
+    const diffMs = estimated.getTime() - now.getTime()
+
+    if (diffMs <= 0) return null // Already passed
+
+    const diffMinutes = Math.floor(diffMs / 1000 / 60)
+
+    if (diffMinutes < 1) return 'Tra pochi secondi'
+    if (diffMinutes === 1) return 'Tra ~1 minuto'
+    if (diffMinutes < 60) return `Tra ~${diffMinutes} minuti`
+
+    const diffHours = Math.floor(diffMinutes / 60)
+    if (diffHours === 1) return 'Tra ~1 ora'
+    return `Tra ~${diffHours} ore`
+  }
+
+  const timeRemaining = getTimeRemaining()
 
   // ✅ Sending state
   if (isSending) {
@@ -580,17 +607,43 @@ function StatusBadgeAndAction({
 
   // ✅ CONFIRMED - IN SENDING (intermediate state)
   if (status === 'CONFIRMED') {
+    const progress = getStatusProgress('CONFIRMED')
+    
     return (
-      <motion.div
-        key={status}
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", duration: 0.5 }}
-        className={`${badgeClass} bg-indigo-50 text-indigo-700`}
-      >
-        <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
-        <span>In invio...</span>
-      </motion.div>
+      <div className="flex flex-col items-center gap-1.5 w-full sm:w-auto">
+        {/* Badge */}
+        <motion.div
+          key={status}
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", duration: 0.5 }}
+          className={`${badgeClass} bg-indigo-50 text-indigo-700`}
+        >
+          <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
+          <span>In invio...</span>
+        </motion.div>
+        
+        {/* Progress bar (below badge) */}
+        <div className="w-full max-w-[120px] h-1.5 bg-gray-200 rounded-full overflow-hidden">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="h-full bg-indigo-500 rounded-full"
+          />
+        </div>
+        
+        {/* Time remaining */}
+        {timeRemaining && (
+          <motion.span
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-[10px] text-gray-500 whitespace-nowrap"
+          >
+            {timeRemaining}
+          </motion.span>
+        )}
+      </div>
     )
   }
   
@@ -614,33 +667,74 @@ function StatusBadgeAndAction({
 
   // ✅ PENDING_REVIEW - WARNING BADGE
   if (status === 'PENDING_REVIEW') {
+    const progress = getStatusProgress('PENDING_REVIEW')
+    
     return (
-      <motion.div
-        key={status}
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", duration: 0.5 }}
-        className={`${badgeClass} bg-warning-50 text-warning-700`}
-      >
-        <Clock className="h-4 w-4 flex-shrink-0" />
-        <span className="hidden sm:inline">In revisione</span>
-      </motion.div>
+      <div className="flex flex-col items-center gap-1.5 w-full sm:w-auto">
+        {/* Badge */}
+        <motion.div
+          key={status}
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", duration: 0.5 }}
+          className={`${badgeClass} bg-warning-50 text-warning-700`}
+        >
+          <Clock className="h-4 w-4 flex-shrink-0" />
+          <span className="hidden sm:inline">In revisione</span>
+        </motion.div>
+        
+        {/* Progress bar (below badge) */}
+        <div className="w-full max-w-[120px] h-1.5 bg-gray-200 rounded-full overflow-hidden">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="h-full bg-warning-500 rounded-full"
+          />
+        </div>
+      </div>
     )
   }
 
   // ✅ PROCESSING - LOADING BADGE
   if (status === 'PROCESSING') {
+    const progress = getStatusProgress('PROCESSING')
+    
     return (
-      <motion.div
-        key={status}
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", duration: 0.5 }}
-        className={`${badgeClass} bg-primary-50 text-primary-700`}
-      >
-        <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
-        <span className="hidden sm:inline">Elaborazione...</span>
-      </motion.div>
+      <div className="flex flex-col items-center gap-1.5 w-full sm:w-auto">
+        {/* Badge */}
+        <motion.div
+          key={status}
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", duration: 0.5 }}
+          className={`${badgeClass} bg-primary-50 text-primary-700`}
+        >
+          <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
+          <span className="hidden sm:inline">Elaborazione...</span>
+        </motion.div>
+        
+        {/* Progress bar (below badge) */}
+        <div className="w-full max-w-[120px] h-1.5 bg-gray-200 rounded-full overflow-hidden">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="h-full bg-primary-500 rounded-full"
+          />
+        </div>
+        
+        {/* Time remaining */}
+        {timeRemaining && (
+          <motion.span
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-[10px] text-gray-500 whitespace-nowrap"
+          >
+            {timeRemaining}
+          </motion.span>
+        )}
+      </div>
     )
   }
 
