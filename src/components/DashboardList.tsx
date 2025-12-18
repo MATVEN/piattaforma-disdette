@@ -4,6 +4,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
+import { useStatusPolling } from '@/hooks/useStatusPolling'
 import InfiniteScrollTrigger from '@/components/InfiniteScrollTrigger'
 import { motion, AnimatePresence } from 'framer-motion'
 import { showSuccess, showError } from '@/lib/toast'
@@ -11,6 +12,7 @@ import { StatusTimeline } from '@/components/StatusTimeline'
 import { StatusTimelineExpanded } from '@/components/StatusTimelineExpanded'
 import { StatusTimelineExpandedSkeleton } from '@/components/StatusTimelineExpandedSkeleton'
 import type { StatusTimelineData } from '@/types/statusHistory'
+import type { DisdettaStatus } from '@/types/statusHistory'
 import {
   FileText,
   Calendar,
@@ -43,7 +45,8 @@ export default function DashboardList() {
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set())
   const [historyData, setHistoryData] = useState<Record<number, StatusTimelineData>>({})
   const [loadingHistory, setLoadingHistory] = useState<Record<number, boolean>>({})
-   const [historyErrors, setHistoryErrors] = useState<Record<number, boolean>>({})
+  const [historyErrors, setHistoryErrors] = useState<Record<number, boolean>>({})
+  const [pollingEnabled, setPollingEnabled] = useState(true)
 
   // --- FUNZIONE FETCH per l'infinite scroll ---
   const fetchDisdette = useCallback(async (page: number, pageSize: number) => {
@@ -163,6 +166,45 @@ export default function DashboardList() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // --- POLLING SETUP ---
+  // Stable callback for polling
+  const handlePollingUpdate = useCallback(() => {
+    refresh()
+  }, [refresh])
+
+  const polling = useStatusPolling({
+    enabled: pollingEnabled && !isLoading && disdette.length > 0,
+    interval: 300000,
+    onUpdate: handlePollingUpdate,
+  })
+
+  // Add disdette to polling when data changes
+  useEffect(() => {
+    if (disdette.length === 0) {
+      polling.clear()
+      return
+    }
+    
+    // Build set of current IDs + statuses
+    const currentIds = new Set(
+      disdette
+        .filter(d => !['SENT', 'TEST_SENT', 'FAILED'].includes(d.status))
+        .map(d => d.id)
+    )
+    
+    // Only update if count changed (optimization)
+    if (currentIds.size > 0) {
+      polling.clear()
+      currentIds.forEach(id => {
+        const item = disdette.find(d => d.id === id)
+        if (item) {
+          polling.addDisdetta(item.id, item.status as DisdettaStatus)
+        }
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disdette.length])
+
   // --- GESTIONE STATI UI ---
   
   // Loading iniziale
@@ -222,7 +264,7 @@ export default function DashboardList() {
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+        className="flex items-center justify-between flex-wrap gap-2" // ← Changed: added flex-wrap gap-2
       >
         <div className="flex items-center space-x-3">
           <div className="h-10 w-1 bg-gradient-primary rounded-full" />
@@ -234,12 +276,32 @@ export default function DashboardList() {
             </p>
           </div>
         </div>
-        {hasMore && (
-          <p className="text-xs text-gray-500 hidden sm:flex items-center space-x-1">
-            <Clock className="h-3 w-3" />
-            <span>Scorri per caricarne altre</span>
-          </p>
-        )}
+
+        {/* Right side container */}
+        <div className="flex items-center gap-4"> {/* ← ADD: Container per polling + hasMore */}
+          {/* Polling indicator (C25 Phase 2.2) */}
+          {polling.isPolling && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center space-x-2 text-xs text-gray-500"
+            >
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                className="h-3 w-3 rounded-full border-2 border-gray-300 border-t-indigo-600"
+              />
+              <span className="hidden sm:inline">Aggiornamento automatico</span>
+            </motion.div>
+          )}
+
+          {hasMore && (
+            <p className="text-xs text-gray-500 hidden sm:flex items-center space-x-1">
+              <Clock className="h-3 w-3" />
+              <span>Scorri per caricarne altre</span>
+            </p>
+          )}
+        </div>
       </motion.div>
 
       {/* Lista disdette */}
@@ -474,17 +536,29 @@ function StatusBadgeAndAction({
   // ✅ Sending state
   if (isSending) {
     return (
-      <div className={`${badgeClass} bg-primary-50 text-primary-700`}>
+      <motion.div
+        key="sending" // ← Key fisso perché isSending è boolean
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", duration: 0.5 }}
+        className={`${badgeClass} bg-primary-50 text-primary-700`}
+      >
         <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
         <span className="hidden sm:inline">Invio in corso...</span>
-      </div>
+      </motion.div>
     )
   }
 
-  // ✅ FAILED - RETRY BUTTON (NEW!)
+  // ✅ FAILED - RETRY BUTTON
   if (status === 'FAILED') {
     return (
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+      <motion.div
+        key={status}
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", duration: 0.5 }}
+        className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto"
+      >
         {/* Error Badge */}
         <div className={`${badgeClass} bg-danger-50 text-danger-700`}>
           <XCircle className="h-4 w-4 flex-shrink-0" />
@@ -500,56 +574,86 @@ function StatusBadgeAndAction({
           <Send className="h-4 w-4 flex-shrink-0" />
           <span>Riprova</span>
         </button>
-      </div>
+      </motion.div>
     )
   }
 
   // ✅ CONFIRMED - IN SENDING (intermediate state)
   if (status === 'CONFIRMED') {
     return (
-      <div className={`${badgeClass} bg-indigo-50 text-indigo-700`}>
+      <motion.div
+        key={status}
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", duration: 0.5 }}
+        className={`${badgeClass} bg-indigo-50 text-indigo-700`}
+      >
         <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
         <span>In invio...</span>
-      </div>
+      </motion.div>
     )
   }
   
   // ✅ SENT - SUCCESS BADGE
   if (status === 'SENT' || status === 'TEST_SENT') {
     return (
-      <div className={`${badgeClass} bg-success-50 text-success-700`}>
+      <motion.div
+        key={status}
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", duration: 0.5 }}
+        className={`${badgeClass} bg-success-50 text-success-700`}
+      >
         <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
         <span className="hidden sm:inline">
           {status === 'TEST_SENT' ? 'Test inviata' : 'PEC inviata'}
         </span>
-      </div>
+      </motion.div>
     )
   }
 
   // ✅ PENDING_REVIEW - WARNING BADGE
   if (status === 'PENDING_REVIEW') {
     return (
-      <div className={`${badgeClass} bg-warning-50 text-warning-700`}>
+      <motion.div
+        key={status}
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", duration: 0.5 }}
+        className={`${badgeClass} bg-warning-50 text-warning-700`}
+      >
         <Clock className="h-4 w-4 flex-shrink-0" />
         <span className="hidden sm:inline">In revisione</span>
-      </div>
+      </motion.div>
     )
   }
 
   // ✅ PROCESSING - LOADING BADGE
   if (status === 'PROCESSING') {
     return (
-      <div className={`${badgeClass} bg-primary-50 text-primary-700`}>
+      <motion.div
+        key={status}
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", duration: 0.5 }}
+        className={`${badgeClass} bg-primary-50 text-primary-700`}
+      >
         <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
         <span className="hidden sm:inline">Elaborazione...</span>
-      </div>
+      </motion.div>
     )
   }
 
   // ✅ UNKNOWN STATUS - FALLBACK
   return (
-    <div className={`${badgeClass} bg-gray-100 text-gray-600`}>
+    <motion.div
+      key={status}
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: "spring", duration: 0.5 }}
+      className={`${badgeClass} bg-gray-100 text-gray-600`}
+    >
       <span className="truncate max-w-[120px]">{status}</span>
-    </div>
+    </motion.div>
   )
 }

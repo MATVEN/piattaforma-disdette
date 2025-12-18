@@ -124,6 +124,7 @@ src\domain
 src\domain\schemas.ts
 src\hooks
 src\hooks\useInfiniteScroll.ts
+src\hooks\useStatusPolling.ts
 src\lib
 src\lib\errors
 src\lib\errors\AppError.ts
