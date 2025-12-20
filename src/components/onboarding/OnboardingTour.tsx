@@ -9,13 +9,7 @@ import { useOnboarding } from '@/context/OnboardingContext'
 import { TourSpotlight } from './TourSpotlight'
 import { TourStepComponent } from './TourStep'
 import type { TourStep } from '@/types/tour'
-import {
-  homepageTour,
-  uploadTour,
-  reviewTour,
-  dashboardTour,
-  defaultTour,
-} from '@/config/tourSteps'
+import { homepageTour, defaultTour } from '@/config/tourSteps'
 
 export function OnboardingTour() {
   const { tourActive, currentStep, totalSteps, nextStep, previousStep, skipTour, stopTour, completeStep } = useOnboarding()
@@ -23,30 +17,11 @@ export function OnboardingTour() {
   const pathname = usePathname()
 
   // Get tour steps based on current page
+  // Strategic decision (C24 Day 4): Tour only on homepage
+  // Other pages use Guida Contestuale for quick help
   const getTourForCurrentPage = (): TourStep[] => {
-    
-    // Homepage
-    if (pathname === '/') {
-      return homepageTour
-    }
-    
-    // Upload page (dynamic route)
-    if (pathname.startsWith('/upload/')) {
-      return uploadTour
-    }
-    
-    // Review page
-    if (pathname === '/review') {
-      return reviewTour
-    }
-    
-    // Dashboard page
-    if (pathname === '/dashboard') {
-      return dashboardTour
-    }
-    
-    // Default fallback
-    return defaultTour
+    if (pathname === '/') return homepageTour
+    return defaultTour // Fallback for any other page
   }
 
   // Set tour steps based on current page when tour becomes active

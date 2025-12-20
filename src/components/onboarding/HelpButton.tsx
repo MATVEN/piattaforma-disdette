@@ -31,7 +31,7 @@ const contextualHelp: Record<string, { title: string; tips: string[] }> = {
       '✏️ Controlla attentamente i dati estratti dall\'AI',
       '🏢 Scegli "Privato" o "Azienda" in base all\'intestatario',
       '📝 I campi obbligatori sono contrassegnati con *',
-      '❓ Passa il mouse sui "?" per aiuto su ogni campo',
+      '🚀 Se tutto è corretto, clicca "Invia Disdetta". Riceverai conferma via email quando la PEC sarà inviata!',
     ],
   },
   '/dashboard': {
@@ -57,9 +57,9 @@ const defaultHelp = {
   title: 'Guida Generale',
   tips: [
     '📄 Carica una bolletta per creare una disdetta',
-    '🤖 L\'AI estrae automaticamente i dati importanti',
-    '✅ Verifica i dati e invia in pochi click',
-    '📧 Riceverai conferma via email',
+    '📋 Accettiamo PDF, JPG e PNG fino a 10MB. La bolletta deve essere leggibile e recente.',
+    '🤖 L\'AI estrae automaticamente i dati importanti. Potrai verificare e correggere nel prossimo step.',
+    '✅ Dopo il caricamento, ti porteremo al form di verifica dove controllare tutti i dati estratti',
   ],
 }
 
