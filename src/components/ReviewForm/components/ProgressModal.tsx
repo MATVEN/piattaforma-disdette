@@ -1,7 +1,5 @@
 // src/components/ReviewForm/components/ProgressModal.tsx
-//
 // Progress modal to show multi-step submission progress
-// C23 Day 4 - Phase 2.1: Enhanced User Feedback
 
 'use client'
 
@@ -104,7 +102,7 @@ export function ProgressModal({ progress }: ProgressModalProps) {
                           : '#e5e7eb',
                       scale: status === 'active' ? 1.1 : 1,
                     }}
-                    className="w-12 h-12 rounded-full flex items-center justify-center mb-2 relative"
+                    className="w-12 h-12 rounded-full flex items-center justify-center mb-2 relative z-20 bg-white"
                   >
                     {status === 'completed' ? (
                       <CheckCircle2 className="h-6 w-6 text-white" />
@@ -116,13 +114,12 @@ export function ProgressModal({ progress }: ProgressModalProps) {
                   </motion.div>
 
                   {/* Label */}
-                  <p
-                    className={`text-xs font-medium text-center ${
-                      status === 'active'
-                        ? 'text-indigo-600'
-                        : status === 'completed'
-                        ? 'text-green-600'
-                        : 'text-gray-400'
+                  <p className={`text-xs font-medium text-center relative z-20 ${
+                    status === 'active'
+                      ? 'text-indigo-600'
+                      : status === 'completed'
+                      ? 'text-green-600'
+                      : 'text-gray-400'
                     }`}
                   >
                     {step.label}
@@ -133,7 +130,7 @@ export function ProgressModal({ progress }: ProgressModalProps) {
           </div>
 
           {/* Connecting Lines */}
-          <div className="flex justify-between items-center -mt-16 mb-8 px-6">
+          <div className="flex justify-between items-center -mt-16 mb-12 px-6 relative z-0">
             {steps.slice(0, -1).map((_, index) => {
               const nextStep = steps[index + 1]
               const status = getStepStatus(nextStep.id)
@@ -156,7 +153,7 @@ export function ProgressModal({ progress }: ProgressModalProps) {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200"
+              className="mt-0 p-4 bg-green-50 rounded-lg border border-green-200 relative z-10"
             >
               <p className="text-sm text-green-800 text-center font-medium">
                 ✅ Operazione completata con successo!

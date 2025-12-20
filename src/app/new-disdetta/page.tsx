@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter } from 'next/navigation'
+import { OnboardingSteps } from '@/components/OnboardingSteps'
+import { onboardingFlowSteps } from '@/config/onboardingSteps'
 
 // Definiamo i "tipi" di dati che ci aspettiamo dal database
 // Devono corrispondere ai nomi delle colonne che hai creato
@@ -157,9 +159,16 @@ export default function NewDisdettaPage() {
 
     // Mostra il wizard solo se l'utente è loggato
     return (
-        <div className="bg-white">
-            <div className="mx-auto max-w-2xl p-8">
-                <h1 className="mb-6 text-3xl font-bold">Inizia la tua disdetta</h1>
+        <>
+            {/* Onboarding Stepper */}
+            <OnboardingSteps
+                steps={onboardingFlowSteps}
+                currentStep={step - 1}  // Map wizard step (1,2,3) to onboarding step (0,1,2)
+            />
+
+            <div className="bg-white">
+                <div className="mx-auto max-w-2xl p-8">
+                    <h1 className="mb-6 text-3xl font-bold">Inizia la tua disdetta</h1>
 
                 {/* Pulsante Indietro (mostrato da step 2 in poi) */}
                 {step > 1 && (
@@ -228,5 +237,6 @@ export default function NewDisdettaPage() {
                 )}
             </div>
         </div>
+        </>
     )
 }

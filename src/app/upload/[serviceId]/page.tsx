@@ -6,6 +6,8 @@ import { useAuth } from '@/context/AuthContext'
 import { useRouter, useParams } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { logger } from '@/lib/logger'
+import { OnboardingSteps } from '@/components/OnboardingSteps'
+import { onboardingFlowSteps } from '@/config/onboardingSteps'
 
 export default function UploadPage() {
   const { user, isAuthLoading } = useAuth()
@@ -135,12 +137,19 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="bg-white">
-      <div className="mx-auto max-w-2xl p-8">
-        {/* ... (resto del JSX invariato) ... */}
-        <h1 className="mb-6 text-3xl font-bold">
-          Carica il tuo documento
-        </h1>
+    <>
+      {/* Onboarding Stepper */}
+      <OnboardingSteps
+        steps={onboardingFlowSteps}
+        currentStep={3}  // Upload step
+      />
+
+      <div className="bg-white">
+        <div className="mx-auto max-w-2xl p-8">
+          {/* ... (resto del JSX invariato) ... */}
+          <h1 className="mb-6 text-3xl font-bold">
+            Carica il tuo documento
+          </h1>
         <p className="mb-4 text-gray-600">
           Stai per avviare la disdetta per il servizio (ID: {serviceId}). Carica il
           documento richiesto (es. bolletta, contratto, modulo).
@@ -177,5 +186,6 @@ export default function UploadPage() {
         </form>
       </div>
     </div>
+    </>
   )
 }
