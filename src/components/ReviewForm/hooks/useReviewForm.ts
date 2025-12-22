@@ -24,6 +24,14 @@ interface ExtractedData {
   error_message: string | null
 }
 
+interface UserProfile {
+  nome: string | null
+  cognome: string | null
+  codice_fiscale: string | null
+  indirizzo_residenza: string | null
+  telefono: string | null
+}
+
 const safeJson = async <T,>(res: Response): Promise<T | undefined> => {
   try {
     return (await res.json()) as T
@@ -58,6 +66,7 @@ export function useReviewForm(): UseReviewFormReturn {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [tipoIntestatario, setTipoIntestatario] = useState<'privato' | 'azienda'>('privato')
+  const [profile, setProfile] = useState<UserProfile | null>(null)
 
   const form = useForm<ReviewFormData>({
     resolver: zodResolver(reviewFormSchema),
@@ -76,6 +85,40 @@ export function useReviewForm(): UseReviewFormReturn {
   })
 
   const { reset } = form
+
+  // Fetch user profile for auto-fill
+  useEffect(() => {
+  async function fetchProfile() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        console.log('❌ DEBUG: No user found')
+        return
+      }
+      
+      console.log('🔍 DEBUG: Fetching profile for user:', user.id)
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('nome, cognome, codice_fiscale, indirizzo_residenza, telefono')
+        .eq('user_id', user.id)
+        .single()
+      
+      if (error) {
+        console.error('❌ DEBUG: Profile fetch error:', error)
+        return
+      }
+      
+      console.log('✅ DEBUG: Profile fetched successfully:', data)
+      setProfile(data)
+    } catch (error) {
+      console.error('❌ DEBUG: Unexpected error:', error)
+    }
+  }
+  
+  fetchProfile()
+}, [])
 
   // Data fetching + polling
   useEffect(() => {
@@ -188,12 +231,23 @@ export function useReviewForm(): UseReviewFormReturn {
             delegaCheckbox: false,
           }
 
+          console.log('📝 DEBUG: Before population:', {
+            disdettaData: {
+              nome: disdettaData.nome,
+              cognome: disdettaData.cognome,
+              codice_fiscale: disdettaData.codice_fiscale,
+            },
+            profile: profile,
+            hasProfile: !!profile
+          })
+
           // Add B2C or B2B specific fields
           if (tipoFromDb === 'privato') {
-            formData.nome = disdettaData.nome || ''
-            formData.cognome = disdettaData.cognome || ''
-            formData.codice_fiscale = disdettaData.codice_fiscale || ''
-            formData.indirizzo_residenza = disdettaData.indirizzo_residenza || ''
+            // Auto-fill with profile data if extracted data is empty
+            formData.nome = disdettaData.nome || profile?.nome || ''
+            formData.cognome = disdettaData.cognome || profile?.cognome || ''
+            formData.codice_fiscale = disdettaData.codice_fiscale || profile?.codice_fiscale || ''
+            formData.indirizzo_residenza = disdettaData.indirizzo_residenza || profile?.indirizzo_residenza || ''
             formData.luogo_nascita = disdettaData.luogo_nascita || ''
             formData.data_nascita = disdettaData.data_nascita || ''
           } else {
@@ -205,6 +259,13 @@ export function useReviewForm(): UseReviewFormReturn {
             formData.lr_codice_fiscale = disdettaData.lr_codice_fiscale || ''
             formData.richiedente_ruolo = disdettaData.richiedente_ruolo || 'legale_rappresentante'
           }
+
+          console.log('✅ DEBUG: After population:', {
+            nome: formData.nome,
+            cognome: formData.cognome,
+            codice_fiscale: formData.codice_fiscale,
+            indirizzo: formData.indirizzo_residenza
+          })
 
           reset(formData)
           setLoading(false)
@@ -228,7 +289,7 @@ export function useReviewForm(): UseReviewFormReturn {
     }
 
     fetchAndPollData()
-  }, [id, user, router, reset])
+  }, [id, user, router, reset, profile])
 
   return {
     form,

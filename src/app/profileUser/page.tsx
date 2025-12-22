@@ -14,6 +14,7 @@ import toast from 'react-hot-toast'
 type Profile = {
   nome: string | null
   cognome: string | null
+  codice_fiscale: string | null
   indirizzo_residenza: string | null
   telefono: string | null
   documento_identita_path: string | null
@@ -41,6 +42,7 @@ export default function ProfilePage() {
     defaultValues: {
       nome: '',
       cognome: '',
+      codice_fiscale: '',
       indirizzo_residenza: '',
       telefono: '',
     }
@@ -61,7 +63,7 @@ export default function ProfilePage() {
         try {
           const { data, error } = await supabase
             .from('profiles')
-            .select('nome, cognome, indirizzo_residenza, telefono, documento_identita_path')
+            .select('nome, cognome, codice_fiscale, indirizzo_residenza, telefono, documento_identita_path')
             .maybeSingle()
 
           if (error) throw error
@@ -69,6 +71,7 @@ export default function ProfilePage() {
             reset({
               nome: data.nome || '',
               cognome: data.cognome || '',
+              codice_fiscale: data.codice_fiscale || '',
               indirizzo_residenza: data.indirizzo_residenza || '',
               telefono: data.telefono || '',
             })
@@ -141,6 +144,7 @@ export default function ProfilePage() {
         user_id: user.id,
         nome: formData.nome,
         cognome: formData.cognome,
+        codice_fiscale: formData.codice_fiscale,
         indirizzo_residenza: formData.indirizzo_residenza,
         telefono: formData.telefono,
         documento_identita_path: filePath,
@@ -266,6 +270,28 @@ export default function ProfilePage() {
               </div>
               {errors.cognome && (
                 <p className="mt-1 text-sm text-red-600">{errors.cognome.message}</p>
+              )}
+            </div>
+
+            {/* Codice Fiscale */}
+            <div>
+              <label htmlFor="codice_fiscale" className="block text-sm font-medium text-gray-700 mb-2">
+                Codice Fiscale *
+              </label>
+              <div className="relative">
+                <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="text"
+                  id="codice_fiscale"
+                  {...register("codice_fiscale")}
+                  placeholder="RSSMRA80A01H501Z"
+                  maxLength={16}
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none uppercase"
+                  style={{ textTransform: 'uppercase' }}
+                />
+              </div>
+              {errors.codice_fiscale && (
+                <p className="mt-1 text-sm text-red-600">{errors.codice_fiscale.message}</p>
               )}
             </div>
 

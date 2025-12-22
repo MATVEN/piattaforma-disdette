@@ -298,6 +298,10 @@ export function parseGetExtractedData(input: unknown) {
 export const profileFormSchema = z.object({
   nome: z.string().trim().min(1, "Il nome è obbligatorio."),
   cognome: z.string().trim().min(1, "Il cognome è obbligatorio."),
+  codice_fiscale: z.string()
+    .min(16, 'Codice fiscale deve essere 16 caratteri')
+    .max(16, 'Codice fiscale deve essere 16 caratteri')
+    .regex(/^[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]$/, 'Formato codice fiscale non valido'),
   indirizzo_residenza: z.string().trim().min(1, "L'indirizzo è obbligatorio."),
   telefono: z.string().trim().min(1, "Il telefono è obbligatorio."),
 })
