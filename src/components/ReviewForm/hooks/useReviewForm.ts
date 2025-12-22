@@ -93,11 +93,8 @@ export function useReviewForm(): UseReviewFormReturn {
       const { data: { user } } = await supabase.auth.getUser()
       
       if (!user) {
-        console.log('❌ DEBUG: No user found')
         return
       }
-      
-      console.log('🔍 DEBUG: Fetching profile for user:', user.id)
       
       const { data, error } = await supabase
         .from('profiles')
@@ -106,11 +103,9 @@ export function useReviewForm(): UseReviewFormReturn {
         .single()
       
       if (error) {
-        console.error('❌ DEBUG: Profile fetch error:', error)
         return
       }
       
-      console.log('✅ DEBUG: Profile fetched successfully:', data)
       setProfile(data)
     } catch (error) {
       console.error('❌ DEBUG: Unexpected error:', error)
@@ -207,12 +202,10 @@ export function useReviewForm(): UseReviewFormReturn {
         if (status === 'PENDING_REVIEW' || status === 'CONFIRMED' || status === 'SENT') {
           // ===== CHECK 5: Dati incompleti =====
           if (!disdettaData.supplier_tax_id) {
-            toast.error('⚠️ Dati estratti incompleti. Ricarica il documento.', {
-              duration: 6000,
-              id: 'incomplete-data'
+            toast('⚠️ P.IVA fornitore non trovata. Compilala manualmente nel form.', {
+              duration: 8000,
+              id: 'missing-tax-id'
             })
-            router.push('/new-disdetta')
-            return
           }
 
           // ===== ALL CHECKS PASSED - Populate form =====
@@ -230,16 +223,6 @@ export function useReviewForm(): UseReviewFormReturn {
             supplier_iban: disdettaData.supplier_iban || '',
             delegaCheckbox: false,
           }
-
-          console.log('📝 DEBUG: Before population:', {
-            disdettaData: {
-              nome: disdettaData.nome,
-              cognome: disdettaData.cognome,
-              codice_fiscale: disdettaData.codice_fiscale,
-            },
-            profile: profile,
-            hasProfile: !!profile
-          })
 
           // Add B2C or B2B specific fields
           if (tipoFromDb === 'privato') {
@@ -260,13 +243,6 @@ export function useReviewForm(): UseReviewFormReturn {
             formData.richiedente_ruolo = disdettaData.richiedente_ruolo || 'legale_rappresentante'
           }
 
-          console.log('✅ DEBUG: After population:', {
-            nome: formData.nome,
-            cognome: formData.cognome,
-            codice_fiscale: formData.codice_fiscale,
-            indirizzo: formData.indirizzo_residenza
-          })
-
           reset(formData)
           setLoading(false)
           return
@@ -277,7 +253,6 @@ export function useReviewForm(): UseReviewFormReturn {
         setLoading(false)
 
       } catch (error) {
-        console.error('❌ Errore caricamento dati:', error)
         toast.error('⚠️ Errore di connessione. Riprova o contatta il supporto.', {
           duration: 6000,
           id: 'fetch-error'
