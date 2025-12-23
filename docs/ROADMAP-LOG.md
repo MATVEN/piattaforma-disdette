@@ -750,3 +750,59 @@
     - `StatusTimeline` and `StatusTimelineExpanded` components.
     - `useStatusPolling` hook.
     - Dashboard integration and repository updates.
+
+- **FAQ & Help Center (C26):**
+
+  - **Overview:**
+    - Implemented a comprehensive FAQ & Help Center to reduce support requests and improve self-service onboarding.
+    - Centralized answers to the most common questions across the entire disdetta flow.
+    - Fully integrated with existing design system and HelpButton navigation.
+
+  - **Features Implemented:**
+    - 7 categorized sections: *Come funziona, Tempi, Costi, Problemi, Documenti, Sicurezza, Supporto*.
+    - 29 structured Q&A items covering the full service lifecycle.
+    - Real-time search and filtering with instant results.
+    - Accordion-based Q&A with smooth expand/collapse animations.
+    - Category navigation with scroll-to-section behavior.
+    - Mobile-first responsive layout.
+    - Prominent “Contatta Supporto” CTA for unresolved issues.
+
+  - **UX & Design System:**
+    - Gradient background: indigo → purple → pink.
+    - Glassmorphism cards with backdrop blur.
+    - Category pills with icons and item counts (Lucide icons).
+    - Accordion chevron rotation animation for visual feedback.
+    - Sticky category navigation for long scrolling sessions.
+    - Smooth scroll behavior between sections.
+
+  - **Technical Implementation:**
+    - Strongly typed FAQ data model with TypeScript interfaces.
+    - Optimized filtering using `useMemo`.
+    - Framer Motion for accordion and interaction animations.
+    - Semantic HTML structure for accessibility and SEO.
+    - Color-coded categories for visual grouping and clarity.
+
+  - **Content Coverage:**
+    - How it works: 3 items
+    - Timing & procedures: 3 items
+    - Costs & payments: 3 items
+    - Common problems: 4 items
+    - Required documents: 3 items
+    - Security & privacy: 3 items
+    - Support: 3 items
+    - Additional FAQs: 7 items
+
+  - **SEO & Discoverability:**
+    - Page title: *FAQ & Centro Assistenza | DisdettaFacile*.
+    - Optimized meta description with relevant keywords.
+    - Semantic structure for improved indexing and readability.
+
+  - **User Experience Impact:**
+    - Reduced dependency on direct support.
+    - Faster access to answers during critical steps.
+    - Clear, concise explanations written in Italian.
+    - Seamless escalation path to human support when needed.
+
+  - **Files Involved:**
+    - `src/data/faqData.ts` (FAQ content and structure)
+    - `src/app/faq/page.tsx` (FAQ page implementation)

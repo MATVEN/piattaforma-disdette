@@ -135,22 +135,7 @@ Dashboard mostra linea temporale grafica con pallini colorati per ogni fase + or
 
 ---
 
-### **C26 - Search & Filters (Dashboard)** ✨
-**Effort:** 2 giorni  
-**Priorità:** MEDIA (Power Users)
-
-**Cosa fa:**  
-Nella dashboard, aggiunge barra di ricerca e filtri per trovare disdette. Cerca per nome file, filtra per status (completate, in corso, fallite), per operatore, per data.
-
-**Perché è importante:**  
-Chi usa molto il servizio può avere decine di disdette. Senza ricerca, diventa difficile trovare quella specifica.
-
-**Esempio pratico:**  
-Utente cerca "Enel" → Mostra solo disdette Enel. Filtra "Completate" + "Novembre 2024" → Mostra solo quelle completate questo mese.
-
----
-
-### **C27 - FAQ & Help Center** ⚡
+### **C26 - FAQ & Help Center** ⚡
 **Effort:** 1-2 giorni  
 **Priorità:** MEDIA (Riduzione supporto)
 
@@ -165,7 +150,7 @@ Utente ha dubbio → Va su FAQ → Cerca "quanto tempo" → Trova "Le disdette v
 
 ---
 
-### **C28 - Service Templates** 🎯
+### **C27 - Service Templates** 🎯
 **Effort:** 2-3 giorni  
 **Priorità:** MEDIA (UX fluida)
 
@@ -180,7 +165,7 @@ Selezioni Enel → Form mostra: Nome, Codice POD (obbligatorio), Indirizzo forni
 
 ---
 
-### **C29 - Data Export & Privacy** ⚡
+### **C28 - Data Export & Privacy** ⚡
 **Effort:** 1 giorno  
 **Priorità:** MEDIA (GDPR Compliance)
 
@@ -195,7 +180,7 @@ Utente clicca "Scarica dati" → Riceve ZIP con profilo, lista disdette, copie d
 
 ---
 
-### **C30 - Advanced Form Validation** ✨
+### **C29 - Advanced Form Validation** ✨
 **Effort:** 1-2 giorni  
 **Priorità:** BASSA (Qualità dati)
 
@@ -210,7 +195,7 @@ Utente inserisce CF sbagliato → Messaggio in tempo reale: "Il codice fiscale n
 
 ---
 
-### **C31 - Document Preview** ✨
+### **C30 - Document Preview** ✨
 **Effort:** 2 giorni  
 **Priorità:** BASSA (UX)
 
@@ -225,7 +210,7 @@ Dopo upload bolletta → Preview automatico. Vedi subito se l'immagine è sfocat
 
 ---
 
-### **C32 - In-App Notifications** ✨
+### **C31 - In-App Notifications** ✨
 **Effort:** 2 giorni  
 **Priorità:** BASSA (Engagement)
 
@@ -240,7 +225,7 @@ OCR finisce → Badge rosso su campanella → Click → "La tua disdetta Enel è
 
 ---
 
-### **C33 - Activity Log** ✨
+### **C32 - Activity Log** ✨
 **Effort:** 1-2 giorni  
 **Priorità:** BASSA (Sicurezza)
 
@@ -255,7 +240,7 @@ Profilo → Tab "Cronologia" → "Login da Milano il 15/11 ore 10:30", "Disdetta
 
 ---
 
-### **C34 - Wizard Save & Resume** 🎯
+### **C33 - Wizard Save & Resume** 🎯
 **Effort:** 2-3 giorni  
 **Priorità:** BASSA (Prevenzione frustrazione)
 
@@ -270,7 +255,7 @@ Compili disdetta a metà → Browser crasha → Riapri → "Hai una bozza salvat
 
 ---
 
-### **C35 - E2E Testing Suite** 🧪
+### **C34 - E2E Testing Suite** 🧪
 **Effort:** 3-4 ore  
 **Priorità:** ALTA (Qualità)
 
@@ -294,7 +279,7 @@ Queste feature richiedono servizi a pagamento o hanno senso solo con il servizio
 
 ---
 
-### **C36 - PEC Real Send** 🔴 CRITICO (Post-Test)
+### **C35 - PEC Real Send** 🔴 CRITICO (Post-Test)
 **Effort:** 0.5-1 giorno  
 **Costo:** Casella PEC certificata (~€50-100/anno) + SMTP
 
@@ -309,7 +294,7 @@ Quando sei pronto a mandare PEC vere ai provider. Fino ad allora, test mode simu
 
 ---
 
-### **C37 - Email Notifications** 🔴 CRITICO (Post-Test)
+### **C36 - Email Notifications** 🔴 CRITICO (Post-Test)
 **Effort:** 2-3 giorni  
 **Costo:** Resend/SendGrid (gratis fino a ~10k email/mese, poi a pagamento)
 
@@ -324,7 +309,7 @@ Pre-launch o subito dopo, quando hai utenti reali. In test, le notifiche in-app 
 
 ---
 
-### **C38 - Payment Integration** 🔴 CRITICO (Monetizzazione)
+### **C37 - Payment Integration** 🔴 CRITICO (Monetizzazione)
 **Effort:** 5-6 giorni  
 **Costo:** Stripe (commissione ~2% + €0.25 per transazione)
 
@@ -339,7 +324,7 @@ Quando decidi il pricing e sei pronto a monetizzare. Prima testa tutto gratis co
 
 ---
 
-### **C39 - Guest Checkout Flow** 🎯 (Post-Payment)
+### **C38 - Guest Checkout Flow** 🎯 (Post-Payment)
 **Effort:** 5-6 giorni  
 **Costo:** Nessuno diretto, ma richiede C37 (Payment)
 
@@ -354,7 +339,7 @@ Dopo C37, quando vedi che molti utenti abbandonano alla registrazione.
 
 ---
 
-### **C40 - Admin Dashboard** 🎯 (Post-Launch)
+### **C39 - Admin Dashboard** 🎯 (Post-Launch)
 **Effort:** 6-8 giorni  
 **Costo:** Nessuno diretto
 
@@ -369,7 +354,7 @@ Dopo lancio, quando hai traffico reale e serve supporto operativo avanzato.
 
 ---
 
-### **C41 - Analytics & Tracking** ✨ (Pre-Launch)
+### **C40 - Analytics & Tracking** ✨ (Pre-Launch)
 **Effort:** 1-2 giorni  
 **Costo:** Google Analytics 4 (gratis), Sentry per errors (gratis fino a soglia)
 
@@ -384,7 +369,7 @@ Dati per capire cosa funziona e cosa no. Ma inutile in test senza traffico reale
 
 ---
 
-### **C42 - Performance Optimization** ✨ (Pre-Launch)
+### **C41 - Performance Optimization** ✨ (Pre-Launch)
 **Effort:** 2-3 giorni  
 **Costo:** Nessuno diretto
 

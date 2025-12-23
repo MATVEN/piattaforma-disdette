@@ -50,6 +50,8 @@ src\app\cookie-policy\page.tsx
 src\app\dashboard
 src\app\dashboard\page.tsx
 src\app\error.tsx
+src\app\faq
+src\app\faq\page.tsx
 src\app\favicon.ico
 src\app\global-error.tsx
 src\app\globals.css
@@ -91,6 +93,7 @@ src\components\onboarding\Tooltip.tsx
 src\components\onboarding\TourSpotlight.tsx
 src\components\onboarding\TourStep.tsx
 src\components\onboarding\WelcomeModal.tsx
+src\components\OnboardingSteps.tsx
 src\components\ReviewForm
 src\components\ReviewForm\components
 src\components\ReviewForm\components\B2BCompanyFields.tsx
@@ -113,6 +116,7 @@ src\components\StatusTimelineExpanded.tsx
 src\components\StatusTimelineExpandedSkeleton.tsx
 src\components\ToastProvider.tsx
 src\config
+src\config\onboardingSteps.ts
 src\config\tourSteps.ts
 src\constants
 src\constants\tooltipContent.ts
@@ -120,6 +124,8 @@ src\context
 src\context\AuthContext.tsx
 src\context\OnboardingContext.tsx
 src\context\TooltipContext.tsx
+src\data
+src\data\faqData.ts
 src\domain
 src\domain\schemas.ts
 src\hooks

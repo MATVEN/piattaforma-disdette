@@ -12,7 +12,8 @@
       "Bash(where:*)",
       "Bash(deno check:*)",
       "Bash(npm run dev:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []

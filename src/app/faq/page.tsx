@@ -1,0 +1,330 @@
+// src/app/faq/page.tsx
+// FAQ & Help Center page
+
+'use client'
+
+import { useState, useMemo, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  Search,
+  ChevronDown,
+  Rocket,
+  Clock,
+  Euro,
+  AlertCircle,
+  FileText,
+  Shield,
+  MessageCircle
+} from 'lucide-react'
+import { faqCategories, faqItems, type FAQItem } from '@/data/faqData'
+
+// Icon mapping (use actual Lucide icons)
+const iconMap: Record<string, any> = {
+  Rocket,
+  Clock,
+  Euro,
+  AlertCircle,
+  FileText,
+  Shield,
+  MessageCircle,
+}
+
+// Color mapping for categories
+const colorMap: Record<string, { bg: string; text: string; border: string }> = {
+  indigo: {
+    bg: 'bg-indigo-100',
+    text: 'text-indigo-700',
+    border: 'border-indigo-200'
+  },
+  purple: {
+    bg: 'bg-purple-100',
+    text: 'text-purple-700',
+    border: 'border-purple-200'
+  },
+  pink: {
+    bg: 'bg-pink-100',
+    text: 'text-pink-700',
+    border: 'border-pink-200'
+  },
+  orange: {
+    bg: 'bg-orange-100',
+    text: 'text-orange-700',
+    border: 'border-orange-200'
+  },
+  blue: {
+    bg: 'bg-blue-100',
+    text: 'text-blue-700',
+    border: 'border-blue-200'
+  },
+  green: {
+    bg: 'bg-green-100',
+    text: 'text-green-700',
+    border: 'border-green-200'
+  },
+  cyan: {
+    bg: 'bg-cyan-100',
+    text: 'text-cyan-700',
+    border: 'border-cyan-200'
+  },
+}
+
+export default function FAQPage() {
+  const [searchQuery, setSearchQuery] = useState('')
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [activeCategory, setActiveCategory] = useState<string>('come-funziona')
+
+  // Filter FAQ items by search query
+  const filteredItems = useMemo(() => {
+    if (!searchQuery.trim()) return faqItems
+
+    const query = searchQuery.toLowerCase()
+    return faqItems.filter(
+      (item) =>
+        item.question.toLowerCase().includes(query) ||
+        item.answer.toLowerCase().includes(query)
+    )
+  }, [searchQuery])
+
+  // Group filtered items by category
+  const groupedItems = useMemo(() => {
+    const grouped: Record<string, FAQItem[]> = {}
+    filteredItems.forEach((item) => {
+      if (!grouped[item.category]) {
+        grouped[item.category] = []
+      }
+      grouped[item.category].push(item)
+    })
+    return grouped
+  }, [filteredItems])
+
+  // Track active category based on scroll position
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: '-20% 0px -70% 0px', // Trigger when section is 20% from top
+      threshold: 0
+    }
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const categoryId = entry.target.id.replace('category-', '')
+          setActiveCategory(categoryId)
+        }
+      })
+    }
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions)
+
+    // Observe all category sections
+    faqCategories.forEach((cat) => {
+      const element = document.getElementById(`category-${cat.id}`)
+      if (element) {
+        observer.observe(element)
+      }
+    })
+
+    return () => observer.disconnect()
+  }, [filteredItems]) // Re-run when filtered items change
+
+  const toggleExpand = (id: string) => {
+    setExpandedId(expandedId === id ? null : id)
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      {/* Header */}
+      <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-16 z-30">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center"
+          >
+            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4">
+              Centro Assistenza
+            </h1>
+            <p className="text-gray-600 text-lg mb-6">
+              Trova rapidamente le risposte alle tue domande
+            </p>
+
+            {/* Search Bar */}
+            <div className="relative max-w-2xl mx-auto">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Cerca una domanda..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none text-gray-900 placeholder-gray-400"
+              />
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Category Pills (scroll navigation) */}
+      <div className="bg-white/60 backdrop-blur-sm border-b border-gray-200 sticky top-[200px] z-20">
+        <div className="mx-auto py-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
+          <div className="flex gap-2 pl-4 sm:pl-6 lg:pl-8 w-max">
+            {faqCategories.map((cat) => {
+              const hasItems = groupedItems[cat.id]?.length > 0
+              if (!hasItems && searchQuery) return null
+
+              const Icon = iconMap[cat.icon]
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => {
+                    const element = document.getElementById(`category-${cat.id}`)
+                    element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    setActiveCategory(cat.id)
+                  }}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full border whitespace-nowrap transition-all hover:scale-105 flex-shrink-0 snap-start ${
+                    colorMap[cat.color].bg
+                  } ${
+                    colorMap[cat.color].text
+                  } ${
+                    colorMap[cat.color].border
+                  } ${
+                    activeCategory === cat.id
+                      ? 'ring-2 ring-offset-2 ring-indigo-500 shadow-lg scale-105'
+                      : ''
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span className="text-sm font-medium">{cat.name}</span>
+                  {hasItems && (
+                    <span className="text-xs opacity-60">
+                      ({groupedItems[cat.id].length})
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ Content */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {searchQuery && filteredItems.length === 0 ? (
+          // No results
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-12"
+          >
+            <p className="text-gray-500 text-lg mb-4">
+              Nessun risultato per &quot;{searchQuery}&quot;
+            </p>
+            <button
+              onClick={() => setSearchQuery('')}
+              className="text-indigo-600 hover:text-indigo-700 font-medium"
+            >
+              Cancella ricerca
+            </button>
+          </motion.div>
+        ) : (
+          // Category sections
+          <div className="space-y-12">
+            {faqCategories.map((cat) => {
+              const items = groupedItems[cat.id]
+              if (!items || items.length === 0) return null
+
+              const Icon = iconMap[cat.icon]
+              const colors = colorMap[cat.color]
+
+              return (
+                <motion.div
+                  key={cat.id}
+                  id={`category-${cat.id}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="scroll-mt-32"
+                >
+                  {/* Category Header */}
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className={`p-3 rounded-xl ${colors.bg} ${colors.text} ${colors.border} border`}>
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      {cat.name}
+                    </h2>
+                  </div>
+
+                  {/* FAQ Items */}
+                  <div className="space-y-3">
+                    {items.map((item, index) => (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                      >
+                        {/* Question (clickable) */}
+                        <button
+                          onClick={() => toggleExpand(item.id)}
+                          className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-50/50 transition-colors"
+                        >
+                          <span className="font-semibold text-gray-900 pr-4">
+                            {item.question}
+                          </span>
+                          <motion.div
+                            animate={{ rotate: expandedId === item.id ? 180 : 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <ChevronDown className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                          </motion.div>
+                        </button>
+
+                        {/* Answer (expandable) */}
+                        <AnimatePresence>
+                          {expandedId === item.id && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.3 }}
+                            >
+                              <div className="px-6 pb-4 pt-2 text-gray-600 leading-relaxed border-t border-gray-100">
+                                {item.answer}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Contact Support CTA */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-16 text-center bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-8 border border-indigo-100"
+        >
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
+            Non hai trovato quello che cercavi?
+          </h3>
+          <p className="text-gray-600 mb-4">
+            Il nostro team è qui per aiutarti
+          </p>
+          <a
+            href="mailto:support@disdettafacile.it"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-primary text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105"
+          >
+            <MessageCircle className="h-5 w-5" />
+            <span>Contatta il Supporto</span>
+          </a>
+        </motion.div>
+      </div>
+    </div>
+  )
+}
