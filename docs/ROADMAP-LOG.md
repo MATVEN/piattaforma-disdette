@@ -806,3 +806,73 @@
   - **Files Involved:**
     - `src/data/faqData.ts` (FAQ content and structure)
     - `src/app/faq/page.tsx` (FAQ page implementation)
+
+- **GDPR Privacy Controls (C28):**
+
+  - **Overview:**
+    - Implemented GDPR-compliant user data controls enabling full data portability and right to erasure.
+    - New privacy section in user profile with clear actions and strong safety guarantees.
+
+  - **Features Implemented:**
+    - **Data Export (Art. 20):**
+      - Download of complete, machine-readable JSON with all user data.
+      - Includes profile, disdette, status history, and metadata.
+      - File naming: `disdettafacile-dati-YYYY-MM-DD.json`.
+    - **Account Deletion (Art. 17):**
+      - Permanent, verified account deletion with full cascade cleanup.
+      - Two-step confirmation flow to prevent accidental erasure.
+
+  - **Privacy & Data – Profile Integration:**
+    - Dedicated "Privacy & Dati" section in profile page.
+    - Shield icon for visual separation and trust signaling.
+    - Primary action: **Scarica i miei dati**.
+    - Danger zone action: **Elimina il mio account**.
+    - Fully responsive layout (desktop + mobile).
+
+  - **Data Export – Technical Details:**
+    - Authenticated API: `GET /api/export-data`.
+    - Aggregates all user-related tables in a single response.
+    - Structured JSON output with counts and metadata.
+    - GDPR-compliant portability format (machine-readable).
+
+  - **Account Deletion – Technical Details:**
+    - Authenticated API: `DELETE /api/delete-account`.
+    - Two-step confirmation modal:
+      1. Explicit intent confirmation (type **ELIMINA**).
+      2. Password verification via Supabase Auth.
+    - Secure cascade deletion:
+      - User profile
+      - All disdette records
+      - Status history (FK cascade)
+      - Uploaded identity documents
+      - Uploaded bill files
+      - Auth user account
+    - Automatic logout and redirect after completion.
+
+  - **Security Guarantees:**
+    - Password verification required for destructive action.
+    - Double confirmation prevents accidental deletion.
+    - Endpoints accessible only to authenticated users.
+    - Storage cleanup executed before database deletion.
+    - Robust error handling and rollback-safe flow.
+
+  - **UX & Accessibility:**
+    - Clear danger-zone styling (red accents).
+    - Informative descriptions for each action.
+    - Loading states and success/error toasts.
+    - Framer Motion animations for modals and transitions.
+    - Mobile-first responsive behavior.
+
+  - **Code Quality & Architecture:**
+    - Dynamic API routes compatible with authenticated server context.
+    - Correct async usage of `createServerClient`.
+    - FK cascade ensures referential integrity.
+    - Parallelized queries and cleanup via `Promise.all`.
+
+  - **Files Involved:**
+    - **Created:**
+      - `src/components/DeleteAccountModal.tsx`
+      - `src/app/api/export-data/route.ts`
+      - `src/app/api/delete-account/route.ts`
+    - **Modified:**
+      - `src/app/profile/page.tsx`

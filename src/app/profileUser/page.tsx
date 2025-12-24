@@ -8,8 +8,9 @@ import { useForm, type SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { profileFormSchema, type ProfileFormData } from '@/domain/schemas'
 import { motion } from 'framer-motion'
-import { User, Mail, Phone, MapPin, Upload, Save, Loader2, FileText } from 'lucide-react'
+import { User, Mail, Phone, MapPin, Upload, Save, Loader2, FileText, Shield, Download, AlertTriangle, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import DeleteAccountModal from '@/components/DeleteAccountModal'
 
 type Profile = {
   nome: string | null
@@ -31,6 +32,10 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [idDocumentFile, setIdDocumentFile] = useState<File | null>(null)
   const [currentDocPath, setCurrentDocPath] = useState<string | null>(null)
+
+  // Privacy & Data state
+  const [exportLoading, setExportLoading] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   const {
     register,
@@ -181,6 +186,41 @@ export default function ProfilePage() {
   const getInitials = () => {
     if (!user?.email) return '?'
     return user.email.charAt(0).toUpperCase()
+  }
+
+  // Export Data Handler
+  const handleExportData = async () => {
+    setExportLoading(true)
+
+    try {
+      const response = await fetch('/api/export-data', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Errore durante l\'esportazione dei dati')
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `disdettafacile-dati-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+
+      toast.success('Dati scaricati con successo!')
+    } catch (error) {
+      console.error('Export error:', error)
+      toast.error('Errore durante l\'esportazione dei dati')
+    } finally {
+      setExportLoading(false)
+    }
   }
 
   // Loading State
@@ -403,6 +443,83 @@ export default function ProfilePage() {
             Il documento d'identità sarà allegato alla PEC.
           </p>
         </motion.div>
+
+        {/* Privacy & Data Section */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="mt-8 bg-white/80 backdrop-blur-xl rounded-2xl shadow-glass border border-white/20 p-6 sm:p-8"
+        >
+          <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <Shield className="h-6 w-6 text-indigo-600" />
+            Privacy e Dati
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Gestisci i tuoi dati personali in conformità al GDPR
+          </p>
+
+          <div className="space-y-4">
+            {/* Export Data */}
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between p-4 rounded-xl border-2 border-gray-200 hover:border-indigo-300 transition-colors gap-4">
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                  <Download className="h-5 w-5 text-indigo-600" />
+                  Scarica i miei dati
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Scarica un file JSON con tutti i tuoi dati personali, disdette e attività
+                </p>
+              </div>
+              <button
+                onClick={handleExportData}
+                disabled={exportLoading}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap min-w-[120px]"
+              >
+                {exportLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Generazione...</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-4 w-4" />
+                    <span>Scarica</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Delete Account - Danger Zone */}
+            <div className="border-2 border-red-200 rounded-xl p-4 bg-red-50/50">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-red-900 mb-1 flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-red-600" />
+                    Elimina il mio account
+                  </h3>
+                  <p className="text-sm text-red-700 mb-2">
+                    Questa azione è <strong>irreversibile</strong>. Tutti i tuoi dati, disdette e documenti saranno eliminati permanentemente.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 whitespace-nowrap min-w-[120px]"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span>Elimina</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Delete Account Modal */}
+        <DeleteAccountModal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          userEmail={user?.email || ''}
+        />
       </div>
     </div>
   )

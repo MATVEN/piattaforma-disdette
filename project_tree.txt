@@ -37,6 +37,10 @@ src\app
 src\app\api
 src\app\api\confirm-data
 src\app\api\confirm-data\route.ts
+src\app\api\delete-account
+src\app\api\delete-account\route.ts
+src\app\api\export-data
+src\app\api\export-data\route.ts
 src\app\api\get-extracted-data
 src\app\api\get-extracted-data\route.ts
 src\app\api\get-my-disdette
@@ -78,6 +82,7 @@ src\app\upload\[serviceId]\page.tsx
 src\components
 src\components\AuthHeader.tsx
 src\components\DashboardList.tsx
+src\components\DeleteAccountModal.tsx
 src\components\FileUploadField.tsx
 src\components\Footer.tsx
 src\components\GoogleIcon.tsx

@@ -150,7 +150,7 @@ Utente ha dubbio → Va su FAQ → Cerca "quanto tempo" → Trova "Le disdette v
 
 ---
 
-### **C27 - Service Templates** 🎯
+### **C27 - Service Templates** 🎯⏸️🔄
 **Effort:** 2-3 giorni  
 **Priorità:** MEDIA (UX fluida)
 
@@ -180,7 +180,7 @@ Utente clicca "Scarica dati" → Riceve ZIP con profilo, lista disdette, copie d
 
 ---
 
-### **C29 - Advanced Form Validation** ✨
+### **C29 - Advanced Form Validation** ✨⏸️🔄
 **Effort:** 1-2 giorni  
 **Priorità:** BASSA (Qualità dati)
 
