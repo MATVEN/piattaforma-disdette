@@ -27,7 +27,7 @@ Utente va su pagina inesistente → Invece di "404 Not Found" vede pagina con de
 
 ---
 
-### **C19 - Legal Pages & Footer** ⚡
+### **C19 - Legal Pages & Footer** ⚡✅
 **Effort:** 1-2 giorni  
 **Priorità:** ALTA (Compliance GDPR)
 
@@ -42,7 +42,7 @@ Ogni utente può vedere come vengono usati i suoi dati, quali sono i suoi diritt
 
 ---
 
-### **C20 - Duplicate Detection** ⚡
+### **C20 - Duplicate Detection** ⚡✅
 **Effort:** 1 giorno  
 **Priorità:** ALTA (Prevenzione errori)
 
@@ -57,7 +57,7 @@ Utente carica bolletta Enel già disdetta → Sistema: "Attenzione! Hai già una
 
 ---
 
-### **C21 - Testing & QA Suite** 🧪
+### **C21 - Testing & QA Suite** 🧪 ✅
 **Effort:** 3-4 giorni  
 **Priorità:** ALTA (Qualità)
 
@@ -72,7 +72,7 @@ Modifichi qualcosa nel codice → Test automatico controlla che login funzioni a
 
 ---
 
-### **C22 - UI Polish (Altre Pagine)** ✨
+### **C22 - UI Polish (Altre Pagine)** ✨ ✅
 **Effort:** 2-3 giorni  
 **Priorità:** MEDIA-ALTA (Coerenza brand)
 
@@ -87,7 +87,7 @@ Login page passa da semplice form bianco a design moderno con gradienti, animazi
 
 ---
 
-### **C23 - PDF Generator & B2B Support** 🔴 CRITICO
+### **C23 - PDF Generator & B2B Support** 🔴 CRITICO ✅
 **Effort:** 3-4 giorni  
 **Priorità:** MASSIMA
 
@@ -105,7 +105,7 @@ Rossi SRL (azienda) vuole disdire ENI → Compila form con Ragione Sociale, P.IV
 
 ---
 
-### **C24 - User Onboarding** ✨
+### **C24 - User Onboarding** ✨ ✅
 **Effort:** 2-3 giorni  
 **Priorità:** MEDIA (UX)
 
@@ -120,7 +120,7 @@ Nuovo utente → Popup: "Benvenuto! Ti guidiamo passo-passo nella tua prima disd
 
 ---
 
-### **C25 - Status Tracking Avanzato** ✨
+### **C25 - Status Tracking Avanzato** ✨ ✅
 **Effort:** 2 giorni  
 **Priorità:** MEDIA (Trasparenza)
 
@@ -135,7 +135,7 @@ Dashboard mostra linea temporale grafica con pallini colorati per ogni fase + or
 
 ---
 
-### **C26 - FAQ & Help Center** ⚡
+### **C26 - FAQ & Help Center** ⚡✅
 **Effort:** 1-2 giorni  
 **Priorità:** MEDIA (Riduzione supporto)
 
@@ -165,7 +165,7 @@ Selezioni Enel → Form mostra: Nome, Codice POD (obbligatorio), Indirizzo forni
 
 ---
 
-### **C28 - Data Export & Privacy** ⚡
+### **C28 - Data Export & Privacy** ⚡ ✅
 **Effort:** 1 giorno  
 **Priorità:** MEDIA (GDPR Compliance)
 
@@ -195,7 +195,7 @@ Utente inserisce CF sbagliato → Messaggio in tempo reale: "Il codice fiscale n
 
 ---
 
-### **C30 - Document Preview** ✨
+### **C30 - Document Preview** ✨ ⏸️🔄
 **Effort:** 2 giorni  
 **Priorità:** BASSA (UX)
 
@@ -209,8 +209,8 @@ L'utente può verificare immediatamente che il documento caricato sia corretto e
 Dopo upload bolletta → Preview automatico. Vedi subito se l'immagine è sfocata e puoi ricaricarla prima di procedere.
 
 ---
-
-### **C31 - In-App Notifications** ✨
+-
+### **C31 - In-App Notifications** ✨ ⏸️🔄
 **Effort:** 2 giorni  
 **Priorità:** BASSA (Engagement)
 
@@ -222,6 +222,21 @@ Comunicazione real-time senza costi email. Mantiene utente informato anche se no
 
 **Esempio pratico:**  
 OCR finisce → Badge rosso su campanella → Click → "La tua disdetta Enel è pronta per la revisione!"
+
+---
+
+### **C31 - Email Notifications** ✅ ✨
+**Effort**: 2 ore
+**Priorità**: ALTA (UX Critical)
+
+**Cosa fa:**
+Sistema di notifiche email usando Resend API. Invia email automatiche agli utenti su 3 eventi chiave: disdetta pronta per revisione, PEC inviata con successo, errore elaborazione.
+
+**Perché è importante:**
+Gli utenti sanno immediatamente quando devono agire, senza dover controllare manualmente la dashboard. Riduce confusion e support requests.
+
+**Esempio pratico:**
+OCR finisce → Email "✅ La tua disdetta è pronta" → Click CTA → Vai direttamente a /review
 
 ---
 

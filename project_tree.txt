@@ -1,6 +1,12 @@
-﻿.gitignore
+﻿.env.example
+.env.vercel
+.gitignore
+.vercel
+.vercel\project.json
+.vercel\README.txt
 CLAUDE.md
 docs
+docs\email-notifications-integration-guide.md
 docs\FEATURES.md
 docs\REFACTORING-REVIEWFORM.md
 docs\ROADMAP-LOG.md
@@ -47,6 +53,8 @@ src\app\api\get-my-disdette
 src\app\api\get-my-disdette\route.ts
 src\app\api\get-status-history
 src\app\api\get-status-history\route.ts
+src\app\api\send-notification-email
+src\app\api\send-notification-email\route.ts
 src\app\api\send-pec
 src\app\api\send-pec\route.ts
 src\app\cookie-policy
@@ -137,6 +145,9 @@ src\hooks
 src\hooks\useInfiniteScroll.ts
 src\hooks\useStatusPolling.ts
 src\lib
+src\lib\email
+src\lib\email\emailService.ts
+src\lib\email\triggerNotification.ts
 src\lib\errors
 src\lib\errors\AppError.ts
 src\lib\logger.ts

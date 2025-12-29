@@ -52,9 +52,9 @@ function isRequestBody(x: unknown): x is RequestBody {
   return typeof rec.id === 'number'
 }
 
-// ==========================
-// ERROR HANDLING (C23 Day 4)
-// ==========================
+// ===============
+// ERROR HANDLING
+// ===============
 
 /** Structured error response for better client-side error handling */
 interface ErrorResponse {
@@ -154,6 +154,32 @@ function getServiceDescription(serviceType: string): string {
     altro: 'servizio'
   }
   return descriptions[serviceType as keyof typeof descriptions] || 'servizio'
+}
+
+// Email notification trigger
+async function triggerEmailNotification(disdettaId: number, type: 'ready' | 'sent' | 'error') {
+  try {
+    const baseUrl = Deno.env.get('NEXT_PUBLIC_BASE_URL') || 'http://localhost:3000'
+    
+    const response = await fetch(`${baseUrl}/api/send-notification-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ disdettaId, type }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      console.error('[EMAIL] Failed to trigger notification:', error)
+      return { success: false, error }
+    }
+
+    const result = await response.json()
+    console.log('[EMAIL] Notification triggered successfully:', result)
+    return { success: true, result }
+  } catch (error) {
+    console.error('[EMAIL] Error triggering notification:', error)
+    return { success: false, error }
+  }
 }
 
 // ==========================
@@ -838,8 +864,8 @@ serve(async (req: Request) => {
     if (updateError) throw new Error(`Errore aggiornamento stato: ${updateError.message}`)
     if (count === 0) { console.warn(`[send-pec-disdetta] Doppio invio bloccato per ID: ${disdettaId}`) }
 
-    console.log(`[send-pec-disdetta] Stato aggiornato a '${newStatus}' - supplier_contract_number preservato: ${existingRecord.supplier_contract_number}`)
-    console.log(`Stato aggiornato a '${newStatus}'. Flusso C23 (PDF Generator) completato.`)
+    // Trigger email notification: PEC sent successfully
+    await triggerEmailNotification(disdettaId, 'sent');
 
     // 11. Risposta
     return new Response(JSON.stringify({

@@ -44,6 +44,7 @@ function resolveCorsOrigin(req: Request): string {
   const reqOrigin = req.headers.get("Origin") ?? ""
   return ALLOWED_ORIGINS.includes(reqOrigin) ? reqOrigin : ALLOWED_ORIGINS[0] ?? "*"
 }
+
 function corsHeaders(origin: string) {
   return {
     "Access-Control-Allow-Origin": origin,
@@ -52,9 +53,11 @@ function corsHeaders(origin: string) {
     "Vary": "Origin",
   }
 }
+
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms))
 }
+
 async function withBackoff<T>(fn: () => Promise<T>, attempts = 5, baseMs = 500): Promise<T> {
   let lastErr: unknown
   for (let i = 0; i < attempts; i++) {
@@ -68,6 +71,7 @@ async function withBackoff<T>(fn: () => Promise<T>, attempts = 5, baseMs = 500):
   }
   throw lastErr
 }
+
 async function fetchWithTimeout(url: string, init: RequestInit, ms = 20_000): Promise<Response> {
   const ctl = new AbortController()
   const id = setTimeout(() => ctl.abort(), ms)
@@ -76,6 +80,32 @@ async function fetchWithTimeout(url: string, init: RequestInit, ms = 20_000): Pr
     return res
   } finally {
     clearTimeout(id)
+  }
+}
+
+// Email notification trigger
+async function triggerEmailNotification(disdettaId: number, type: 'ready' | 'sent' | 'error') {
+  try {
+    const baseUrl = Deno.env.get('NEXT_PUBLIC_BASE_URL') || 'http://localhost:3000'
+    
+    const response = await fetch(`${baseUrl}/api/send-notification-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ disdettaId, type }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      console.error('[EMAIL] Failed to trigger notification:', error)
+      return { success: false, error }
+    }
+
+    const result = await response.json()
+    console.log('[EMAIL] Notification triggered successfully:', result)
+    return { success: true, result }
+  } catch (error) {
+    console.error('[EMAIL] Error triggering notification:', error)
+    return { success: false, error }
   }
 }
 
@@ -261,18 +291,21 @@ serve(async (req: Request) => {
         .from("extracted_data")
         .update(successRow)
         .eq("id", recordId)
-        .select() // ← AGGIUNTO: ritorna il record aggiornato
+        .select()
 
       if (updateSuccessError) throw new Error(`DB update (success) failed: ${updateSuccessError.message}`);
 
-      // Log DOPO l'update con verifica
-      console.log(`[C21-DEBUG] Record aggiornato nel DB:`, {
-        recordId,
-        returned_supplier_contract_number: updatedData?.[0]?.supplier_contract_number,
-        returned_status: updatedData?.[0]?.status
+      // DOPO riga ~300 (dove triggera email)
+      console.log('[EMAIL-TEST] Attempting to trigger email:', {
+        baseUrl: Deno.env.get('NEXT_PUBLIC_BASE_URL') || 'http://localhost:3000',
+        disdettaId: recordId,
+        type: 'ready'
       })
+      
+      // Trigger email notification: disdetta ready for review
+      await triggerEmailNotification(recordId, 'ready');
 
-      console.log(`[C14] Record ${recordId} aggiornato a PENDING_REVIEW.`);
+      console.log('[EMAIL-TEST] Trigger completed')
 
       // --- MONITORING & ANALYTICS ---
       if (contractResult.method !== 'none') {
@@ -299,7 +332,10 @@ serve(async (req: Request) => {
         .eq("id", recordId);
 
       if (updateFailError) {
-         console.error(`[C14] FATALE: Impossibile aggiornare lo stato FAILED: ${updateFailError.message}`);
+        console.error(`[C14] FATALE: Impossibile aggiornare lo stato FAILED: ${updateFailError.message}`);
+      } else {
+        // Trigger email notification: processing error
+        await triggerEmailNotification(recordId, 'error');
       }
     }
 

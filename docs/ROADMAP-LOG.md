@@ -876,3 +876,60 @@
       - `src/app/api/delete-account/route.ts`
     - **Modified:**
       - `src/app/profile/page.tsx`
+
+- **Email Notification System (C31):**
+  - **Problem Addressed:**
+    - Users had no visibility on asynchronous processing steps (OCR completion, PEC sending, errors).
+    - Required manual dashboard polling with poor UX and high uncertainty.
+
+  - **Solution Implemented:**
+    - Email notifications triggered on 3 critical status changes:
+      - **PENDING_REVIEW:*- Disdetta ready for user review.
+      - **SENT / TEST_SENT:*- PEC successfully sent.
+      - **FAILED:*- Processing error requiring user action.
+
+  - **Infrastructure Added:**
+    - Resend-based email service with lazy-loaded client.
+    - Centralized email trigger utility usable from Edge Functions, API routes, and server components.
+    - Dedicated API endpoint for notification dispatch.
+    - Full integration and testing guide.
+
+  - **Email Templates:**
+    - 3 production-ready, mobile-responsive HTML templates:
+      - *Disdetta Ready:* green gradient header, review CTA.
+      - *PEC Sent:* success styling, dashboard CTA, next-steps explanation.
+      - *Processing Error:* warning styling, recovery CTAs and troubleshooting tips.
+    - Consistent DisdettaFacile branding, support links, and accessible CTAs.
+
+  - **Integration Completed:**
+    - `process-document` Edge Function triggers *ready* and *error* emails.
+    - `send-pec-disdetta` Edge Function triggers *sent* emails.
+    - Error handlers consistently emit notification events.
+
+  - **CORS & Auth Fixes:**
+    - Fixed CORS issues blocking Vercel deployments via `ALLOWED_ORIGINS` secret.
+    - Corrected Supabase auth propagation using cookie-aware client creation.
+    - Authorization headers now properly forwarded to Edge Functions.
+    - Edge Functions re-deployed with updated configuration.
+
+  - **Technical Highlights:**
+    - Resend API integration (100 emails/day free tier).
+    - Type-safe email generation and dispatch.
+    - Lazy-loading to avoid build-time issues.
+    - Robust error handling and logging.
+    - Environment-driven configuration for URLs and secrets.
+
+  - **Files Involved:**
+    - `src/lib/email/emailService.ts` (email service + templates)
+    - `src/lib/email/triggerNotification.ts` (trigger helper)
+    - `src/app/api/send-notification-email/route.ts` (API endpoint)
+    - `docs/email-notifications-integration-guide.md` (integration guide)
+    - `src/app/upload/[serviceId]/page.tsx` (auth fix)
+    - `supabase/functions/process-document/index.ts` (email triggers + CORS)
+
+  - **UX & Product Impact:**
+    - Immediate user feedback on long-running processes.
+    - Eliminates manual dashboard polling.
+    - Professional, trust-building communication.
+    - Reduced support requests and confusion.
+    - Production-ready email workflow aligned with industry standards.

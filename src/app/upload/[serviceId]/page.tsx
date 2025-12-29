@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, type FormEvent } from 'react'
-import { supabase } from '@/lib/supabaseClient'
+import { createBrowserClient } from '@supabase/ssr'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter, useParams } from 'next/navigation'
 import toast from 'react-hot-toast'
@@ -18,6 +18,28 @@ export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Create Supabase client dynamically with current env vars and cookie handling
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          const cookie = document.cookie
+            .split('; ')
+            .find(row => row.startsWith(`${name}=`))
+          return cookie ? cookie.split('=')[1] : null
+        },
+        set(name: string, value: string, options: any) {
+          document.cookie = `${name}=${value}; path=/; ${options.maxAge ? `max-age=${options.maxAge};` : ''} SameSite=Lax`
+        },
+        remove(name: string, options: any) {
+          document.cookie = `${name}=; path=/; max-age=0`
+        }
+      }
+    }
+  )
 
   useEffect(() => {
     if (!isAuthLoading && !user) {
