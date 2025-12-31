@@ -1,0 +1,341 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\Matti\\Documents\\piattaforma-disdette\\playwright.config.ts",
+    "rootDir": "C:/Users/Matti/Documents/piattaforma-disdette/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        null
+      ],
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/Matti/Documents/piattaforma-disdette/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/Matti/Documents/piattaforma-disdette/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 90000
+      }
+    ],
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.57.0",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run dev",
+      "url": "http://localhost:3000",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "duplicate-detection.spec.ts",
+      "file": "duplicate-detection.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Duplicate Detection (C21)",
+          "file": "duplicate-detection.spec.ts",
+          "line": 17,
+          "column": 6,
+          "specs": [
+            {
+              "title": "prevents duplicate disdetta creation for same contract",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "location": {
+                        "file": "C:\\Users\\Matti\\Documents\\piattaforma-disdette\\tests\\e2e\\duplicate-detection.spec.ts",
+                        "line": 22,
+                        "column": 7
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-31T13:57:38.257Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "location": {
+                            "file": "C:\\Users\\Matti\\Documents\\piattaforma-disdette\\tests\\e2e\\duplicate-detection.spec.ts",
+                            "line": 22,
+                            "column": 7
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a336f143f5d6a87c87ef-f4168a9c5d5b71774876",
+              "file": "duplicate-detection.spec.ts",
+              "line": 22,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "main-flow.spec.ts",
+      "file": "main-flow.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Main Disdetta Flow",
+          "file": "main-flow.spec.ts",
+          "line": 21,
+          "column": 6,
+          "specs": [
+            {
+              "title": "complete disdetta flow from upload to TEST_SENT",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 38424,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔍 Checking for welcome modal on login page...\n"
+                        },
+                        {
+                          "text": "⚠️ Welcome modal detected on login page!\n"
+                        },
+                        {
+                          "text": "✓ Clicked \"Salta\" button\n"
+                        },
+                        {
+                          "text": "✓ Login successful\n"
+                        },
+                        {
+                          "text": "🎯 Starting main flow test...\n"
+                        },
+                        {
+                          "text": "❌ Browser Error: Failed to fetch RSC payload for http://localhost:3000/. Falling back to browser navigation. TypeError: Failed to fetch\n    at fetchServerResponse (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/router-reducer/fetch-server-response.js:59:27)\n    at InnerLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/layout-router.js:305:90)\n    at renderWithHooks (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:11121:18)\n    at mountIndeterminateComponent (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:16869:13)\n    at beginWork$1 (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:18458:16)\n    at beginWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:26927:14)\n    at performUnitOfWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25748:12)\n    at workLoopSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25464:5)\n    at renderRootSync (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:25419:7)\n    at performConcurrentWorkOnRoot (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:24504:74)\n    at workLoop (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:256:34)\n    at flushWork (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:225:14)\n    at MessagePort.performWorkUntilDeadline (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/scheduler/cjs/scheduler.development.js:534:21)\n"
+                        },
+                        {
+                          "text": "✓ Navigated to new-disdetta\n"
+                        },
+                        {
+                          "text": "🎯 Navigating wizard...\n"
+                        },
+                        {
+                          "text": "✓ Selected category\n"
+                        },
+                        {
+                          "text": "✓ Selected operator\n"
+                        },
+                        {
+                          "text": "✓ Found service: Profilo\n"
+                        },
+                        {
+                          "text": "⚠️ Router did not navigate, using goto fallback\n"
+                        },
+                        {
+                          "text": "✓ On upload page\n"
+                        },
+                        {
+                          "text": "✓ File selected\n"
+                        },
+                        {
+                          "text": "📤 Submitting form...\n"
+                        },
+                        {
+                          "text": "✓ Submit button ready\n"
+                        },
+                        {
+                          "text": "✓ Form submitted\n"
+                        },
+                        {
+                          "text": "⏳ Waiting for OCR to complete and redirect...\n"
+                        },
+                        {
+                          "text": "✓ Redirected to review page\n"
+                        },
+                        {
+                          "text": "✓ Upload successful, disdetta ID: 12\n"
+                        },
+                        {
+                          "text": "⏳ Waiting for OCR processing (up to 60s)...\n"
+                        },
+                        {
+                          "text": "✓ OCR processing completed\n"
+                        },
+                        {
+                          "text": "✓ Extracted data form displayed\n"
+                        },
+                        {
+                          "text": "✓ Data confirmed\n"
+                        },
+                        {
+                          "text": "✓ PEC send triggered\n"
+                        },
+                        {
+                          "text": "⏳ Waiting for PEC send to complete...\n"
+                        },
+                        {
+                          "text": "✅ Complete flow executed successfully!\n"
+                        },
+                        {
+                          "text": "✅ Status will be TEST_SENT (set by Edge Function)\n"
+                        },
+                        {
+                          "text": "✓ Returned to dashboard\n"
+                        },
+                        {
+                          "text": "🎉 COMPLETE FLOW TEST PASSED!\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-31T13:57:39.357Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "4e87a89092cd4aa0e90c-855b4e1128485f4b196b",
+              "file": "main-flow.spec.ts",
+              "line": 28,
+              "column": 7
+            },
+            {
+              "title": "user can navigate to dashboard during flow",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9280,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔍 Checking for welcome modal on login page...\n"
+                        },
+                        {
+                          "text": "⚠️ Welcome modal detected on login page!\n"
+                        },
+                        {
+                          "text": "✓ Clicked \"Salta\" button\n"
+                        },
+                        {
+                          "text": "✓ Login successful\n"
+                        },
+                        {
+                          "text": "✓ Navigated to dashboard\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-31T13:58:18.463Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "4e87a89092cd4aa0e90c-5d4609a0c2f2bedd41d2",
+              "file": "main-flow.spec.ts",
+              "line": 141,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-12-31T13:57:37.570Z",
+    "duration": 50544.844999999994,
+    "expected": 2,
+    "skipped": 1,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -29,7 +29,6 @@ interface UserProfile {
   cognome: string | null
   codice_fiscale: string | null
   indirizzo_residenza: string | null
-  telefono: string | null
 }
 
 const safeJson = async <T,>(res: Response): Promise<T | undefined> => {
@@ -98,7 +97,7 @@ export function useReviewForm(): UseReviewFormReturn {
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('nome, cognome, codice_fiscale, indirizzo_residenza, telefono')
+        .select('nome, cognome, codice_fiscale, indirizzo_residenza')
         .eq('user_id', user.id)
         .single()
       

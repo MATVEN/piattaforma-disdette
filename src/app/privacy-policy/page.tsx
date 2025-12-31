@@ -50,7 +50,7 @@ export default function PrivacyPolicyPage() {
               2. Tipologie di Dati Raccolti
             </h2>
             <ul className="list-disc list-inside text-gray-600 leading-relaxed space-y-2">
-              <li>Dati identificativi (nome, cognome, email, telefono)</li>
+              <li>Dati identificativi (nome, cognome, email)</li>
               <li>Dati di navigazione</li>
               <li>Dati dei documenti caricati</li>
             </ul>

@@ -263,7 +263,7 @@ The delega flow was refactored in C13:
 
 **`profiles`** (user data):
 - `user_id` (uuid, FK to auth.users)
-- `nome`, `cognome`, `indirizzo_residenza`, `telefono`
+- `nome`, `cognome`, `indirizzo_residenza`
 - `documento_identita_path` (storage path)
 
 **`extracted_data`** (disdette):

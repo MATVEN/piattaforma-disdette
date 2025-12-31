@@ -55,14 +55,12 @@ ADD COLUMN IF NOT EXISTS nome TEXT,
 ADD COLUMN IF NOT EXISTS cognome TEXT,
 ADD COLUMN IF NOT EXISTS codice_fiscale TEXT,
 ADD COLUMN IF NOT EXISTS indirizzo_residenza TEXT,
-ADD COLUMN IF NOT EXISTS telefono TEXT;
 
 -- Add comments
 COMMENT ON COLUMN extracted_data.nome IS 'Nome intestatario (B2C)';
 COMMENT ON COLUMN extracted_data.cognome IS 'Cognome intestatario (B2C)';
 COMMENT ON COLUMN extracted_data.codice_fiscale IS 'Codice Fiscale intestatario (B2C) o LR (B2B)';
 COMMENT ON COLUMN extracted_data.indirizzo_residenza IS 'Indirizzo residenza (B2C)';
-COMMENT ON COLUMN extracted_data.telefono IS 'Telefono intestatario';
 
 -- Create index on tipo_intestatario for performance
 CREATE INDEX idx_extracted_data_tipo_intestatario ON extracted_data(tipo_intestatario);

@@ -212,7 +212,6 @@ export const confirmDataSchema = z.object({
   cognome: z.string().nullable().optional(),
   codice_fiscale: z.string().nullable().optional(),
   indirizzo_residenza: z.string().nullable().optional(),
-  telefono: z.string().nullable().optional(),
   
   // Campi B2B (azienda)
   ragione_sociale: z.string().nullable().optional(),
@@ -303,7 +302,6 @@ export const profileFormSchema = z.object({
     .max(16, 'Codice fiscale deve essere 16 caratteri')
     .regex(/^[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]$/, 'Formato codice fiscale non valido'),
   indirizzo_residenza: z.string().trim().min(1, "L'indirizzo è obbligatorio."),
-  telefono: z.string().trim().min(1, "Il telefono è obbligatorio."),
 })
 
 export type ProfileFormData = z.infer<typeof profileFormSchema>

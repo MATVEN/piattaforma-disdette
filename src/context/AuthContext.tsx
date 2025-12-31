@@ -9,7 +9,6 @@ type Profile = {
   nome: string | null
   cognome: string | null
   indirizzo_residenza: string | null
-  telefono: string | null
   documento_identita_path: string | null
 }
 
@@ -63,7 +62,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('nome, cognome, indirizzo_residenza, telefono, documento_identita_path')
+          .select('nome, cognome, indirizzo_residenza, documento_identita_path')
           .eq('user_id', user.id) // <-- 2. ERRORE SPARITO (user è garantito)
           .maybeSingle()
 

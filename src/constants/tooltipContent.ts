@@ -14,9 +14,6 @@ export const TOOLTIP_CONTENT = {
   
   email: 
     "Email dove riceverai conferma dell'invio della disdetta.",
-  
-  telefono: 
-    "Numero di telefono per eventuali comunicazioni urgenti.",
 
   // B2B Fields
   partitaIva: 
@@ -73,7 +70,6 @@ export const TOOLTIP_IDS = {
   luogoNascita: 'tooltip-luogo-nascita',
   dataNascita: 'tooltip-data-nascita',
   email: 'tooltip-email',
-  telefono: 'tooltip-telefono',
   partitaIva: 'tooltip-partita-iva',
   ragioneSociale: 'tooltip-ragione-sociale',
   sedeLegale: 'tooltip-sede-legale',

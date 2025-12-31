@@ -209,8 +209,24 @@ L'utente può verificare immediatamente che il documento caricato sia corretto e
 Dopo upload bolletta → Preview automatico. Vedi subito se l'immagine è sfocata e puoi ricaricarla prima di procedere.
 
 ---
--
-### **C31 - In-App Notifications** ✨ ⏸️🔄
+
+### **C31 - Email Notifications** ✅ ✨
+**Effort**: 1 giorno
+**Priorità**: ALTA (UX Critical)
+**Costo:** Resend/SendGrid (gratis fino a ~10k email/mese, poi a pagamento)
+
+**Cosa fa:**
+Sistema di notifiche email usando Resend API. Invia email automatiche agli utenti su 3 eventi chiave: disdetta pronta per revisione, PEC inviata con successo, errore elaborazione.
+
+**Perché è importante:**
+Gli utenti sanno immediatamente quando devono agire, senza dover controllare manualmente la dashboard. Riduce confusion e support requests.
+
+**Esempio pratico:**
+OCR finisce → Email "✅ La tua disdetta è pronta" → Click CTA → Vai direttamente a /review
+
+---
+
+### **C32 - In-App Notifications** ✨ ⏸️🔄
 **Effort:** 2 giorni  
 **Priorità:** BASSA (Engagement)
 
@@ -225,22 +241,7 @@ OCR finisce → Badge rosso su campanella → Click → "La tua disdetta Enel è
 
 ---
 
-### **C31 - Email Notifications** ✅ ✨
-**Effort**: 2 ore
-**Priorità**: ALTA (UX Critical)
-
-**Cosa fa:**
-Sistema di notifiche email usando Resend API. Invia email automatiche agli utenti su 3 eventi chiave: disdetta pronta per revisione, PEC inviata con successo, errore elaborazione.
-
-**Perché è importante:**
-Gli utenti sanno immediatamente quando devono agire, senza dover controllare manualmente la dashboard. Riduce confusion e support requests.
-
-**Esempio pratico:**
-OCR finisce → Email "✅ La tua disdetta è pronta" → Click CTA → Vai direttamente a /review
-
----
-
-### **C32 - Activity Log** ✨
+### **C33 - Activity Log** ✨ ⏸️🔄
 **Effort:** 1-2 giorni  
 **Priorità:** BASSA (Sicurezza)
 
@@ -255,7 +256,7 @@ Profilo → Tab "Cronologia" → "Login da Milano il 15/11 ore 10:30", "Disdetta
 
 ---
 
-### **C33 - Wizard Save & Resume** 🎯
+### **C34 - Wizard Save & Resume** 🎯 ⏸️🔄
 **Effort:** 2-3 giorni  
 **Priorità:** BASSA (Prevenzione frustrazione)
 
@@ -270,7 +271,7 @@ Compili disdetta a metà → Browser crasha → Riapri → "Hai una bozza salvat
 
 ---
 
-### **C34 - E2E Testing Suite** 🧪
+### **C35 - E2E Testing Suite** 🧪
 **Effort:** 3-4 ore  
 **Priorità:** ALTA (Qualità)
 
@@ -294,7 +295,7 @@ Queste feature richiedono servizi a pagamento o hanno senso solo con il servizio
 
 ---
 
-### **C35 - PEC Real Send** 🔴 CRITICO (Post-Test)
+### **C36 - PEC Real Send** 🔴 CRITICO (Post-Test)
 **Effort:** 0.5-1 giorno  
 **Costo:** Casella PEC certificata (~€50-100/anno) + SMTP
 
@@ -306,21 +307,6 @@ Senza questo, nessuna PEC viene realmente inviata. È necessario per il servizio
 
 **Quando farlo:**  
 Quando sei pronto a mandare PEC vere ai provider. Fino ad allora, test mode simula tutto.
-
----
-
-### **C36 - Email Notifications** 🔴 CRITICO (Post-Test)
-**Effort:** 2-3 giorni  
-**Costo:** Resend/SendGrid (gratis fino a ~10k email/mese, poi a pagamento)
-
-**Cosa fa:**  
-Invia email automatiche agli utenti: conferma registrazione, "disdetta in elaborazione", "PEC inviata con successo", "errore nella pratica".
-
-**Perché è importante:**  
-Comunicazione professionale via email. Attualmente solo toast in-app, ma le email sono più affidabili per comunicazioni importanti.
-
-**Quando farlo:**  
-Pre-launch o subito dopo, quando hai utenti reali. In test, le notifiche in-app (C32) sono sufficienti.
 
 ---
 
@@ -403,48 +389,57 @@ SEO e UX. Ma ha senso ottimizzare con traffico reale per capire i veri bottlenec
 
 ### **Feature Gratuite (Test Environment)**
 ```
-🔴 PRIORITÀ MASSIMA (Settimana 1-2):
-- C18: PDF Template System (4-6d) ⚡⚡⚡
-- C19: Legal Pages (1-2d)
-- C20: Testing Suite (3-4d)
-- C21: Duplicate Detection (1d)
 
-✨ PRIORITÀ ALTA (Settimana 3-4):
+🔴 PRIORITÀ MASSIMA - BLOCCANTI(Legalità + Core Flow) (Settimana 1-2):
+- C19: Legal Pages & Footer (1-2d)
+- C20: Duplicate Detection (1d)
+- C21: Testing & QA Suite (3-4d)
+- C23: PDF Generator & B2B Support (3-4d)
+
+🟠 ✨PRIORITÀ ALTA - CORE UX / FIDUCIA (Settimana 3-4):
 - C22: UI Polish (2-3d)
-- C23: User Onboarding (2-3d)
-- C24: Status Tracking (2d)
-- C25: Search & Filters (2d)
-- C26: FAQ & Help (1-2d)
-
-🎨 PRIORITÀ MEDIA-BASSA (Settimana 5+):
+- C25: Status Tracking Avanzato (2d)
+- C31: Email Notifications (1d)
 - C27: Service Templates (2-3d)
-- C28: Data Export (1d)
-- C29: Error Pages (0.5d)
-- C30: Advanced Validation (1-2d)
-- C31: Document Preview (2d)
+
+🟡 🎨 PRIORITÀ MEDIA-BASSA (Settimana 5+):
+- C18: Error Pages Branded (0.5d)
+- C24: User Onboarding (2-3d)
+- C26: FAQ & Help Center (1-2d)
+- C28: Data Export & Privacy (1d)
+
+⚪ POLISH / ROBUSTEZZA:
+- C29: Advanced Form Validation (1-2d)
+- C30: Document Preview (2d)
 - C32: In-App Notifications (2d)
 - C33: Activity Log (1-2d)
-- C34: Wizard Save (2-3d)
+- C34: Wizard Save & Resume (2-3d)
+- C35: E2E Testing Suite (3-4h)
+
+
 ```
 
-**Totale Feature Gratuite:** ~28-37 giorni (6-8 settimane)
+**Totale Feature Gratuite:** ~30-38 giorni (6-8 settimane)
 
 ---
 
 ### **Feature con Costi (Post-Test)**
 ```
-🔴 CRITICHE per Lancio:
-- C35: PEC Real Send (0.5-1d) 💰 ~€100/anno
-- C36: Email Notifications (2-3d) 💰 Gratis poi €
+
+🔴 GATE OBBLIGATORI(CRITICHE per Lancio)
+- C36: PEC Real Send (0.5-1d) 💰~€50-100/anno 
+
+🔴 MONETIZZAZIONE
 - C37: Payment Integration (5-6d) 💰 ~2% commissioni
 
-🎯 STRATEGIC (Post-Launch):
+🎯 POST-LAUNCH
 - C38: Guest Checkout (5-6d) - Richiede C37
 - C39: Admin Dashboard (6-8d)
 
-✨ PRE-LAUNCH:
-- C40: Analytics (1-2d) - Gratis
-- C41: Performance (2-3d) - Gratis
+✨ PRE-LAUNCH
+- C40: Analytics & Tracking (1-2d) - GratiS
+- C41: Performance Optimization (2-3d) - GratiS
+
 ```
 
 **Totale Feature Costi:** ~20-27 giorni + costi servizi
@@ -453,34 +448,33 @@ SEO e UX. Ma ha senso ottimizzare con traffico reale per capire i veri bottlenec
 
 ## 🎯 PERCORSI CONSIGLIATI
 
-### **Percorso A: FAST TEST (3 settimane)**
+### **Percorso A — SAFE TEST (3-4 settimane)**
 ```
-Week 1-2: C18 + C19 + C21
-Week 3:   C22 + C23
+Week 1-2: C19 + C20 + C21 + C23
+Week 3-4: C22 + C25 + C31
+
 ```
 **Focus:** Solo essenziali + template critici  
 **Risultato:** Servizio testabile con moduli corretti
 
 ---
 
-### **Percorso B: QUALITY TEST (5-6 settimane)**
+### **Percorso B - QUALITY TEST (5-6 settimane)**
 ```
-Week 1-2: C18 + C19 + C20 + C21
-Week 3-4: C22 + C23 + C24 + C25 + C26
-Week 5-6: C27 + C28 + Testing finale
+Week 1-2: Core blocchi
+Week 3-4: UX + Comunicazione
+Week 5-6: C27 + C24 + C26
+
 ```
 **Focus:** Feature complete per test beta  
 **Risultato:** Piattaforma professionale pronta per beta testers
 
 ---
 
-### **Percorso C: COMPLETE (8 settimane)**
+### **Percorso C - PRODUZIONE**
 ```
-Week 1-2: Priorità Massima (C18-C21)
-Week 3-4: Priorità Alta (C22-C26)
-Week 5-6: Priorità Media-Bassa (C27-C34)
-Week 7:   C35-C37 (Lancio)
-Week 8:   C40-C41 (Ottimizzazione)
+Test completo → C35 (E2E) → C36 (PEC) → C37 (Pagamenti)
+
 ```
 **Focus:** Tutto + lancio  
 **Risultato:** Servizio completo pronto per produzione
@@ -492,12 +486,14 @@ Week 8:   C40-C41 (Ottimizzazione)
 **Per Test Environment (prima del lancio reale):**
 
 ### **MINIMO ASSOLUTO (Must-Do):**
-1. **C18** - PDF Template System 🔴 (CRITICO)
-2. **C19** - Legal Pages 🔴 (GDPR obbligatorio)
-3. **C21** - Duplicate Detection (Previene problemi)
+
+1. **C23** – PDF Generator & B2B 🔴
+2. **C19** – Legal Pages
+3. **C20** – Duplicate Detection
+4. **C21** – Testing & QA
+5. **C25** – Status Tracking
 
 **Totale:** ~6-9 giorni
-
 Per testare il servizio core con moduli corretti e compliance legale.
 
 ---
@@ -509,5 +505,4 @@ Aggiungi a Minimo:
 6. **C23** - User Onboarding (Riduce abbandoni)
 
 **Totale:** ~13-18 giorni (3-4 settimane)
-
 Per una piattaforma solida per beta testers.

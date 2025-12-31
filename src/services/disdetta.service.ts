@@ -162,7 +162,6 @@ export class DisdettaService {
       cognome: validated.cognome || null,
       codice_fiscale: validated.codice_fiscale || null,
       indirizzo_residenza: validated.indirizzo_residenza || null,
-      telefono: validated.telefono || null,
       ragione_sociale: validated.ragione_sociale || null,
       partita_iva: validated.partita_iva || null,
       sede_legale: validated.sede_legale || null,

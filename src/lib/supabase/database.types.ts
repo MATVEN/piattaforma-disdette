@@ -168,7 +168,6 @@ export type Database = {
           documento_identita_path: string | null
           indirizzo_residenza: string | null
           nome: string | null
-          telefono: string | null
           updated_at: string | null
           user_id: string
         }
@@ -178,7 +177,6 @@ export type Database = {
           documento_identita_path?: string | null
           indirizzo_residenza?: string | null
           nome?: string | null
-          telefono?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -188,7 +186,6 @@ export type Database = {
           documento_identita_path?: string | null
           indirizzo_residenza?: string | null
           nome?: string | null
-          telefono?: string | null
           updated_at?: string | null
           user_id?: string
         }

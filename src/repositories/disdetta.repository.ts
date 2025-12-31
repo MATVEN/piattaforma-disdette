@@ -173,7 +173,6 @@ export class DisdettaRepository {
       cognome?: string | null;
       codice_fiscale?: string | null;
       indirizzo_residenza?: string | null;
-      telefono?: string | null;
 
       // B2B fields
       ragione_sociale?: string | null;
