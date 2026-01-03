@@ -415,7 +415,7 @@
   - **Footer Component:**
     - Creates responsive footer with 4-column layout (Brand, Product, Support, Legal)
     - Dark theme design (bg-gray-900) with consistent hover states (text-primary-400)
-    - Brand section with Sparkles logo and "Disdette Facile" tagline
+    - Brand section with Sparkles logo and "DisdEasy" tagline
     - Navigation links to product features (/how-it-works, /operators, /faq)
     - Support section with help center, contacts, and email (supporto@disdette.it)
     - Legal section linking to Privacy Policy, Terms of Service, Cookie Policy
@@ -873,7 +873,7 @@
     - Additional FAQs: 7 items
 
   - **SEO & Discoverability:**
-    - Page title: *FAQ & Centro Assistenza | DisEasy*.
+    - Page title: *FAQ & Centro Assistenza | DisdEasy*.
     - Optimized meta description with relevant keywords.
     - Semantic structure for improved indexing and readability.
 
@@ -897,7 +897,7 @@
     - **Data Export (Art. 20):**
       - Download of complete, machine-readable JSON with all user data.
       - Includes profile, disdette, status history, and metadata.
-      - File naming: `DisEasy-dati-YYYY-MM-DD.json`.
+      - File naming: `DisdEasy-dati-YYYY-MM-DD.json`.
     - **Account Deletion (Art. 17):**
       - Permanent, verified account deletion with full cascade cleanup.
       - Two-step confirmation flow to prevent accidental erasure.
@@ -979,7 +979,7 @@
       - *Disdetta Ready:* green gradient header, review CTA.
       - *PEC Sent:* success styling, dashboard CTA, next-steps explanation.
       - *Processing Error:* warning styling, recovery CTAs and troubleshooting tips.
-    - Consistent DisEasy branding, support links, and accessible CTAs.
+    - Consistent DisdEasy branding, support links, and accessible CTAs.
 
   - **Integration Completed:**
     - `process-document` Edge Function triggers *ready* and *error* emails.

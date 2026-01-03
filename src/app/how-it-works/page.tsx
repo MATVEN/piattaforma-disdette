@@ -65,7 +65,7 @@ export default function HowItWorksPage() {
             className="text-center"
           >
             <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4">
-              Come funziona DisEasy
+              Come funziona DisdEasy
             </h1>
             <p className="text-gray-600 text-lg mb-6">
               Inviare una disdetta non è mai stato così semplice. Segui questi 4 passaggi e pensa al resto.
@@ -128,7 +128,7 @@ export default function HowItWorksPage() {
             className="text-center mb-12"
           >
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Perché Scegliere DisEasy
+              Perché Scegliere DisdEasy
             </h2>
             <p className="text-gray-600 text-lg">
               Il modo più rapido e sicuro per gestire le tue disdette

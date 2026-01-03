@@ -135,7 +135,7 @@ export function WelcomeModal() {
               {/* Content */}
               <div className="p-8">
                 <h2 className="text-3xl font-bold text-gray-900 mb-3 text-center">
-                  Benvenuto su DisEasy! 🎉
+                  Benvenuto su DisdEasy! 🎉
                 </h2>
                 <p className="text-lg text-gray-600 mb-6 text-center">
                   Siamo felici di averti qui! Ti guidiamo passo dopo passo nella creazione della tua prima disdetta.

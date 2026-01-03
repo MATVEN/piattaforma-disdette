@@ -65,8 +65,8 @@ export const faqItems: FAQItem[] = [
   {
     id: 'cf-1',
     category: 'come-funziona',
-    question: 'Come funziona DisEasy?',
-    answer: 'DisEasy automatizza il processo di disdetta in 4 semplici step: 1) Carichi la bolletta del fornitore da cui vuoi recedere, 2) Il nostro sistema estrae automaticamente i dati del contratto, 3) Verifichi e confermi i dati estratti, 4) Inviamo la PEC di disdetta al fornitore per te. Tutto in pochi minuti!',
+    question: 'Come funziona DisdEasy?',
+    answer: 'DisdEasy automatizza il processo di disdetta in 4 semplici step: 1) Carichi la bolletta del fornitore da cui vuoi recedere, 2) Il nostro sistema estrae automaticamente i dati del contratto, 3) Verifichi e confermi i dati estratti, 4) Inviamo la PEC di disdetta al fornitore per te. Tutto in pochi minuti!',
   },
   {
     id: 'cf-2',
@@ -83,14 +83,14 @@ export const faqItems: FAQItem[] = [
   {
     id: 'cf-4',
     category: 'come-funziona',
-    question: 'Posso usare DisEasy per più contratti?',
+    question: 'Posso usare DisdEasy per più contratti?',
     answer: 'Sì, puoi gestire tutte le disdette che vuoi dallo stesso account. Ogni contratto viene processato separatamente e puoi monitorare lo stato di ciascuno nella tua dashboard personale.',
   },
   {
     id: 'cf-5',
     category: 'come-funziona',
     question: 'È necessaria la PEC per inviare una disdetta?',
-    answer: 'Sì, la PEC (Posta Elettronica Certificata) è l\'unico metodo legalmente valido per inviare disdette di contratti in Italia. DisEasy si occupa di tutto: noi generiamo e inviamo la PEC per te, garantendo validità legale e tracciabilità.',
+    answer: 'Sì, la PEC (Posta Elettronica Certificata) è l\'unico metodo legalmente valido per inviare disdette di contratti in Italia. DisdEasy si occupa di tutto: noi generiamo e inviamo la PEC per te, garantendo validità legale e tracciabilità.',
   },
 
   // TEMPI E PROCEDURE
@@ -185,8 +185,8 @@ export const faqItems: FAQItem[] = [
   {
     id: 'pc-6',
     category: 'problemi',
-    question: "Non ricevo le email di DisEasy: cosa devo controllare?",
-    answer: "Se non ricevi le email di notifica, controlla la cartella spam o posta indesiderata. Assicurati che l’indirizzo email nel tuo profilo sia corretto e aggiungi noreply@DisEasy.it ai contatti fidati. Se dopo 10 minuti non ricevi comunicazioni, contatta il supporto."
+    question: "Non ricevo le email di DisdEasy: cosa devo controllare?",
+    answer: "Se non ricevi le email di notifica, controlla la cartella spam o posta indesiderata. Assicurati che l’indirizzo email nel tuo profilo sia corretto e aggiungi noreply@DisdEasy.it ai contatti fidati. Se dopo 10 minuti non ricevi comunicazioni, contatta il supporto."
   },
   {
     id: 'pc-7',
@@ -258,7 +258,7 @@ export const faqItems: FAQItem[] = [
     id: 'su-1',
     category: 'supporto',
     question: 'Come posso contattare il supporto?',
-    answer: 'Puoi contattarci via email a support@DisEasy.it oppure tramite il form di contatto nella pagina Supporto. Il nostro team risponde entro 24 ore lavorative. Per problemi urgenti, specifica "URGENTE" nell\'oggetto.',
+    answer: 'Puoi contattarci via email a support@DisdEasy.it oppure tramite il form di contatto nella pagina Supporto. Il nostro team risponde entro 24 ore lavorative. Per problemi urgenti, specifica "URGENTE" nell\'oggetto.',
   },
   {
     id: 'su-2',

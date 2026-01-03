@@ -13,7 +13,7 @@ export const AuthHeader = ({ title, subtitle }: AuthHeaderProps) => (
       transition={{ delay: 0.1 }}
       className="text-4xl sm:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2"
     >
-      DisEasy
+      DisdEasy
     </motion.h1>
     <motion.p
       initial={{ opacity: 0 }}

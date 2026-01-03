@@ -166,7 +166,7 @@ export default function PrivacyPage() {
                   <p className="text-gray-700">PEC: <strong>[DA COMPILARE: PEC]</strong></p>
                 </div>
                 <p className="text-gray-700 leading-relaxed mt-4">
-                  Il Titolare gestisce la piattaforma denominata <strong>DisEasy</strong> ("Piattaforma" o "Servizio").
+                  Il Titolare gestisce la piattaforma denominata <strong>DisdEasy</strong> ("Piattaforma" o "Servizio").
                 </p>
               </section>
 
@@ -455,7 +455,7 @@ export default function PrivacyPage() {
               <section id="cookie-tecnici" className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">3. Cookie tecnici (sempre attivi - non richiedono consenso)</h2>
                 <p className="text-gray-700 leading-relaxed mb-4">
-                  DisEasy utilizza cookie tecnici necessari per:
+                  DisdEasy utilizza cookie tecnici necessari per:
                 </p>
                 <ul className="list-disc list-inside space-y-2 mb-4">
                   <li className="text-gray-700">il corretto funzionamento del sito;</li>
@@ -473,7 +473,7 @@ export default function PrivacyPage() {
               <section id="cookie-analytics" className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">4. Cookie di analisi (analytics)</h2>
                 <p className="text-gray-700 leading-relaxed mb-4">
-                  DisEasy può utilizzare, previo consenso:
+                  DisdEasy può utilizzare, previo consenso:
                 </p>
 
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">4.1 Analytics anonimizzati</h3>
@@ -551,7 +551,7 @@ export default function PrivacyPage() {
               <section id="consensi" className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">8. Conservazione dei consensi (Cookie Consent Log)</h2>
                 <p className="text-gray-700 leading-relaxed mb-4">
-                  DisEasy conserva:
+                  DisdEasy conserva:
                 </p>
                 <ul className="list-disc list-inside space-y-2 mb-4">
                   <li className="text-gray-700">data/ora del consenso;</li>

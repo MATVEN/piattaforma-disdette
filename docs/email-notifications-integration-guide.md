@@ -231,17 +231,17 @@ Before going to production:
 
 1. **Update Resend "from" address:**
    - In `src/lib/email/emailService.ts`
-   - Change: `'DisEasy <onboarding@resend.dev>'`
-   - To: `'DisEasy <noreply@yourdomain.com>'`
+   - Change: `'DisdEasy <onboarding@resend.dev>'`
+   - To: `'DisdEasy <noreply@yourdomain.com>'`
    - Requires domain verification in Resend dashboard
 
 2. **Update base URL:**
    - In `.env.local` (production):
    - Change: `NEXT_PUBLIC_BASE_URL=http://localhost:3000`
-   - To: `NEXT_PUBLIC_BASE_URL=https://DisEasy.it`
+   - To: `NEXT_PUBLIC_BASE_URL=https://DisdEasy.it`
 
 3. **Update footer links:**
-   - Email templates have hardcoded `https://DisEasy.it` links
+   - Email templates have hardcoded `https://DisdEasy.it` links
    - Update if your domain is different
 
 ---

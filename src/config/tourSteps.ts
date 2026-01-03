@@ -17,7 +17,7 @@ import type { TourStep } from '@/types/tour'
 export const homepageTour: TourStep[] = [
   {
     id: 'home-welcome',
-    title: '👋 Benvenuto su DisEasy!',
+    title: '👋 Benvenuto su DisdEasy!',
     content: 'La piattaforma più semplice per disdire contratti di luce, gas e telefonia. Ti guidiamo passo dopo passo!',
     target: 'body',
     placement: 'bottom',

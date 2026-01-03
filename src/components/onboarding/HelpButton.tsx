@@ -10,7 +10,7 @@ import { usePathname } from 'next/navigation'
 // Contenuti guida contestuale per ogni pagina
 const contextualHelp: Record<string, { title: string; tips: string[] }> = {
   '/': {
-    title: 'Benvenuto su DisEasy!',
+    title: 'Benvenuto su DisdEasy!',
     tips: [
       '📄 Carica la tua bolletta per iniziare',
       '🤖 L\'AI estrae automaticamente i dati',
@@ -232,7 +232,7 @@ export function HelpButton() {
                   icon={<Mail className="h-5 w-5 text-indigo-600" />}
                   title="Contatta Supporto"
                   description="Scrivici per assistenza diretta"
-                  href="mailto:supporto@DisEasy.it"
+                  href="mailto:supporto@DisdEasy.it"
                   onClick={() => setIsOpen(false)}
                   isLast
                 />

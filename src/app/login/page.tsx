@@ -62,7 +62,7 @@ export default function LoginPage() {
       >
         {/* Logo/Header */}
         <AuthHeader 
-          title="DisEasy"
+          title="DisdEasy"
           subtitle="Bentornato! 👋"
         />
 

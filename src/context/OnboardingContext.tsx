@@ -29,7 +29,7 @@ interface OnboardingContextType extends OnboardingState {
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined)
 
-const STORAGE_KEY = 'DisEasy_onboarding'
+const STORAGE_KEY = 'DisdEasy_onboarding'
 const TOTAL_TOUR_STEPS = 5
 
 const defaultState: OnboardingState = {

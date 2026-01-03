@@ -281,8 +281,8 @@ export default function ContactPage() {
             <h3 className="font-semibold text-gray-900 mb-2">Supporto Email</h3>
             <p className="text-gray-600 text-sm">
               Puoi anche scriverci direttamente a{' '}
-              <a href="mailto:support@DisEasy.it" className="text-indigo-600 hover:text-indigo-700 font-medium">
-                support@DisEasy.it
+              <a href="mailto:support@DisdEasy.it" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                support@DisdEasy.it
               </a>
             </p>
           </div>

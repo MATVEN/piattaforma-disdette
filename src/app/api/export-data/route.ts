@@ -81,7 +81,7 @@ export async function GET() {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
-          'Content-Disposition': `attachment; filename="DisEasy-export-${new Date().toISOString().split('T')[0]}.json"`,
+          'Content-Disposition': `attachment; filename="DisdEasy-export-${new Date().toISOString().split('T')[0]}.json"`,
         },
       }
     )

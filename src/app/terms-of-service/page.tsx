@@ -14,9 +14,6 @@ export default function TermsPage() {
            animate={{ opacity: 1, y: 0 }}
            className="text-center"
          >
-           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-primary text-white rounded-2xl mb-6">
-             <FileText className="h-8 w-8" />
-           </div>
            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4">
              Termini e Condizioni di Servizio
            </h1>
@@ -51,7 +48,7 @@ export default function TermsPage() {
                <p className="text-gray-700">PEC: <strong>[DA COMPILARE: PEC]</strong></p>
              </div>
              <p className="text-gray-700 leading-relaxed">
-               La piattaforma opera commercialmente con il nome <strong>DisEasy</strong>.
+               La piattaforma opera commercialmente con il nome <strong>DisdEasy</strong>.
              </p>
            </section>
 
@@ -66,7 +63,7 @@ export default function TermsPage() {
                  </span>
                </li>
                <li>
-                 <strong className="text-gray-900">Piattaforma/DisEasy:</strong>{' '}
+                 <strong className="text-gray-900">Piattaforma/DisdEasy:</strong>{' '}
                  <span className="text-gray-700">
                    il servizio digitale gestito da [DA COMPILARE: NOME SOCIETÀ].
                  </span>
@@ -90,7 +87,7 @@ export default function TermsPage() {
            <section id="oggetto-servizio" className="mb-8">
              <h2 className="text-2xl font-bold text-gray-900 mb-4">3. Oggetto del Servizio</h2>
              <p className="text-gray-700 leading-relaxed mb-4">
-               DisEasy fornisce:
+               DisdEasy fornisce:
              </p>
              <ol className="list-decimal list-inside space-y-2 mb-4">
                <li className="text-gray-700">Generazione automatizzata di comunicazioni personalizzate, basate sui dati forniti dall'Utente.</li>
@@ -98,7 +95,7 @@ export default function TermsPage() {
                <li className="text-gray-700">Archiviazione di documenti, ricevute PEC e log tecnici.</li>
              </ol>
              <p className="text-gray-700 leading-relaxed mb-4">
-               DisEasy opera come <strong>mandatario con rappresentanza</strong>, limitatamente all'attività di:
+               DisdEasy opera come <strong>mandatario con rappresentanza</strong>, limitatamente all'attività di:
              </p>
              <ul className="list-disc list-inside space-y-2 mb-4">
                <li className="text-gray-700">redigere la Comunicazione su istruzione dell'Utente,</li>
@@ -160,7 +157,7 @@ export default function TermsPage() {
            <section id="limitazioni" className="mb-8">
              <h2 className="text-2xl font-bold text-gray-900 mb-4">6. Limitazioni di responsabilità della Piattaforma</h2>
              <p className="text-gray-700 leading-relaxed mb-4">
-               DisEasy risponde esclusivamente della corretta generazione e trasmissione tecnica della comunicazione.
+               DisdEasy risponde esclusivamente della corretta generazione e trasmissione tecnica della comunicazione.
              </p>
              <p className="text-gray-700 leading-relaxed mb-4">
                Non risponde, a titolo esemplificativo, di:
@@ -181,7 +178,7 @@ export default function TermsPage() {
            <section id="disponibilita" className="mb-8">
              <h2 className="text-2xl font-bold text-gray-900 mb-4">7. Disponibilità del Servizio</h2>
              <p className="text-gray-700 leading-relaxed mb-4">
-               DisEasy non garantisce l'assenza di interruzioni o errori.
+               DisdEasy non garantisce l'assenza di interruzioni o errori.
              </p>
              <p className="text-gray-700 leading-relaxed mb-4">
                Potranno verificarsi:
@@ -232,7 +229,7 @@ export default function TermsPage() {
                <li className="text-gray-700">generare massa di comunicazioni seriali non autorizzate.</li>
              </ul>
              <p className="text-gray-700 leading-relaxed">
-               DisEasy potrà sospendere o chiudere l'account dell'Utente in caso di uso contrario a legge o ai Termini.
+               DisdEasy potrà sospendere o chiudere l'account dell'Utente in caso di uso contrario a legge o ai Termini.
              </p>
            </section>
 
@@ -240,7 +237,7 @@ export default function TermsPage() {
            <section id="modifica" className="mb-8">
              <h2 className="text-2xl font-bold text-gray-900 mb-4">10. Modifica dei Termini</h2>
              <p className="text-gray-700 leading-relaxed mb-4">
-               DisEasy può modificare i presenti Termini per esigenze normative o tecniche.
+               DisdEasy può modificare i presenti Termini per esigenze normative o tecniche.
              </p>
              <p className="text-gray-700 leading-relaxed mb-4">
                Le modifiche saranno comunicate mediante:

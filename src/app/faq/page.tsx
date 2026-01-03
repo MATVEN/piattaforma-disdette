@@ -388,7 +388,7 @@ export default function FAQPage() {
             Il nostro team è qui per aiutarti
           </p>
           <a
-            href="mailto:support@DisEasy.it"
+            href="mailto:support@DisdEasy.it"
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-primary text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105"
           >
             <MessageCircle className="h-5 w-5" />

@@ -26,7 +26,7 @@ interface TooltipContextType {
 
 const TooltipContext = createContext<TooltipContextType | undefined>(undefined)
 
-const STORAGE_KEY = 'DisEasy_dismissed_tooltips'
+const STORAGE_KEY = 'DisdEasy_dismissed_tooltips'
 
 export function TooltipProvider({ children }: { children: ReactNode }) {
   const [activeTooltip, setActiveTooltip] = useState<TooltipState | null>(null)

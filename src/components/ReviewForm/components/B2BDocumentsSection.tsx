@@ -123,7 +123,7 @@ export function B2BDocumentsSection({
                   </p>
                   <p className="text-blue-700 mt-1">
                     2. <strong>Delega alla piattaforma</strong> (checkbox a fine form): Autorizzi
-                    DisEasy ad inviare la PEC per tuo conto.
+                    DisdEasy ad inviare la PEC per tuo conto.
                   </p>
                 </div>
               </div>

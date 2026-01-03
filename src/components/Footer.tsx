@@ -16,7 +16,7 @@ export default function Footer() {
           <div>
             <Link href="/" className="flex items-center space-x-2 mb-4">
               <Sparkles className="h-6 w-6 text-primary-400" />
-              <span className="text-white font-bold text-xl">Disdette Facile</span>
+              <span className="text-white font-bold text-xl">DisdEasy</span>
             </Link>
             <p className="text-gray-400 text-sm mt-2">
               Semplifichiamo le tue disdette

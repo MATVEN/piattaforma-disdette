@@ -32,7 +32,7 @@ Totale: €120,50
 ## Test User
 
 Create this user in Supabase for testing:
-- Email: test-e2e@DisEasy.test
+- Email: test-e2e@DisdEasy.test
 - Password: TestPassword123!
 - Complete profile with all required fields
 - Upload documento identita
