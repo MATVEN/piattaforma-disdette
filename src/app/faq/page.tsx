@@ -72,6 +72,7 @@ export default function FAQPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [activeCategory, setActiveCategory] = useState<string>('come-funziona')
+  const [showStickyPills, setShowStickyPills] = useState(false) // ✅ Nuovo state
 
   // Filter FAQ items by search query
   const filteredItems = useMemo(() => {
@@ -97,11 +98,22 @@ export default function FAQPage() {
     return grouped
   }, [filteredItems])
 
+  // ✅ Track scroll position for sticky pills
+  useEffect(() => {
+    const handleScroll = () => {
+      // Show pills after scrolling past header (250px)
+      setShowStickyPills(window.scrollY > 250)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   // Track active category based on scroll position
   useEffect(() => {
     const observerOptions = {
       root: null,
-      rootMargin: '-20% 0px -70% 0px', // Trigger when section is 20% from top
+      rootMargin: '-20% 0px -70% 0px',
       threshold: 0
     }
 
@@ -116,7 +128,6 @@ export default function FAQPage() {
 
     const observer = new IntersectionObserver(observerCallback, observerOptions)
 
-    // Observe all category sections
     faqCategories.forEach((cat) => {
       const element = document.getElementById(`category-${cat.id}`)
       if (element) {
@@ -125,27 +136,42 @@ export default function FAQPage() {
     })
 
     return () => observer.disconnect()
-  }, [filteredItems]) // Re-run when filtered items change
+  }, [filteredItems])
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id)
   }
 
+  const scrollToCategory = (categoryId: string) => {
+    const element = document.getElementById(`category-${categoryId}`)
+    if (element) {
+      const offset = 140 // navbar + pills + gap
+      const elementPosition = element.getBoundingClientRect().top
+      const offsetPosition = elementPosition + window.pageYOffset - offset
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      })
+    }
+    setActiveCategory(categoryId)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-      {/* Header */}
-      <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-16 z-30">
+      {/* Header - NON sticky */}
+      <div className="bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center"
+           initial={{ opacity: 0, y: -20 }}
+           animate={{ opacity: 1, y: 0 }}
+           className="text-center"
           >
-            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4">
-              Centro Assistenza
+            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4 pb-2">
+              Domande Frequenti
             </h1>
             <p className="text-gray-600 text-lg mb-6">
-              Trova rapidamente le risposte alle tue domande
+              Siamo qui per aiutarti. Trova rapidamente le risposte alle tue domande o contattaci per supporto.
             </p>
 
             {/* Search Bar */}
@@ -163,10 +189,59 @@ export default function FAQPage() {
         </div>
       </div>
 
-      {/* Category Pills (scroll navigation) */}
-      <div className="bg-white/60 backdrop-blur-sm border-b border-gray-200 sticky top-[200px] z-20">
-        <div className="mx-auto py-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
-          <div className="flex gap-2 pl-4 sm:pl-6 lg:pl-8 w-max">
+      {/* ✅ STICKY PILLS - Show after scroll */}
+      <AnimatePresence>
+        {showStickyPills && (
+          <motion.div
+            initial={{ y: -80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -80, opacity: 0 }}
+            transition={{ duration: 0 }}
+            className="fixed top-16 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-lg"
+          >
+            <div className="mx-auto py-4 overflow-x-auto scrollbar-hide">
+              <div className="flex gap-2 px-4 sm:px-6 lg:px-8 w-max min-w-full justify-start">
+                {faqCategories.map((cat) => {
+                  const hasItems = groupedItems[cat.id]?.length > 0
+                  if (!hasItems && searchQuery) return null
+
+                  const Icon = iconMap[cat.icon]
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => scrollToCategory(cat.id)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-full border whitespace-nowrap transition-all hover:scale-105 flex-shrink-0 ${
+                        colorMap[cat.color].bg
+                      } ${
+                        colorMap[cat.color].text
+                      } ${
+                        colorMap[cat.color].border
+                      } ${
+                        activeCategory === cat.id
+                          ? 'ring-2 ring-offset-2 ring-indigo-500 shadow-lg scale-105'
+                          : ''
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span className="text-sm font-medium">{cat.name}</span>
+                      {hasItems && (
+                        <span className="text-xs opacity-60">
+                          ({groupedItems[cat.id].length})
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Initial Category Pills (visible at start) */}
+      <div className="bg-white/60 backdrop-blur-sm border-b border-gray-200">
+        <div className="mx-auto py-4 overflow-x-auto scrollbar-hide">
+          <div className="flex gap-2 px-4 sm:px-6 lg:px-8 w-max min-w-full justify-start">
             {faqCategories.map((cat) => {
               const hasItems = groupedItems[cat.id]?.length > 0
               if (!hasItems && searchQuery) return null
@@ -175,12 +250,8 @@ export default function FAQPage() {
               return (
                 <button
                   key={cat.id}
-                  onClick={() => {
-                    const element = document.getElementById(`category-${cat.id}`)
-                    element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                    setActiveCategory(cat.id)
-                  }}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full border whitespace-nowrap transition-all hover:scale-105 flex-shrink-0 snap-start ${
+                  onClick={() => scrollToCategory(cat.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full border whitespace-nowrap transition-all hover:scale-105 flex-shrink-0 ${
                     colorMap[cat.color].bg
                   } ${
                     colorMap[cat.color].text
@@ -317,7 +388,7 @@ export default function FAQPage() {
             Il nostro team è qui per aiutarti
           </p>
           <a
-            href="mailto:support@disdettafacile.it"
+            href="mailto:support@DisEasy.it"
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-primary text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105"
           >
             <MessageCircle className="h-5 w-5" />

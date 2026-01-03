@@ -29,7 +29,7 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
     const resend = getResendClient()
 
     const { data, error } = await resend.emails.send({
-      from: 'DisdettaFacile <onboarding@resend.dev>', // Change to your domain in production
+      from: 'DisEasy <onboarding@resend.dev>', // Change to your domain in production
       to,
       subject,
       html,
@@ -175,11 +175,11 @@ export function getDisdettaReadyEmail(params: {
     </div>
 
     <div class="footer">
-      <p>Hai ricevuto questa email perché hai richiesto una disdetta su DisdettaFacile.</p>
+      <p>Hai ricevuto questa email perché hai richiesto una disdetta su DisEasy.</p>
       <p>
-        <a href="https://disdettafacile.it/dashboard">Dashboard</a> ·
-        <a href="https://disdettafacile.it/faq">FAQ</a> ·
-        <a href="mailto:support@disdettafacile.it">Supporto</a>
+        <a href="https://DisEasy.it/dashboard">Dashboard</a> ·
+        <a href="https://DisEasy.it/faq">FAQ</a> ·
+        <a href="mailto:support@DisEasy.it">Supporto</a>
       </p>
     </div>
   </div>
@@ -329,11 +329,11 @@ export function getPecSentEmail(params: {
     </div>
 
     <div class="footer">
-      <p>Hai ricevuto questa email perché hai richiesto una disdetta su DisdettaFacile.</p>
+      <p>Hai ricevuto questa email perché hai richiesto una disdetta su DisEasy.</p>
       <p>
-        <a href="https://disdettafacile.it/dashboard">Dashboard</a> ·
-        <a href="https://disdettafacile.it/faq">FAQ</a> ·
-        <a href="mailto:support@disdettafacile.it">Supporto</a>
+        <a href="https://DisEasy.it/dashboard">Dashboard</a> ·
+        <a href="https://DisEasy.it/faq">FAQ</a> ·
+        <a href="mailto:support@DisEasy.it">Supporto</a>
       </p>
     </div>
   </div>
@@ -490,7 +490,7 @@ export function getProcessingErrorEmail(params: {
           <a href="${uploadUrl}" class="button">Ricarica Bolletta →</a>
         </div>
         <div>
-          <a href="mailto:support@disdettafacile.it" class="button-secondary">Contatta Supporto</a>
+          <a href="mailto:support@DisEasy.it" class="button-secondary">Contatta Supporto</a>
         </div>
       </div>
 
@@ -500,11 +500,11 @@ export function getProcessingErrorEmail(params: {
     </div>
 
     <div class="footer">
-      <p>Hai ricevuto questa email perché hai richiesto una disdetta su DisdettaFacile.</p>
+      <p>Hai ricevuto questa email perché hai richiesto una disdetta su DisEasy.</p>
       <p>
-        <a href="https://disdettafacile.it/dashboard">Dashboard</a> ·
-        <a href="https://disdettafacile.it/faq">FAQ</a> ·
-        <a href="mailto:support@disdettafacile.it">Supporto</a>
+        <a href="https://DisEasy.it/dashboard">Dashboard</a> ·
+        <a href="https://DisEasy.it/faq">FAQ</a> ·
+        <a href="mailto:support@DisEasy.it">Supporto</a>
       </p>
     </div>
   </div>

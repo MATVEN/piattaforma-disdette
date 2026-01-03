@@ -25,7 +25,7 @@ test.describe('Duplicate Detection (C21)', () => {
    const testContractNumber = 'IT001E12345678_TEST_' + Date.now()
    
    // Get test user ID
-   const testUserEmail = 'test-e2e@disdettafacile.test'
+   const testUserEmail = 'test-e2e@DisEasy.test'
    let userId: string
    
    const { data: users, error: userError } = await supabaseAdmin

@@ -37,13 +37,7 @@ export default function Footer() {
                 href="/operators"
                 className="text-gray-300 hover:text-primary-400 transition-colors text-sm"
               >
-                Operatori supportati
-              </Link>
-              <Link
-                href="/faq"
-                className="text-gray-300 hover:text-primary-400 transition-colors text-sm"
-              >
-                Domande frequenti
+                Operatori
               </Link>
             </nav>
           </div>
@@ -53,10 +47,10 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-4">Supporto</h3>
             <nav className="flex flex-col space-y-2">
               <Link
-                href="/help"
+                href="/faq"
                 className="text-gray-300 hover:text-primary-400 transition-colors text-sm"
               >
-                Centro assistenza
+                FAQ
               </Link>
               <Link
                 href="/contact"
@@ -64,12 +58,6 @@ export default function Footer() {
               >
                 Contatti
               </Link>
-              <a
-                href="mailto:supporto@disdette.it"
-                className="text-gray-300 hover:text-primary-400 transition-colors text-sm"
-              >
-                supporto@disdette.it
-              </a>
             </nav>
           </div>
 
@@ -78,22 +66,16 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-4">Legale</h3>
             <nav className="flex flex-col space-y-2">
               <Link
-                href="/privacy-policy"
+                href="/privacy-cookie-policy"
                 className="text-gray-300 hover:text-primary-400 transition-colors text-sm"
               >
-                Privacy Policy
+                Privacy & Cookie Policy
               </Link>
               <Link
                 href="/terms-of-service"
                 className="text-gray-300 hover:text-primary-400 transition-colors text-sm"
               >
                 Termini di Servizio
-              </Link>
-              <Link
-                href="/cookie-policy"
-                className="text-gray-300 hover:text-primary-400 transition-colors text-sm"
-              >
-                Cookie Policy
               </Link>
             </nav>
           </div>

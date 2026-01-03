@@ -165,7 +165,7 @@ Selezioni Enel → Form mostra: Nome, Codice POD (obbligatorio), Indirizzo forni
 
 ---
 
-### **C28 - Data Export & Privacy** ⚡ ✅
+### **C28 - Data Export & Privacy** ⚡✅
 **Effort:** 1 giorno  
 **Priorità:** MEDIA (GDPR Compliance)
 
@@ -210,7 +210,7 @@ Dopo upload bolletta → Preview automatico. Vedi subito se l'immagine è sfocat
 
 ---
 
-### **C31 - Email Notifications** ✅ ✨
+### **C31 - Email Notifications** ✨✅
 **Effort**: 1 giorno
 **Priorità**: ALTA (UX Critical)
 **Costo:** Resend/SendGrid (gratis fino a ~10k email/mese, poi a pagamento)
@@ -271,7 +271,7 @@ Compili disdetta a metà → Browser crasha → Riapri → "Hai una bozza salvat
 
 ---
 
-### **C35 - E2E Testing Suite** 🧪
+### **C35 - E2E Testing Suite** 🧪✅
 **Effort:** 3-4 ore  
 **Priorità:** ALTA (Qualità)
 

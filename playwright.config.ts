@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
 /**
- * Playwright E2E Configuration for DisdettaFacile
+ * Playwright E2E Configuration for DisEasy
  * Phase 1: Core tests (main flow + duplicates)
  *
  * Technical decisions from C35 task:

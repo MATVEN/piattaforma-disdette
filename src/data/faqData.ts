@@ -65,8 +65,8 @@ export const faqItems: FAQItem[] = [
   {
     id: 'cf-1',
     category: 'come-funziona',
-    question: 'Come funziona DisdettaFacile?',
-    answer: 'DisdettaFacile automatizza il processo di disdetta in 4 semplici step: 1) Carichi la bolletta del fornitore da cui vuoi recedere, 2) Il nostro sistema estrae automaticamente i dati del contratto, 3) Verifichi e confermi i dati estratti, 4) Inviamo la PEC di disdetta al fornitore per te. Tutto in pochi minuti!',
+    question: 'Come funziona DisEasy?',
+    answer: 'DisEasy automatizza il processo di disdetta in 4 semplici step: 1) Carichi la bolletta del fornitore da cui vuoi recedere, 2) Il nostro sistema estrae automaticamente i dati del contratto, 3) Verifichi e confermi i dati estratti, 4) Inviamo la PEC di disdetta al fornitore per te. Tutto in pochi minuti!',
   },
   {
     id: 'cf-2',
@@ -83,14 +83,14 @@ export const faqItems: FAQItem[] = [
   {
     id: 'cf-4',
     category: 'come-funziona',
-    question: 'Posso usare DisdettaFacile per più contratti?',
+    question: 'Posso usare DisEasy per più contratti?',
     answer: 'Sì, puoi gestire tutte le disdette che vuoi dallo stesso account. Ogni contratto viene processato separatamente e puoi monitorare lo stato di ciascuno nella tua dashboard personale.',
   },
   {
     id: 'cf-5',
     category: 'come-funziona',
     question: 'È necessaria la PEC per inviare una disdetta?',
-    answer: 'Sì, la PEC (Posta Elettronica Certificata) è l\'unico metodo legalmente valido per inviare disdette di contratti in Italia. DisdettaFacile si occupa di tutto: noi generiamo e inviamo la PEC per te, garantendo validità legale e tracciabilità.',
+    answer: 'Sì, la PEC (Posta Elettronica Certificata) è l\'unico metodo legalmente valido per inviare disdette di contratti in Italia. DisEasy si occupa di tutto: noi generiamo e inviamo la PEC per te, garantendo validità legale e tracciabilità.',
   },
 
   // TEMPI E PROCEDURE
@@ -155,38 +155,44 @@ export const faqItems: FAQItem[] = [
   {
     id: 'pc-1',
     category: 'problemi',
-    question: 'La bolletta non viene riconosciuta, cosa faccio?',
-    answer: 'Assicurati che la bolletta sia in formato PDF, PNG o JPG e che sia leggibile (non sfocata). Se il sistema non riconosce automaticamente i dati, puoi inserirli manualmente nel form di revisione. Per problemi persistenti, contatta il supporto allegando la bolletta.',
+    question: "Errore nel caricamento della bolletta: perché l’upload fallisce?",
+    answer: "L’upload della bolletta può fallire se il file supera i 5MB o non è in formato PDF, PNG o JPG. Verifica anche la connessione internet e prova a ricaricare il file da un altro browser o dispositivo. Se necessario, comprimi il file o ottimizza il PDF prima di riprovare."
   },
   {
     id: 'pc-2',
     category: 'problemi',
-    question: 'I dati estratti sono sbagliati',
-    answer: 'Puoi correggere qualsiasi dato nella pagina di revisione prima di inviare la disdetta. Verifica attentamente tutti i campi, in particolare il codice contratto (POD/PDR/numero cliente) e la P.IVA del fornitore, che sono fondamentali per la disdetta.',
+    question: "La bolletta non viene riconosciuta dal sistema: cosa posso fare?",
+    answer: "Se la bolletta non viene riconosciuta, assicurati che l’immagine o il PDF siano leggibili, non sfocati e correttamente orientati. In caso di riconoscimento parziale, puoi inserire manualmente i dati nella pagina di revisione. Se il problema persiste, contatta il supporto allegando la bolletta."
   },
   {
     id: 'pc-3',
     category: 'problemi',
-    question: 'Non ricevo email di conferma',
-    answer: 'Controlla la cartella spam/posta indesiderata. Aggiungi noreply@disdettafacile.it ai contatti fidati. Se dopo 10 minuti non hai ricevuto nulla, verifica che l\'indirizzo email nel profilo sia corretto e contatta il supporto.',
+    question: "La pagina di revisione della disdetta è vuota: è un errore?",
+    answer: "La pagina di revisione può risultare vuota se l’elaborazione OCR della bolletta non è ancora completata. Attendi qualche secondo e ricarica la pagina. Se dopo 2 minuti la situazione non cambia, verifica lo stato della disdetta nella dashboard."
   },
   {
     id: 'pc-4',
     category: 'problemi',
-    question: 'Il sistema dice "dati incompleti"',
-    answer: 'Questo messaggio appare quando il nostro OCR non riesce a estrarre tutti i dati necessari dalla bolletta. Puoi procedere comunque compilando manualmente i campi mancanti nel form di revisione. I campi obbligatori sono evidenziati in rosso.',
+    question: "I dati della disdetta sono errati o incompleti: come li correggo?",
+    answer: "Prima di inviare la disdetta puoi modificare manualmente tutti i dati estratti dal sistema. I campi obbligatori sono evidenziati. Presta particolare attenzione a POD/PDR, numero cliente e P.IVA del fornitore. Se l’OCR ha estratto dati errati, puoi correggerli senza problemi."
   },
   {
     id: 'pc-5',
     category: 'problemi',
-    question: 'L\'upload della bolletta fallisce',
-    answer: 'Verifica che il file non superi i 10MB e che sia in uno dei formati supportati (PDF, PNG, JPG). Se il problema persiste, prova a comprimere l\'immagine o a convertire il PDF. Controlla anche la tua connessione internet.',
+    question: "Come controllare lo stato della disdetta online?",
+    answer: "Puoi verificare lo stato di ogni disdetta direttamente dalla dashboard. Gli stati disponibili includono: PROCESSING (in elaborazione), PENDING_REVIEW (pronta per la revisione), CONFIRMED (confermata) e TEST_SENT/SENT (PEC inviata)."
   },
   {
     id: 'pc-6',
     category: 'problemi',
-    question: 'La pagina di revisione è vuota',
-    answer: 'Questo può accadere se l\'elaborazione OCR non è ancora completata. Attendi qualche secondo e ricarica la pagina. Se dopo 2 minuti il problema persiste, l\'elaborazione potrebbe essere fallita - controlla lo stato nella dashboard.',
+    question: "Non ricevo le email di DisEasy: cosa devo controllare?",
+    answer: "Se non ricevi le email di notifica, controlla la cartella spam o posta indesiderata. Assicurati che l’indirizzo email nel tuo profilo sia corretto e aggiungi noreply@DisEasy.it ai contatti fidati. Se dopo 10 minuti non ricevi comunicazioni, contatta il supporto."
+  },
+  {
+    id: 'pc-7',
+    category: 'problemi',
+    question: "La PEC di disdetta non risulta ricevuta: è stata inviata?",
+    answer: "La PEC viene inviata direttamente al fornitore. Puoi verificare l’invio nella dashboard: se lo stato è TEST_SENT o SENT, la PEC è stata correttamente spedita con valore legale. In caso contrario, la PEC non è stata ancora inviata e potrebbe essere necessario intervenire."
   },
 
   // DOCUMENTI NECESSARI
@@ -252,7 +258,7 @@ export const faqItems: FAQItem[] = [
     id: 'su-1',
     category: 'supporto',
     question: 'Come posso contattare il supporto?',
-    answer: 'Puoi contattarci via email a support@disdettafacile.it oppure tramite il form di contatto nella pagina Supporto. Il nostro team risponde entro 24 ore lavorative. Per problemi urgenti, specifica "URGENTE" nell\'oggetto.',
+    answer: 'Puoi contattarci via email a support@DisEasy.it oppure tramite il form di contatto nella pagina Supporto. Il nostro team risponde entro 24 ore lavorative. Per problemi urgenti, specifica "URGENTE" nell\'oggetto.',
   },
   {
     id: 'su-2',

@@ -31,7 +31,7 @@ export function DelegationCheckbox({ register, errors }: DelegationCheckboxProps
             <span>Delega e Autorizzazione alla Piattaforma<span className="text-red-500">*</span></span>
           </label>
           <p className="text-xs text-gray-500 mt-1">
-            Autorizzo DisdettaFacile ad agire come mio mandatario nell'invio della PEC di
+            Autorizzo DisEasy ad agire come mio mandatario nell'invio della PEC di
             disdetta
           </p>
           {errors.delegaCheckbox && (

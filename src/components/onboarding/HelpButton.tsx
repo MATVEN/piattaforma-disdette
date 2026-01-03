@@ -10,7 +10,7 @@ import { usePathname } from 'next/navigation'
 // Contenuti guida contestuale per ogni pagina
 const contextualHelp: Record<string, { title: string; tips: string[] }> = {
   '/': {
-    title: 'Benvenuto su DisdettaFacile!',
+    title: 'Benvenuto su DisEasy!',
     tips: [
       '📄 Carica la tua bolletta per iniziare',
       '🤖 L\'AI estrae automaticamente i dati',
@@ -49,6 +49,60 @@ const contextualHelp: Record<string, { title: string; tips: string[] }> = {
       '⚡ Scegli il tipo di servizio (Luce/Gas/Telefonia)',
       '📄 Avrai bisogno della bolletta più recente',
       '🚀 Il processo richiede circa 2-3 minuti',
+    ],
+  },
+  '/terms': {
+    title: 'Termini e Condizioni',
+    tips: [
+      '📋 Leggi con attenzione prima di usare il servizio',
+      '🔝 Usa i bottoni in alto per navigare velocemente tra le sezioni',
+      '⚖️ Sezioni chiave: Mandato, Responsabilità e Limitazioni',
+      '📧 Per dubbi, contatta il supporto tramite il form contatti',
+    ],
+  },
+  '/privacy-cookie-policy': {
+    title: 'Privacy & Cookie Policy',
+    tips: [
+      '🔒 Scopri come proteggiamo i tuoi dati personali',
+      '🍪 Gestisci le tue preferenze sui cookie',
+      '📊 Trovi info su: conservazione dati, diritti GDPR, e destinatari',
+      '🔝 Usa i bottoni in alto per passare da Privacy a Cookie Policy',
+    ],
+  },
+  '/faq': {
+    title: 'Domande Frequenti',
+    tips: [
+      '🔍 Usa la barra di ricerca per trovare risposte velocemente',
+      '📂 Le domande sono organizzate per categoria',
+      '💡 Clicca su una domanda per espandere la risposta',
+      '📧 Non trovi risposta? Contattaci dal form supporto',
+    ],
+  },
+  '/operators': {
+    title: 'Operatori Supportati',
+    tips: [
+      '📡 Verifica se il tuo operatore è nella lista',
+      '🔎 Usa i filtri per cercare per tipo servizio',
+      '✅ Lista aggiornata regolarmente con nuovi operatori',
+      '📧 Operatore mancante? Segnalacelo!',
+    ],
+  },
+  '/how-it-works': {
+    title: 'Come Funziona',
+    tips: [
+      '📖 Scopri il processo in 3 semplici step',
+      '🤖 L\'AI estrae automaticamente i dati dalla bolletta',
+      '🔒 Tutti i dati sono crittografati e protetti',
+      '🚀 Pronto? Clicca "Nuova Disdetta" per iniziare',
+    ],
+  },
+  '/contact': {
+    title: 'Contattaci',
+    tips: [
+      '✍️ Compila il form per richiedere assistenza',
+      '📧 Preferisci email? Trova l\'indirizzo in fondo alla pagina',
+      '⏰ Rispondiamo entro 24-48 ore lavorative',
+      '💡 Per domande comuni, consulta prima le FAQ',
     ],
   },
 }
@@ -178,7 +232,7 @@ export function HelpButton() {
                   icon={<Mail className="h-5 w-5 text-indigo-600" />}
                   title="Contatta Supporto"
                   description="Scrivici per assistenza diretta"
-                  href="mailto:supporto@disdettafacile.it"
+                  href="mailto:supporto@DisEasy.it"
                   onClick={() => setIsOpen(false)}
                   isLast
                 />

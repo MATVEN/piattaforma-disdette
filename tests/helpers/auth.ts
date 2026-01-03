@@ -5,7 +5,7 @@ import { Page } from '@playwright/test'
  * Uses timestamp-based email to avoid conflicts between test runs
  */
 export const createTestUser = () => ({
-  email: `test-e2e-${Date.now()}@disdettafacile.test`,
+  email: `test-e2e-${Date.now()}@DisEasy.test`,
   password: 'TestE2E123!Strong',
   nome: 'Test',
   cognome: 'E2E',
@@ -16,7 +16,7 @@ export const createTestUser = () => ({
  * Create this user manually in Supabase for development
  */
 export const TEST_USER = {
-  email: 'test-e2e@disdettafacile.test',
+  email: 'test-e2e@DisEasy.test',
   password: 'TestPassword123!',
   nome: 'Test',
   cognome: 'E2E',

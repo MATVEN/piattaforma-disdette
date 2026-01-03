@@ -81,7 +81,7 @@ export default function Navbar() {
                 <div className="absolute inset-0 bg-gradient-primary blur-lg opacity-60 group-hover:opacity-100 transition-opacity" />
               </div>
               <span className="text-white drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]">
-                DisdettaFacile
+                DisEasy
               </span>
             </Link>
 

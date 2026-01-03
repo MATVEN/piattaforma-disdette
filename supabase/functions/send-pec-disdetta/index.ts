@@ -638,7 +638,7 @@ async function creaPdfDelega(profile: ProfileData): Promise<Uint8Array> {
     Io sottoscritto ${profile.nome || ''} ${profile.cognome || ''},
     residente in ${profile.indirizzo_residenza || ''},
 
-    DELEGO formalmente la piattaforma DisdettaFacile
+    DELEGO formalmente la piattaforma DisEasy
     a inviare la richiesta di disdetta per mio conto.
 
     Data: ${new Date().toLocaleDateString('it-IT')}

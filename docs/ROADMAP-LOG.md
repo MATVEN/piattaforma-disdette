@@ -467,6 +467,86 @@
     - Reduced bounce rate with clear navigation paths
     - Foundation for future features (contact form, FAQ, help center)
 
+- **Footer & Legal Pages Optimization (C19.5):**
+
+  - **Overview:**
+    - Reorganized the footer structure to eliminate redundancies and improve information hierarchy.
+    - Implemented missing legal and informational pages required for compliance and user trust.
+    - Enhanced navigation on long-form pages with sticky, scroll-aware navigation patterns.
+    - Fully integrated with the existing design system and contextual HelpButton logic.
+
+  - **Features Implemented:**
+    - Reworked footer layout into a balanced **2–2–2 structure**:
+      - *Product*: How It Works, Operators
+      - *Support*: FAQ, Contact
+      - *Legal*: Privacy & Cookie Policy, Terms of Service
+    - Introduced dedicated pages:
+      - Terms & Conditions
+      - Privacy Policy + Cookie Policy (unified)
+      - Supported Operators
+      - Contact page with structured form
+      - How It Works overview page
+    - Replaced confusing `mailto:` links with a proper contact form and email fallback.
+    - Contextual HelpButton support added for all new footer pages.
+
+  - **UX & Design System:**
+    - Consistent gradient system (indigo → pink) across all pages.
+    - Glassmorphism cards with backdrop blur for content sections.
+    - Sticky navigation pills on long pages (Privacy, FAQ).
+    - Scroll-aware active state tracking for navigation pills.
+    - Smooth scroll behavior with correct offset handling.
+    - Mobile-first responsive layouts with horizontal pill scrolling where needed.
+
+  - **Technical Implementation:**
+    - Scroll-based sticky navigation using state-driven visibility.
+    - IntersectionObserver for section-aware active pill highlighting.
+    - AnimatePresence for smooth sticky navigation entrance/exit.
+    - Centralized HelpButton logic extended with page-specific contextual tips.
+    - Unified Privacy + Cookie Policy to avoid legal duplication.
+    - Removed deprecated routes and references to obsolete pages.
+
+  - **Content Coverage:**
+    - **Terms of Service**:
+      - Mandate scope and limitations
+      - Responsibilities and liability boundaries
+      - Legal framework and service conditions
+    - **Privacy & Cookie Policy**:
+      - GDPR-compliant data processing purposes
+      - Legal bases and user rights
+      - Technical, analytics, and profiling cookies
+    - **How It Works**:
+      - End-to-end disdetta process explained in 3 steps
+      - Visual timeline with clear CTAs
+    - **Operators**:
+      - Supported providers list
+      - Service-type filtering
+    - **Contact**:
+      - Structured contact form
+      - Direct email fallback and response time expectations
+
+  - **SEO & Discoverability:**
+    - Dedicated SEO-friendly routes for all legal and informational pages.
+    - Semantic HTML structure for long-form legal content.
+    - Improved internal linking from footer and HelpButton.
+    - Clear separation between Privacy Policy and Terms for indexing clarity.
+
+  - **User Experience Impact:**
+    - Cleaner, more professional footer with no redundant links.
+    - Improved legal transparency and compliance readiness.
+    - Faster navigation within long documents.
+    - Reduced confusion around support contact methods.
+    - Context-aware help available on all informational pages.
+
+  - **Files Involved:**
+    - `src/components/Footer.tsx` (footer restructuring)
+    - `src/app/terms/page.tsx`
+    - `src/app/privacy/page.tsx`
+    - `src/app/operators/page.tsx`
+    - `src/app/contact/page.tsx`
+    - `src/app/how-it-works/page.tsx`
+    - `src/components/HelpButton.tsx`
+    - `src/app/faq/page.tsx`
+
 - **Duplicate Detection System (C20):**
   - **Data Access Layer:**
     - Adds `checkDuplicate()` in `src/repositories/disdetta.repository.ts` to detect existing cancellations matching the tuple  
@@ -793,7 +873,7 @@
     - Additional FAQs: 7 items
 
   - **SEO & Discoverability:**
-    - Page title: *FAQ & Centro Assistenza | DisdettaFacile*.
+    - Page title: *FAQ & Centro Assistenza | DisEasy*.
     - Optimized meta description with relevant keywords.
     - Semantic structure for improved indexing and readability.
 
@@ -817,7 +897,7 @@
     - **Data Export (Art. 20):**
       - Download of complete, machine-readable JSON with all user data.
       - Includes profile, disdette, status history, and metadata.
-      - File naming: `disdettafacile-dati-YYYY-MM-DD.json`.
+      - File naming: `DisEasy-dati-YYYY-MM-DD.json`.
     - **Account Deletion (Art. 17):**
       - Permanent, verified account deletion with full cascade cleanup.
       - Two-step confirmation flow to prevent accidental erasure.
@@ -899,7 +979,7 @@
       - *Disdetta Ready:* green gradient header, review CTA.
       - *PEC Sent:* success styling, dashboard CTA, next-steps explanation.
       - *Processing Error:* warning styling, recovery CTAs and troubleshooting tips.
-    - Consistent DisdettaFacile branding, support links, and accessible CTAs.
+    - Consistent DisEasy branding, support links, and accessible CTAs.
 
   - **Integration Completed:**
     - `process-document` Edge Function triggers *ready* and *error* emails.
