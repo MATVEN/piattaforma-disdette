@@ -15,6 +15,7 @@ import {
   formatTimestamp,
   getRelativeTime,
 } from '@/types/statusHistory'
+import { Fragment } from 'react'
 
 interface StatusTimelineProps {
   currentStatus: DisdettaStatus
@@ -54,63 +55,79 @@ export function StatusTimeline({
         return currentStatus === status
     }
 
+    // Helper: Get color based on current status (completed steps inherit current status color)
+    const getStepColor = (status: DisdettaStatus, completed: boolean, current: boolean): string => {
+      if (!completed && !current) {
+        return '#e5e7eb' // gray-200 for future steps
+      }
+      // Completed or current: use currentStatus color
+      const currentConfig = getStatusConfig(currentStatus)
+      switch (currentConfig.color) {
+        case 'blue': return '#3b82f6'
+        case 'yellow': return '#eab308'
+        case 'green': return '#22c55e'
+        case 'purple': return '#a855f7'
+        case 'red': return '#ef4444'
+        default: return '#6b7280'
+      }
+    }
+
   return (
-    <div className={`${className}`}>
+    <div className={`w-full sm:max-w-[560px] ${className}`}>
       {/* Timeline */}
-      <div className={`flex items-center ${compact ? 'gap-1' : 'gap-2'}`}>
+      <div className="w-full flex items-center">
         {visibleStatuses.map((status, index) => {
           const config = getStatusConfig(status)
           const historyEntry = getHistoryForStatus(status)
           const completed = isCompleted(status)
           const current = isCurrent(status)
           const isLast = index === visibleStatuses.length - 1
-          
+          const nextStatus = visibleStatuses[index + 1]
+          const nextCompleted = nextStatus ? isCompleted(nextStatus) : false
+          const nextCurrent = nextStatus ? isCurrent(nextStatus) : false
+
           return (
-            <div key={status} className="flex items-center flex-1">
-              {/* Step */}
-              <div className="flex flex-col items-center">
+            <Fragment key={status}>
+              {/* Icon */}
+              <div className="flex flex-col items-center flex-shrink-0">
                 {/* Circle */}
                 <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: index * 0.1 }}
-                    className={`
-                        ${compact ? 'w-8 h-8' : 'w-10 h-10'}
-                        rounded-full flex items-center justify-center
-                        transition-all duration-300
-                    `}
-                    style={{
-                        backgroundColor: completed || current 
-                        ? config.color === 'blue' ? '#3b82f6'
-                        : config.color === 'yellow' ? '#eab308'
-                        : config.color === 'green' ? '#22c55e'
-                        : config.color === 'red' ? '#ef4444'
-                        : '#6b7280'
-                        : '#e5e7eb' // gray-200
-                    }}
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`
+                    ${compact ? 'w-8 h-8' : 'w-10 h-10'}
+                    rounded-full flex items-center justify-center
+                    transition-all duration-300
+                  `}
+                  style={{
+                    backgroundColor: getStepColor(status, completed, current),
+                  }}
                 >
-                    {(() => {
-                        const IconComponent = Icons[config.icon as keyof typeof Icons] as any
-                        return IconComponent ? (
-                            <IconComponent 
-                                className={`${compact ? 'w-4 h-4' : 'w-5 h-5'} ${
-                                completed || current ? 'text-white' : 'text-gray-400'
-                                }`}
-                            />
-                        ) : (
-                            <span className={compact ? 'text-xs' : 'text-base'}>
-                                {config.icon}
-                            </span>
-                        )
-                    })()}
+                  {(() => {
+                    const IconComponent = Icons[config.icon as keyof typeof Icons] as any
+                    return IconComponent ? (
+                      <IconComponent
+                        className={`${compact ? 'w-4 h-4' : 'w-5 h-5'} ${
+                          completed || current ? 'text-white' : 'text-gray-400'
+                        }`}
+                      />
+                    ) : (
+                      <span className={compact ? 'text-xs' : 'text-base'}>
+                        {config.icon}
+                      </span>
+                    )
+                  })()}
                 </motion.div>
-                
+
                 {/* Label (non-compact only) */}
                 {!compact && (
                   <div className="mt-2 text-center">
-                    <p className={`text-xs font-medium ${
-                      completed || current ? 'text-gray-900' : 'text-gray-400'
-                    }`}>
+                    <p
+                      className={`text-xs font-medium ${
+                        completed || current ? 'text-gray-900' : 'text-gray-400'
+                      }`}
+                    >
                       {config.label}
                     </p>
                     {historyEntry && (
@@ -121,27 +138,23 @@ export function StatusTimeline({
                   </div>
                 )}
               </div>
-              
-              {/* Connector line */}
+
+              {/* Connector line (only if not last) */}
               {!isLast && (
-                <div className={`flex-1 ${compact ? 'h-0.5' : 'h-1'} mx-1 relative`}>
+                <div className={`flex-1 ${compact ? 'h-0.5' : 'h-1'} relative mx-4`}>
                   <div className="absolute inset-0 bg-gray-200 rounded-full" />
                   <motion.div
                     initial={{ width: 0 }}
-                    animate={{ width: completed ? '100%' : '0%' }}
+                    animate={{ width: nextCompleted || nextCurrent ? '100%' : '0%' }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className={`absolute inset-y-0 left-0 rounded-full`}
+                    className="absolute inset-y-0 left-0 rounded-full"
                     style={{
-                      backgroundColor: config.color === 'blue' ? '#3b82f6'
-                        : config.color === 'yellow' ? '#eab308'
-                        : config.color === 'green' ? '#22c55e'
-                        : config.color === 'purple' ? '#a855f7'
-                        : '#6b7280'
+                      backgroundColor: getStepColor(nextStatus, nextCompleted, nextCurrent),
                     }}
                   />
                 </div>
               )}
-            </div>
+            </Fragment>
           )
         })}
       </div>

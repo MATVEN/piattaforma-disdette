@@ -14,37 +14,50 @@ import type { TourStep } from '@/types/tour'
  */
 
 // Homepage Tour (active)
-export const homepageTour: TourStep[] = [
-  {
-    id: 'home-welcome',
-    title: '👋 Benvenuto su DisdEasy!',
-    content: 'La piattaforma più semplice per disdire contratti di luce, gas e telefonia. Ti guidiamo passo dopo passo!',
-    target: 'body',
-    placement: 'bottom',
-    showPrevious: false,
-  },
-  {
-    id: 'home-how-it-works',
-    title: '🚀 Come Funziona',
-    content: 'In 3 semplici passi: 1) Carica la bolletta 2) Verifica i dati estratti 3) Inviamo la PEC per te!',
-    target: 'body',
-    placement: 'bottom',
-  },
-  {
-    id: 'home-new-disdetta',
-    title: '📄 Inizia Subito',
-    content: 'Clicca "Nuova Disdetta" per iniziare. Ti servirà una bolletta recente del servizio da disdire.',
-    target: '[href="/new-disdetta"]',
-    placement: 'bottom',
-  },
-  {
-    id: 'home-help',
-    title: '❓ Serve Aiuto?',
-    content: 'Usa questo pulsante in qualsiasi momento per rivedere il tour o contattare il supporto!',
-    target: 'button[aria-label="Aiuto"]',
-    placement: 'left',
-  },
-]
+export function getHomepageTour(isAuthenticated: boolean): TourStep[] {
+  return [
+    {
+      id: 'home-welcome',
+      title: '👋 Benvenuto su DisdEasy!',
+      content: 'La piattaforma più semplice per disdire contratti di luce, gas e telefonia. Ti guidiamo passo dopo passo!',
+      target: 'body',
+      placement: 'bottom',
+      showPrevious: false,
+    },
+    {
+      id: 'home-how-it-works',
+      title: '🚀 Come Funziona',
+      content: 'In 3 semplici passi: 1) Carica la bolletta 2) Verifica i dati estratti 3) Inviamo la PEC per te!',
+      target: 'body',
+      placement: 'bottom',
+    },
+    // Step 3: Condizionale in base all'autenticazione
+    isAuthenticated
+      ? {
+          id: 'home-new-disdetta',
+          title: '📄 Inizia Subito',
+          content: 'Clicca "Nuova Disdetta" per iniziare. Ti servirà una bolletta recente del servizio da disdire.',
+          target: '[href="/new-disdetta"]',
+          placement: 'bottom',
+        }
+      : {
+          id: 'home-auth',
+          title: '🔑 Accedi o Registrati',
+          content: 'Per creare disdette, accedi con il tuo account o registrati gratuitamente in pochi secondi!',
+          target: '[href="/login"]',
+          placement: 'bottom',
+        },
+    {
+      id: 'home-help',
+      title: '❓ Serve Aiuto?',
+      content: 'Usa questo pulsante in qualsiasi momento per rivedere il tour o contattare il supporto!',
+      target: 'button[aria-label="Aiuto"]',
+      placement: 'left',
+    },
+  ]
+}
+
+export const homepageTour = getHomepageTour(false)
 
 // Default fallback tour
 // Removed: uploadTour, reviewTour, dashboardTour (unused after strategic decision)

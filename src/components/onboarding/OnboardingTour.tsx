@@ -9,28 +9,49 @@ import { useOnboarding } from '@/context/OnboardingContext'
 import { TourSpotlight } from './TourSpotlight'
 import { TourStepComponent } from './TourStep'
 import type { TourStep } from '@/types/tour'
-import { homepageTour, defaultTour } from '@/config/tourSteps'
+import { getHomepageTour, defaultTour } from '@/config/tourSteps'
+import { supabase } from '@/lib/supabaseClient'
 
 export function OnboardingTour() {
   const { tourActive, currentStep, totalSteps, nextStep, previousStep, skipTour, stopTour, completeStep } = useOnboarding()
   const [tourSteps, setTourSteps] = useState<TourStep[]>([])
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const pathname = usePathname()
 
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setIsAuthenticated(!!session)
+    }
+    
+    checkAuth()
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
+
   // Get tour steps based on current page
-  // Strategic decision (C24 Day 4): Tour only on homepage
-  // Other pages use Guida Contestuale for quick help
   const getTourForCurrentPage = (): TourStep[] => {
-    if (pathname === '/') return homepageTour
+    if (pathname === '/') {
+      return getHomepageTour(isAuthenticated)
+    }
     return defaultTour // Fallback for any other page
   }
 
   // Set tour steps based on current page when tour becomes active
   useEffect(() => {
-    if (tourActive && tourSteps.length === 0) {
+    if (tourActive) {
       const pageTour = getTourForCurrentPage()
       setTourSteps(pageTour)
     }
-  }, [tourActive, pathname, tourSteps.length])
+  }, [tourActive, pathname, isAuthenticated])
 
   // Scroll target into view when step changes
   useEffect(() => {

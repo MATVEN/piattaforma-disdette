@@ -57,8 +57,8 @@ export default function HowItWorksPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
       {/* Hero Section */}
-      <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-16 z-30">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="bg-white/80 backdrop-blur-md border-b border-gray-200">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -67,8 +67,8 @@ export default function HowItWorksPage() {
             <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4">
               Come funziona DisdEasy
             </h1>
-            <p className="text-gray-600 text-lg mb-6">
-              Inviare una disdetta non è mai stato così semplice. Segui questi 4 passaggi e pensa al resto.
+            <p className="text-sm sm:text-base text-gray-600">
+              Inviare una disdetta non è mai stato così semplice. Segui questi 4 passaggi e al resto ci pensiamo noi.
             </p>
           </motion.div>
         </div>
@@ -103,11 +103,11 @@ export default function HowItWorksPage() {
                       <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-primary text-white text-sm font-bold">
                         {step.number}
                       </span>
-                      <h3 className="text-xl font-bold text-gray-900">
+                      <h3 className="text-lg sm:text-xl font-bold text-gray-900">
                         {step.title}
                       </h3>
                     </div>
-                    <p className="text-gray-600 leading-relaxed">
+                    <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                       {step.description}
                     </p>
                   </div>
@@ -127,10 +127,10 @@ export default function HowItWorksPage() {
             transition={{ delay: 0.4 }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
               Perché Scegliere DisdEasy
             </h2>
-            <p className="text-gray-600 text-lg">
+            <p className="text-sm sm:text-base text-gray-600">
               Il modo più rapido e sicuro per gestire le tue disdette
             </p>
           </motion.div>
@@ -149,10 +149,10 @@ export default function HowItWorksPage() {
                   <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-primary text-white mb-4">
                     <Icon className="h-8 w-8" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-600">
+                  <p className="text-sm sm:text-base text-gray-600">
                     {feature.description}
                   </p>
                 </motion.div>
@@ -170,10 +170,10 @@ export default function HowItWorksPage() {
           transition={{ delay: 0.8 }}
           className="bg-gradient-to-r from-indigo-600 to-pink-500 rounded-2xl p-8 md:p-12 text-center text-white shadow-2xl"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="text-xl sm:text-2xl md:text-4xl font-bold mb-4">
             Pronto per Iniziare?
           </h2>
-          <p className="text-xl text-white/90 mb-8">
+          <p className="text-sm sm:text-base text-white/90 mb-8">
             Invia la tua prima disdetta in meno di 5 minuti
           </p>
           <Link

@@ -170,7 +170,7 @@ export default function FAQPage() {
             <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4 pb-2">
               Domande Frequenti
             </h1>
-            <p className="text-gray-600 text-lg mb-6">
+            <p className="text-sm sm:text-base text-gray-600 mb-6">
               Siamo qui per aiutarti. Trova rapidamente le risposte alle tue domande o contattaci per supporto.
             </p>
 
@@ -286,7 +286,7 @@ export default function FAQPage() {
             animate={{ opacity: 1 }}
             className="text-center py-12"
           >
-            <p className="text-gray-500 text-lg mb-4">
+            <p className="text-sm sm:text-base text-gray-500 mb-4">
               Nessun risultato per &quot;{searchQuery}&quot;
             </p>
             <button
@@ -298,7 +298,7 @@ export default function FAQPage() {
           </motion.div>
         ) : (
           // Category sections
-          <div className="space-y-12">
+          <div className="text-sm sm:text-base space-y-12">
             {faqCategories.map((cat) => {
               const items = groupedItems[cat.id]
               if (!items || items.length === 0) return null
@@ -315,11 +315,11 @@ export default function FAQPage() {
                   className="scroll-mt-32"
                 >
                   {/* Category Header */}
-                  <div className="flex items-center gap-3 mb-6">
+                  <div className="flex items-center gap-3 mb-4">
                     <div className={`p-3 rounded-xl ${colors.bg} ${colors.text} ${colors.border} border`}>
                       <Icon className="h-6 w-6" />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
                       {cat.name}
                     </h2>
                   </div>
@@ -381,10 +381,10 @@ export default function FAQPage() {
           transition={{ delay: 0.5 }}
           className="mt-16 text-center bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-8 border border-indigo-100"
         >
-          <h3 className="text-xl font-bold text-gray-900 mb-2">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
             Non hai trovato quello che cercavi?
           </h3>
-          <p className="text-gray-600 mb-4">
+          <p className="text-sm sm:text-base text-gray-600 mb-4">
             Il nostro team è qui per aiutarti
           </p>
           <a

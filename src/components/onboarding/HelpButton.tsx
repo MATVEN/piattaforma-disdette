@@ -266,7 +266,7 @@ export function HelpButton() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ type: 'spring', duration: 0.3 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100"
+              className="fixed top-1/2 -translate-y-1/2 inset-x-4 z-50 max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100"
             >
               {/* Header */}
               <div className="bg-gradient-to-r from-indigo-600 to-pink-500 px-6 py-4 flex items-center justify-between">

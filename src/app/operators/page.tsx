@@ -117,8 +117,8 @@ export default function OperatorsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
       {/* Hero Section */}
-      <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-16 z-30">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="bg-white/80 backdrop-blur-md border-b border-gray-200">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -127,7 +127,7 @@ export default function OperatorsPage() {
             <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4">
               Operatori Supportati
             </h1>
-            <p className="text-gray-600 text-lg mb-6">
+            <p className="text-sm sm:text-base text-gray-600 text-lg">
               Puoi inviare disdette a tutti i principali fornitori italiani di energia, gas e telecomunicazioni
             </p>
 
@@ -173,7 +173,7 @@ export default function OperatorsPage() {
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-indigo-600 border-r-transparent"></div>
-            <p className="mt-4 text-gray-600">Caricamento operatori...</p>
+            <p className="text-sm sm:text-base mt-4 text-gray-600">Caricamento operatori...</p>
           </div>
         ) : filteredOperators.length === 0 ? (
           <motion.div
@@ -181,7 +181,7 @@ export default function OperatorsPage() {
             animate={{ opacity: 1 }}
             className="text-center py-12"
           >
-            <p className="text-gray-500 text-lg mb-4">
+            <p className="text-sm sm:text-base text-gray-500 mb-4">
               Nessun operatore trovato
             </p>
             {searchQuery && (
@@ -226,7 +226,7 @@ export default function OperatorsPage() {
                         <div className="p-2 bg-gradient-primary text-white rounded-lg flex-shrink-0">
                           <Icon className="h-4 w-4" />
                         </div>
-                        <h3 className="font-semibold text-gray-900 text-base truncate">
+                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 text-base truncate">
                           {operator.name}
                         </h3>
                       </div>
@@ -251,10 +251,10 @@ export default function OperatorsPage() {
           transition={{ delay: 0.3 }}
           className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-8 border border-indigo-100 text-center"
         >
-          <h3 className="text-xl font-bold text-gray-900 mb-2">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
             Non trovi il tuo operatore?
           </h3>
-          <p className="text-gray-600 mb-4">
+          <p className="text-sm sm:text-base text-gray-600 mb-4">
             Stiamo continuamente aggiungendo nuovi operatori. Contattaci per richiedere il supporto per il tuo fornitore.
           </p>
           <a

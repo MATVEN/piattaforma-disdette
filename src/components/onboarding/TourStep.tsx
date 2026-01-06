@@ -24,7 +24,7 @@ interface Position {
 
 export function TourStepComponent({ step, currentStep, totalSteps, onNext, onPrevious, onSkip }: TourStepProps) {
   const [position, setPosition] = useState<Position>({ top: 0, left: 0 })
-  const [isPositioned, setIsPositioned] = useState(false) // ← ADD
+  const [isPositioned, setIsPositioned] = useState(false)
   const tooltipRef = useRef<HTMLDivElement>(null)
   const updateTimeoutRef = useRef<NodeJS.Timeout>()
 
@@ -34,59 +34,91 @@ export function TourStepComponent({ step, currentStep, totalSteps, onNext, onPre
 
     const updatePosition = () => {
       const targetEl = document.querySelector(step.target)
-      if (!targetEl || !tooltipRef.current) return
 
-      const targetRect = targetEl.getBoundingClientRect()
+      if (!tooltipRef.current) return
+
       const tooltipRect = tooltipRef.current.getBoundingClientRect()
-      const placement = step.placement || 'bottom'
-      const gap = 16
+      const viewportWidth = window.innerWidth
+      const viewportHeight = window.innerHeight
+      const isMobile = viewportWidth < 640
 
       let top = 0
       let left = 0
 
-      // Special handling for body element
-      if (step.target === 'body') {
-        // Center tooltip in viewport
-        top = window.innerHeight / 2 - tooltipRect.height / 2
-        left = window.innerWidth / 2 - tooltipRect.width / 2
-      } else {
-        // Calculate position based on placement
-        switch (placement) {
-          case 'top':
-            top = targetRect.top - tooltipRect.height - gap
-            left = targetRect.left + targetRect.width / 2 - tooltipRect.width / 2
-            break
-          case 'bottom':
-            top = targetRect.bottom + gap
-            left = targetRect.left + targetRect.width / 2 - tooltipRect.width / 2
-            break
-          case 'left':
-            top = targetRect.top + targetRect.height / 2 - tooltipRect.height / 2
-            left = targetRect.left - tooltipRect.width - gap
-            break
-          case 'right':
-            top = targetRect.top + targetRect.height / 2 - tooltipRect.height / 2
-            left = targetRect.right + gap
-            break
+      // Caso speciale: step 3 (Nuova Disdetta o Login) su mobile
+      if (isMobile && (step.target === '[href="/new-disdetta"]' || step.target === '[href="/login"]')) {
+        if (targetEl) {
+          const targetRect = targetEl.getBoundingClientRect()
+          // Verifica che il rect sia valido (non zero)
+          if (targetRect.height > 0 && targetRect.top > 0) {
+            top = targetRect.bottom + 16
+            left = 16
+            top = Math.min(top, viewportHeight - tooltipRect.height - 32)
+          } else {
+            // Link esiste ma non ancora renderizzato → posizione fissa alta
+            top = 240
+            left = 16
+          }
+        } else {
+          top = viewportHeight / 2 - tooltipRect.height / 2
+          left = 16
         }
+        setPosition({ top, left })
+        setIsPositioned(true)
+        return
+      }
 
-        // Auto-flip if doesn't fit viewport
-        const viewportWidth = window.innerWidth
-        const viewportHeight = window.innerHeight
+      // Se target non esiste o è 'body', centra la modal
+      if (!targetEl || step.target === 'body') {
+        top = viewportHeight / 2 - tooltipRect.height / 2
+        left = isMobile ? 16 : viewportWidth / 2 - tooltipRect.width / 2
+        setPosition({ top, left })
+        setIsPositioned(true)
+        return
+      }
 
-        // Flip horizontally if needed
+      // Target esiste: calcola posizione normale
+      const targetRect = targetEl.getBoundingClientRect()
+
+      const placement = step.placement || 'bottom'
+      const gap = 16
+
+      switch (placement) {
+        case 'top':
+          top = targetRect.top - tooltipRect.height - gap
+          left = targetRect.left + targetRect.width / 2 - tooltipRect.width / 2
+          break
+        case 'bottom':
+          top = targetRect.bottom + gap
+          left = targetRect.left + targetRect.width / 2 - tooltipRect.width / 2
+          break
+        case 'left':
+          top = targetRect.top + targetRect.height / 2 - tooltipRect.height / 2
+          left = targetRect.left - tooltipRect.width - gap
+          break
+        case 'right':
+          top = targetRect.top + targetRect.height / 2 - tooltipRect.height / 2
+          left = targetRect.right + gap
+          break
+      }
+
+      // Auto-flip su mobile: sempre a sinistra con margine
+      if (isMobile) {
+        left = 16
+      } else {
+        // Desktop: flip normale
         if (left < 16) {
           left = 16
         } else if (left + tooltipRect.width > viewportWidth - 16) {
           left = viewportWidth - tooltipRect.width - 16
         }
+      }
 
-        // Flip vertically if needed
-        if (top < 16) {
-          top = targetRect.bottom + gap
-        } else if (top + tooltipRect.height > viewportHeight - 16) {
-          top = targetRect.top - tooltipRect.height - gap
-        }
+      // Flip verticale
+      if (top < 16) {
+        top = targetRect.bottom + gap
+      } else if (top + tooltipRect.height > viewportHeight - 16) {
+        top = targetRect.top - tooltipRect.height - gap
       }
 
       setPosition({ top, left })
@@ -114,6 +146,27 @@ export function TourStepComponent({ step, currentStep, totalSteps, onNext, onPre
     }
   }, [step.target, step.placement])
 
+  // Auto-apri hamburger menu quando si entra nello step 3 su mobile
+  useEffect(() => {
+  const isMobile = window.innerWidth < 640
+  if (isMobile && currentStep === 2 && (step.target === '[href="/new-disdetta"]' || step.target === '[href="/login"]')) {
+    const menuButton = document.querySelector('button.md\\:hidden svg.lucide-menu')?.closest('button') as HTMLButtonElement
+    if (menuButton) {
+      const isMenuClosed = menuButton.querySelector('svg.lucide-menu')
+      if (isMenuClosed) {
+        // Simula click
+        menuButton.click()
+        // Aspetta che TUTTO sia pronto: animazione menu + rendering link
+        setTimeout(() => {
+          // Forza ricalcolo posizione
+          const event = new Event('resize')
+          window.dispatchEvent(event)
+        }, 500) // ← AUMENTATO da 350 a 500ms
+      }
+    }
+  }
+  }, [currentStep, step.target])
+
   const progressPercentage = ((currentStep + 1) / totalSteps) * 100
   const showPrevious = step.showPrevious !== false && currentStep > 0
   const showSkip = step.showSkip !== false
@@ -128,7 +181,7 @@ export function TourStepComponent({ step, currentStep, totalSteps, onNext, onPre
       }}
       exit={{ opacity: 0, y: 10 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
-      className="fixed z-[60] bg-white rounded-2xl shadow-2xl w-full px-4 sm:px-0 sm:max-w-sm pointer-events-auto"
+      className="fixed z-[60] bg-white rounded-2xl shadow-2xl w-[calc(100vw-2rem)] sm:w-full sm:max-w-sm pointer-events-auto"
       style={{
         top: `${position.top}px`,
         left: `${position.left}px`,

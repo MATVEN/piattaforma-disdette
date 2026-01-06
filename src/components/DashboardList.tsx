@@ -292,7 +292,7 @@ export default function DashboardList() {
                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                 className="h-3 w-3 rounded-full border-2 border-gray-300 border-t-indigo-600"
               />
-              <span className="hidden sm:inline">Aggiornamento automatico</span>
+              <span>Aggiornamento automatico</span>
             </motion.div>
           )}
 
@@ -400,7 +400,7 @@ function DisdettaCard({
               </div>
 
               <div className="flex-1 min-w-0 max-w-full overflow-hidden">
-                <h3 className="font-semibold text-gray-900 break-words sm:truncate group-hover:text-primary-600 transition-colors max-w-full">
+                <h3 className="text-sm sm:text-base font-semibold text-gray-900 truncate group-hover:text-primary-600 transition-colors max-w-full">
                   {fileName}
                 </h3>
                 <div className="flex items-center gap-2 mt-1 text-sm text-gray-500 overflow-hidden">
@@ -534,7 +534,7 @@ function StatusBadgeAndAction({
   estimatedCompletion?: string | null
 }) {
   // Stili condivisi per evitare overflow
-  const badgeClass = "flex items-center justify-center gap-2 rounded-full px-3 py-1.5 text-xs sm:text-sm font-medium whitespace-nowrap w-full sm:w-auto max-w-full";
+  const badgeClass = "inline-flex items-center gap-2 rounded-full px-2.5 py-1.5 text-xs font-medium whitespace-nowrap";
   const buttonClass = "flex items-center justify-center gap-2 rounded-lg px-3 py-1.5 text-xs sm:text-sm font-medium whitespace-nowrap w-full sm:w-auto max-w-full";
 
   // Helper: Format time remaining
@@ -571,7 +571,7 @@ function StatusBadgeAndAction({
         className={`${badgeClass} bg-primary-50 text-primary-700`}
       >
         <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
-        <span className="hidden sm:inline">Invio in corso...</span>
+        <span>Invio in corso...</span>
       </motion.div>
     )
   }
@@ -589,7 +589,7 @@ function StatusBadgeAndAction({
         {/* Error Badge */}
         <div className={`${badgeClass} bg-danger-50 text-danger-700`}>
           <XCircle className="h-4 w-4 flex-shrink-0" />
-          <span className="hidden sm:inline">Errore invio</span>
+          <span>Errore invio</span>
         </div>
         
         {/* Retry Button */}
@@ -624,7 +624,7 @@ function StatusBadgeAndAction({
         </motion.div>
         
         {/* Progress bar (below badge) */}
-        <div className="w-full max-w-[120px] h-1.5 bg-gray-200 rounded-full overflow-hidden">
+        <div className="w-full sm:max-w-[140px] h-1.5 bg-gray-200 rounded-full overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
@@ -658,7 +658,7 @@ function StatusBadgeAndAction({
         className={`${badgeClass} bg-success-50 text-success-700`}
       >
         <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
-        <span className="hidden sm:inline">
+        <span>
           {status === 'TEST_SENT' ? 'Test inviata' : 'PEC inviata'}
         </span>
       </motion.div>
@@ -670,7 +670,7 @@ function StatusBadgeAndAction({
     const progress = getStatusProgress('PENDING_REVIEW')
     
     return (
-      <div className="flex flex-col items-center gap-1.5 w-full sm:w-auto">
+      <div className="flex flex-col items-start gap-1.5 w-full sm:w-auto">
         {/* Badge */}
         <motion.div
           key={status}
@@ -680,11 +680,11 @@ function StatusBadgeAndAction({
           className={`${badgeClass} bg-warning-50 text-warning-700`}
         >
           <Clock className="h-4 w-4 flex-shrink-0" />
-          <span className="hidden sm:inline">In revisione</span>
+          <span>In revisione</span>
         </motion.div>
         
-        {/* Progress bar (below badge) */}
-        <div className="w-full max-w-[120px] h-1.5 bg-gray-200 rounded-full overflow-hidden">
+        {/* Progress bar (below badge) - Hidden on mobile */}
+        <div className="hidden sm:flex w-full max-w-[140px] h-1.5 bg-gray-200 rounded-full overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
@@ -711,11 +711,11 @@ function StatusBadgeAndAction({
           className={`${badgeClass} bg-primary-50 text-primary-700`}
         >
           <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
-          <span className="hidden sm:inline">Elaborazione...</span>
+          <span>Elaborazione...</span>
         </motion.div>
         
         {/* Progress bar (below badge) */}
-        <div className="w-full max-w-[120px] h-1.5 bg-gray-200 rounded-full overflow-hidden">
+        <div className="w-full sm:max-w-[140px] h-1.5 bg-gray-200 rounded-full overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}

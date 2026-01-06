@@ -1038,3 +1038,82 @@
   - **Status:**
     - Phase 1 completed and stable.
     - Phase 2 planned to extend coverage to duplicate detection and failure scenarios
+
+- **Validation & Mobile UX Improvements (UI Polish):**
+
+  - **Overview:**
+    - Improved form validation robustness and mobile user experience across the entire platform.
+    - Focused on reducing friction on small screens, fixing validation edge cases, and ensuring consistent responsive behavior.
+    - Enhancements span onboarding, dashboard, footer pages, and legal/informational content.
+
+  - **Form Validation & Schemas:**
+    - Fixed *Codice Fiscale* validation to handle lowercase characters and extra whitespace.
+    - Normalized CF input (trim + uppercase) before validation.
+    - Applied fixes consistently across B2C and B2B form fields.
+    - Updated domain schemas to align frontend and backend validation rules.
+
+  - **Onboarding Tour System (C24):**
+    - Fixed mobile overflow issues where tour content was clipped.
+    - Improved positioning when the hamburger menu is open (guest and authenticated users).
+    - Added proper max-height constraints and internal scrolling for small viewports.
+    - Improved responsive spacing across all tour components.
+    - Updated tour step configuration to be fully mobile-compatible.
+
+  - **Welcome Modal Improvements:**
+    - Reduced header height on mobile (`h-16` vs `h-32` on desktop).
+    - Made modal content scrollable using `overflow-y-auto` and `flex-1`.
+    - Responsive padding adjustments (`p-4 sm:p-6 lg:p-8`).
+    - Added `min-h-0` to prevent flex overflow issues on mobile.
+
+  - **Footer & Informational Pages:**
+    - Removed duplicated top spacing (`pt-16`) where navbar offset was already applied.
+    - Ensured consistent vertical spacing across all footer-linked pages.
+    - Pages affected: *Contact, How It Works, Operators, FAQ, Privacy, Terms*.
+
+  - **Dashboard UX Enhancements:**
+    - Truncated long PDF filenames with ellipsis for better mobile readability.
+    - Unified typography (`text-sm → text-base`) across breakpoints.
+    - Status badges rendered as compact `inline-flex`, always showing status text.
+    - Timeline layout:
+      - Full-width on mobile.
+      - Constrained width on desktop (`max-w-xl`).
+      - Dynamic color inheritance from current status.
+      - Progress bar hidden on mobile to reduce visual clutter.
+
+  - **Footer Pages Readability:**
+    - Increased scroll offset for anchor navigation (180–200px) to avoid navbar overlap.
+    - Standardized responsive typography:
+      - H1: `text-2xl → text-3xl`
+      - H2: `text-xl → text-2xl`
+      - H3: `text-lg → text-xl`
+      - Body text: `text-sm → text-base`
+    - Improved readability on mobile for Privacy, Terms, FAQ, Contact pages.
+
+  - **Profile Page:**
+    - Applied the same responsive typography improvements for visual consistency.
+
+  - **User Experience Impact:**
+    - Fewer validation errors caused by formatting issues.
+    - Improved usability on mobile devices across all critical flows.
+    - Cleaner layouts with reduced overflow and spacing inconsistencies.
+    - More readable dashboards and legal pages on small screens.
+
+  - **Files Involved:**
+    - `src/domain/schemas.ts`
+    - `src/components/ReviewForm/components/B2BLegalRepFields.tsx`
+    - `src/components/ReviewForm/components/B2CFields.tsx`
+    - `src/components/onboarding/TourStep.tsx`
+    - `src/components/onboarding/TourSpotlight.tsx`
+    - `src/components/onboarding/OnboardingTour.tsx`
+    - `src/components/onboarding/HelpButton.tsx`
+    - `src/components/onboarding/WelcomeModal.tsx`
+    - `src/config/tourSteps.ts`
+    - `src/components/DashboardList.tsx`
+    - `src/components/StatusTimeline.tsx`
+    - `src/app/contact/page.tsx`
+    - `src/app/how-it-works/page.tsx`
+    - `src/app/operators/page.tsx`
+    - `src/app/faq/page.tsx`
+    - `src/app/privacy-cookie-policy/page.tsx`
+    - `src/app/terms-of-service/page.tsx`
+    - `src/app/profileUser/page.tsx`

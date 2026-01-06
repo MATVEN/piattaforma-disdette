@@ -62,7 +62,7 @@ export function WelcomeModal() {
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
           />
 
-          {/* Modal Container - ✅ FIX BUG 3: Click outside to close */}
+          {/* Modal Container */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -73,12 +73,12 @@ export function WelcomeModal() {
           >
             {/* Modal Content - Stop propagation so clicks inside don't close */}
             <div
-              className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden"
+              className="relative w-full max-w-2xl max-h-[90vh] min-h-0 bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col"
               onClick={(e) => e.stopPropagation()} // ✅ Prevent close when clicking inside
             >
-              {/* Gradient Header */}
-              <div className="relative h-32 bg-gradient-to-r from-indigo-600 to-pink-500 overflow-hidden">
-                {/* Animated sparkles */}
+              {/* Gradient Header - Ridotto su mobile */}
+              <div className="relative h-16 sm:h-28 bg-gradient-to-r from-indigo-600 to-pink-500 overflow-hidden flex-shrink-0">
+                {/* Animated sparkles - Ridotti */}
                 <motion.div
                   animate={{
                     scale: [1, 1.2, 1],
@@ -89,7 +89,7 @@ export function WelcomeModal() {
                     repeat: Infinity,
                     ease: 'linear',
                   }}
-                  className="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full blur-3xl"
+                  className="absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"
                 />
                 <motion.div
                   animate={{
@@ -101,19 +101,17 @@ export function WelcomeModal() {
                     repeat: Infinity,
                     ease: 'linear',
                   }}
-                  className="absolute -bottom-12 -left-12 w-48 h-48 bg-white/10 rounded-full blur-3xl"
+                  className="absolute -bottom-8 -left-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"
                 />
-
-                {/* Close button - ✅ FIX BUG 2: Ensure clickable with higher z-index */}
+                {/* Close button */}
                 <button
                   onClick={handleClose}
-                  className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors cursor-pointer"
+                  className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 p-1.5 sm:p-2 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors cursor-pointer"
                   aria-label="Chiudi"
                 >
-                  <X className="h-5 w-5 text-white" />
+                  <X className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                 </button>
-
-                {/* Icon */}
+                {/* Icon - Più piccolo su mobile */}
                 <div className="relative h-full flex items-center justify-center">
                   <motion.div
                     animate={{
@@ -125,15 +123,15 @@ export function WelcomeModal() {
                       repeat: Infinity,
                       ease: 'easeInOut',
                     }}
-                    className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg"
+                    className="w-10 h-10 sm:w-16 sm:h-16 bg-white rounded-full flex items-center justify-center shadow-lg"
                   >
-                    <Sparkles className="h-10 w-10 text-indigo-600" />
+                    <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600" />
                   </motion.div>
                 </div>
               </div>
 
-              {/* Content */}
-              <div className="p-8">
+              {/* Content - Scrollable */}
+              <div className="p-4 sm:p-6 lg:p-8 overflow-y-auto flex-1 min-h-0">
                 <h2 className="text-3xl font-bold text-gray-900 mb-3 text-center">
                   Benvenuto su DisdEasy! 🎉
                 </h2>
@@ -189,7 +187,7 @@ export function WelcomeModal() {
 
                   <button
                     onClick={handleSkip}
-                    className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+                    className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-100 text-gray-700  text-sm sm:text-base font-semibold rounded-xl hover:bg-gray-200 transition-colors"
                   >
                     Salta, lo farò da solo
                   </button>

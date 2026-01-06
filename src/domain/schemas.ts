@@ -23,6 +23,21 @@ const ibanIt = z
   .transform((s) => s.replace(/\s+/g, '').toUpperCase())
   .pipe(z.string().regex(/^IT\d{2}[A-Z0-9]{23}$/, 'IBAN italiano non valido (forma)'))
 
+// Codice Fiscale IT: formato ufficiale italiano
+// Pattern: 6 lettere + 2 numeri + 1 lettera + 2 numeri + 1 lettera + 3 numeri + 1 lettera
+const codiceFiscale = z
+ .string()
+ .trim()                                       // Rimuove spazi
+ .transform((s) => s.toUpperCase())            // Maiuscolo
+ .pipe(
+   z.string()
+     .length(16, 'Codice Fiscale deve essere di 16 caratteri')
+     .regex(
+       /^[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]$/,
+       'Formato codice fiscale non valido'
+     )
+ )
+
 // Whitelist di bucket (adatta ai tuoi)
 export const bucketEnum = z.enum([
   'documenti_utente',
@@ -297,10 +312,7 @@ export function parseGetExtractedData(input: unknown) {
 export const profileFormSchema = z.object({
   nome: z.string().trim().min(1, "Il nome è obbligatorio."),
   cognome: z.string().trim().min(1, "Il cognome è obbligatorio."),
-  codice_fiscale: z.string()
-    .min(16, 'Codice fiscale deve essere 16 caratteri')
-    .max(16, 'Codice fiscale deve essere 16 caratteri')
-    .regex(/^[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]$/, 'Formato codice fiscale non valido'),
+  codice_fiscale: codiceFiscale,
   indirizzo_residenza: z.string().trim().min(1, "L'indirizzo è obbligatorio."),
 })
 
@@ -339,10 +351,7 @@ const reviewFormSchemaB2C = reviewFormBaseSchema.extend({
   // Dati anagrafici privato
   nome: z.string().trim().min(1, 'Nome obbligatorio'),
   cognome: z.string().trim().min(1, 'Cognome obbligatorio'),
-  codice_fiscale: z.string()
-    .min(16, 'Codice Fiscale deve essere di 16 caratteri')
-    .max(16, 'Codice Fiscale deve essere di 16 caratteri')
-    .regex(/^[A-Z0-9]{16}$/i, 'Codice Fiscale non valido'),
+  codice_fiscale: codiceFiscale,
   indirizzo_residenza: z.string().trim().min(1, 'Indirizzo residenza obbligatorio'),
 })
 
@@ -361,10 +370,7 @@ const reviewFormSchemaB2B = reviewFormBaseSchema.extend({
   // Dati Legale Rappresentante
   lr_nome: z.string().trim().min(1, 'Nome legale rappresentante obbligatorio'),
   lr_cognome: z.string().trim().min(1, 'Cognome legale rappresentante obbligatorio'),
-  lr_codice_fiscale: z.string()
-    .min(16, 'Codice Fiscale LR deve essere di 16 caratteri')
-    .max(16, 'Codice Fiscale LR deve essere di 16 caratteri')
-    .regex(/^[A-Z0-9]{16}$/i, 'Codice Fiscale LR non valido'),
+  lr_codice_fiscale: codiceFiscale,
 
   // Indirizzi
   indirizzo_fornitura: z.string().trim().min(1, 'Indirizzo fornitura obbligatorio'),

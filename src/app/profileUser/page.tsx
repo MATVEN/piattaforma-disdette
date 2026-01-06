@@ -319,7 +319,13 @@ export default function ProfilePage() {
                 <input
                   type="text"
                   id="codice_fiscale"
-                  {...register("codice_fiscale")}
+                  {...register('codice_fiscale', {
+                    onChange: (e) => {
+                      // ✅ Transform live: trim + uppercase
+                      const value = e.target.value.trim().toUpperCase()
+                      e.target.value = value
+                    }
+                  })}
                   placeholder="RSSMRA80A01H501Z"
                   maxLength={16}
                   className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none uppercase"
