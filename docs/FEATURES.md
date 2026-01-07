@@ -279,7 +279,7 @@ Compili disdetta a metà → Browser crasha → Riapri → "Hai una bozza salvat
 Implementa una suite completa di test end-to-end con Playwright che valida tutti i flussi critici dell’applicazione: registrazione, upload bolletta, revisione dati, conferma, invio in modalità test, salvataggio e ripresa del wizard, rilevamento duplicati e interazioni della dashboard (scroll infinito, stati, errori).
 
 **Perché è importante:**  
-Assicura che l’intero percorso utente funzioni correttamente da inizio a fine. È un passaggio obbligatorio prima della PEC reale (C36), poiché l’invio PEC è irreversibile e può essere attivato solo quando tutti i flussi fondamentali sono certificati tramite test E2E affidabili.
+Assicura che l’intero percorso utente funzioni correttamente da inizio a fine. È un passaggio obbligatorio prima della PEC reale (C37), poiché l’invio PEC è irreversibile e può essere attivato solo quando tutti i flussi fondamentali sono certificati tramite test E2E affidabili.
 
 **Quando farlo:**  
 Subito dopo il completamento di C34 (Wizard Save & Resume) e prima di qualunque feature di produzione. In questo modo si garantisce la stabilità end-to-end della piattaforma prima del lancio.
@@ -289,13 +289,29 @@ L’utente crea un account → carica la bolletta → attende l’OCR → rivede
 
 ---
 
+### C36 – New Homepage & Conversion Flow ⚡✅
+
+**Effort:** 1–2 giorni
+**Priorità:** ALTA (Conversione)
+
+**Cosa fa:**
+Nuova homepage con sezioni interattive che spiegano il servizio, guidano l’utente nel flusso di disdetta e portano all’azione tramite CTA chiare.
+
+**Perché è importante:**
+La homepage determina se l’utente capisce subito il valore del servizio. Una struttura chiara riduce l’abbandono e aumenta la conversione.
+
+**Esempio pratico:**
+Utente entra → Capisce il processo in 3 step → Vede benefici e FAQ → Si fida → Avvia la disdetta.
+
+---
+
 ## 💰 FEATURE CON COSTI (Post-Test / Lancio Reale)
 
 Queste feature richiedono servizi a pagamento o hanno senso solo con il servizio reale attivo.
 
 ---
 
-### **C36 - PEC Real Send** 🔴 CRITICO (Post-Test)
+### **C37 - PEC Real Send** 🔴 CRITICO (Post-Test)
 **Effort:** 0.5-1 giorno  
 **Costo:** Casella PEC certificata (~€50-100/anno) + SMTP
 
@@ -310,7 +326,7 @@ Quando sei pronto a mandare PEC vere ai provider. Fino ad allora, test mode simu
 
 ---
 
-### **C37 - Payment Integration** 🔴 CRITICO (Monetizzazione)
+### **C38 - Payment Integration** 🔴 CRITICO (Monetizzazione)
 **Effort:** 5-6 giorni  
 **Costo:** Stripe (commissione ~2% + €0.25 per transazione)
 
@@ -325,22 +341,22 @@ Quando decidi il pricing e sei pronto a monetizzare. Prima testa tutto gratis co
 
 ---
 
-### **C38 - Guest Checkout Flow** 🎯 (Post-Payment)
+### **C39 - Guest Checkout Flow** 🎯 (Post-Payment)
 **Effort:** 5-6 giorni  
-**Costo:** Nessuno diretto, ma richiede C37 (Payment)
+**Costo:** Nessuno diretto, ma richiede C38 (Payment)
 
 **Cosa fa:**  
 Permette di creare disdette senza registrazione obbligatoria. L'utente paga come ospite, poi può eventualmente registrarsi per salvare la pratica nel profilo.
 
 **Perché è importante:**  
-Riduce friction, aumenta conversioni. Ma ha senso solo DOPO aver implementato pagamenti (C37).
+Riduce friction, aumenta conversioni. Ma ha senso solo DOPO aver implementato pagamenti (C38).
 
 **Quando farlo:**  
-Dopo C37, quando vedi che molti utenti abbandonano alla registrazione.
+Dopo C38, quando vedi che molti utenti abbandonano alla registrazione.
 
 ---
 
-### **C39 - Admin Dashboard** 🎯 (Post-Launch)
+### **C40 - Admin Dashboard** 🎯 (Post-Launch)
 **Effort:** 6-8 giorni  
 **Costo:** Nessuno diretto
 
@@ -355,7 +371,7 @@ Dopo lancio, quando hai traffico reale e serve supporto operativo avanzato.
 
 ---
 
-### **C40 - Analytics & Tracking** ✨ (Pre-Launch)
+### **C41 - Analytics & Tracking** ✨ (Pre-Launch)
 **Effort:** 1-2 giorni  
 **Costo:** Google Analytics 4 (gratis), Sentry per errors (gratis fino a soglia)
 
@@ -370,7 +386,7 @@ Dati per capire cosa funziona e cosa no. Ma inutile in test senza traffico reale
 
 ---
 
-### **C41 - Performance Optimization** ✨ (Pre-Launch)
+### **C42 - Performance Optimization** ✨ (Pre-Launch)
 **Effort:** 2-3 giorni  
 **Costo:** Nessuno diretto
 
@@ -427,18 +443,18 @@ SEO e UX. Ma ha senso ottimizzare con traffico reale per capire i veri bottlenec
 ```
 
 🔴 GATE OBBLIGATORI(CRITICHE per Lancio)
-- C36: PEC Real Send (0.5-1d) 💰~€50-100/anno 
+- C37: PEC Real Send (0.5-1d) 💰~€50-100/anno 
 
 🔴 MONETIZZAZIONE
-- C37: Payment Integration (5-6d) 💰 ~2% commissioni
+- C38: Payment Integration (5-6d) 💰 ~2% commissioni
 
 🎯 POST-LAUNCH
-- C38: Guest Checkout (5-6d) - Richiede C37
-- C39: Admin Dashboard (6-8d)
+- C39: Guest Checkout (5-6d) - Richiede C38
+- C40: Admin Dashboard (6-8d)
 
 ✨ PRE-LAUNCH
-- C40: Analytics & Tracking (1-2d) - GratiS
-- C41: Performance Optimization (2-3d) - GratiS
+- C41: Analytics & Tracking (1-2d) - GratiS
+- C42: Performance Optimization (2-3d) - GratiS
 
 ```
 
@@ -473,7 +489,7 @@ Week 5-6: C27 + C24 + C26
 
 ### **Percorso C - PRODUZIONE**
 ```
-Test completo → C35 (E2E) → C36 (PEC) → C37 (Pagamenti)
+Test completo → C35 (E2E) → C37 (PEC) → C38 (Pagamenti)
 
 ```
 **Focus:** Tutto + lancio  

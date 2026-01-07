@@ -1117,3 +1117,48 @@
     - `src/app/privacy-cookie-policy/page.tsx`
     - `src/app/terms-of-service/page.tsx`
     - `src/app/profileUser/page.tsx`
+
+- **Homepage Redesign (CXX):**
+
+  - **Overview:**
+    - Implemented a completely redesigned homepage focused on clarity, conversion, and guided onboarding.
+    - Introduces interactive sections that explain the value proposition and process at a glance.
+    - Fully aligned with the existing design system and onboarding flow.
+
+  - **Features Implemented:**
+    - Hero section with category selector and visual progress indicator.
+    - Interactive category buttons leading directly to new disdetta creation.
+    - 3-step process explanation with visual connecting lines.
+    - 6 benefit cards with hover animations and visual feedback.
+    - B2B promotional banner with gradient background and dedicated CTA.
+    - Customer testimonials section with ratings and social proof.
+    - Final conversion-focused CTA with patterned gradient overlay.
+    - FAQ accordion with 7 frequently asked questions.
+
+  - **UX & Design System:**
+    - Indigo → pink gradient design system applied consistently.
+    - Card-based layout with hover states and depth.
+    - Clear visual hierarchy for scanning and readability.
+    - Mobile-first responsive layout across all sections.
+    - Interactive elements to reduce cognitive load and guide users.
+
+  - **Technical Implementation:**
+    - Framer Motion used for scroll-based and interaction animations.
+    - Lucide React icons (Material Symbols fully replaced).
+    - Next.js `Link` components for all internal navigation.
+    - Optimized component structure for fast initial render.
+    - Lightweight animations to avoid layout shifts.
+
+  - **Performance & Build Impact:**
+    - Homepage bundle size: **8.52 kB**.
+    - First Load JS: **142 kB**.
+    - No performance regressions detected.
+
+  - **User Experience Impact:**
+    - Clear explanation of the service in under one screen.
+    - Faster user understanding of the 3-step process.
+    - Improved trust through testimonials and transparency.
+    - Stronger conversion via progressive CTAs and guided flow.
+
+  - **Files Involved:**
+    - `src/app/page.tsx` (complete homepage implementation)
