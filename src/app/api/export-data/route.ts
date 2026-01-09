@@ -24,13 +24,13 @@ export async function GET() {
         .single(),
 
       supabase
-        .from('extracted_data')
+        .from('disdette')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false }),
 
       supabase
-        .from('status_history')
+        .from('disdetta_status_history')
         .select('*')
         .eq('user_id', user.id)
         .order('changed_at', { ascending: false })
@@ -55,7 +55,7 @@ export async function GET() {
         items: disdette.data || [],
       },
 
-      status_history: {
+      disdetta_status_history: {
         total_count: statusHistory.data?.length || 0,
         items: statusHistory.data || [],
       },

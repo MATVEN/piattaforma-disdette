@@ -114,7 +114,7 @@ grep -r "PENDING_REVIEW" supabase/functions/
 Look for code like:
 ```typescript
 await supabase
-  .from('extracted_data')
+  .from('disdette')
   .update({ status: 'PENDING_REVIEW' })
 ```
 
@@ -131,7 +131,7 @@ grep -r "TEST_SENT\|SENT" supabase/functions/
 Look for code like:
 ```typescript
 await supabase
-  .from('extracted_data')
+  .from('disdette')
   .update({ status: 'TEST_SENT' })
 ```
 
@@ -148,7 +148,7 @@ grep -r "FAILED" supabase/functions/
 Look for code in catch blocks like:
 ```typescript
 await supabase
-  .from('extracted_data')
+  .from('disdette')
   .update({ status: 'FAILED', error_message: ... })
 ```
 

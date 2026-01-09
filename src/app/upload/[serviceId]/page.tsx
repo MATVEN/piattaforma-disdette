@@ -98,7 +98,7 @@ export default function UploadPage() {
       // Creiamo il record 'placeholder' con stato 'PROCESSING'
       // Usiamo 'upsert' per sicurezza, nel caso l'utente ricarichi lo stesso file
       const { data: recordData, error: insertError } = await supabase
-        .from('extracted_data')
+        .from('disdette')
         .insert({
           user_id: user.id,
           file_path: filePath,

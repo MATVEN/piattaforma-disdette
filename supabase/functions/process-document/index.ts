@@ -188,7 +188,7 @@ serve(async (req: Request) => {
       // 4) Recupera il record
       console.log(`[C14] Recupero record ID: ${recordId}`);
       const { data: record, error: selectError } = await sb
-        .from("extracted_data")
+        .from("disdette")
         .select("file_path")
         .eq("id", recordId)
         .single();
@@ -288,7 +288,7 @@ serve(async (req: Request) => {
       })
 
       const { data: updatedData, error: updateSuccessError } = await sb
-        .from("extracted_data")
+        .from("disdette")
         .update(successRow)
         .eq("id", recordId)
         .select()
@@ -324,7 +324,7 @@ serve(async (req: Request) => {
       console.error(`[C14] Errore di processo per ID ${recordId}: ${msg}`);
       
       const { error: updateFailError } = await sb
-        .from("extracted_data")
+        .from("disdette")
         .update({
           status: "FAILED",
           error_message: msg.substring(0, 500)

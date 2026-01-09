@@ -43,7 +43,7 @@ The codebase follows a layered architecture pattern:
 - Type definitions derived from schemas using `z.infer<>`
 
 **Layer 2: Repository (`src/repositories/`)**
-- `disdetta.repository.ts`: Data access layer for `extracted_data` table
+- `disdetta.repository.ts`: Data access layer for `disdette` table
 - Handles all direct database queries via Supabase client
 - Methods: `getById`, `getByUser`, `create`, `updateStatus`, `confirmData`, etc.
 - Returns raw database types, throws `DatabaseError` or `NotFoundError`
@@ -89,7 +89,7 @@ Located in `supabase/functions/`:
 - Triggered after file upload to extract data from utility bills
 - Calls Google Document AI REST API with JWT authentication
 - Implements retry logic and 7-second strategic delay for GCP storage propagation
-- Updates `extracted_data` table with OCR results
+- Updates `disdette` table with OCR results
 - Sets status: PROCESSING → PENDING_REVIEW (success) or FAILED (error)
 
 **`send-pec-disdetta/index.ts`** (C8, C12):
@@ -106,7 +106,7 @@ supabase functions deploy send-pec-disdetta
 
 ### State Machine (Disdetta Status Flow)
 
-The `extracted_data.status` field follows this flow:
+The `disdette.status` field follows this flow:
 
 1. **PROCESSING** - Initial state when file is uploaded and OCR is running
 2. **PENDING_REVIEW** - OCR completed, user must review/confirm extracted data
@@ -266,7 +266,7 @@ The delega flow was refactored in C13:
 - `nome`, `cognome`, `indirizzo_residenza`
 - `documento_identita_path` (storage path)
 
-**`extracted_data`** (disdette):
+**`disdette`** (disdette):
 - `id` (serial primary key)
 - `user_id` (uuid, FK)
 - `file_path` (storage path to uploaded bill)

@@ -12,17 +12,13 @@ export function WelcomeModal() {
 
     if (isLoading) return null
 
-    console.log('🎨 WelcomeModal render - isLoading:', isLoading, 'isFirstVisit:', isFirstVisit, 'isVisible:', isVisible)
-
     // ✅ Don't render until Context has loaded from localStorage
     if (isLoading) {
-        console.log('⏳ Still loading, not rendering modal')
         return null
     }
 
     // Don't render if not first visit or already dismissed
     if (!isFirstVisit || !isVisible) {
-        console.log('✋ Not first visit or not visible, not rendering modal')
         return null
     }
 

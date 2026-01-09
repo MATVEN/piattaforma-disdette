@@ -142,7 +142,7 @@ export function useReviewForm(): UseReviewFormReturn {
       try {
         // Fetch disdetta data
         const { data: disdettaData, error: fetchError } = await supabase
-          .from('extracted_data')
+          .from('disdette')
           .select('*')
           .eq('id', id) // ← Usa direttamente id (già number)
           .single()

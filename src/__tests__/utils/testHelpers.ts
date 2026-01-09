@@ -21,7 +21,7 @@ export const createTestDisdetta = (overrides = {}) => ({
 // Cleanup helper
 export const cleanupTestData = async (userId: string) => {
   await supabaseTest
-    .from('extracted_data')
+    .from('disdette')
     .delete()
     .eq('user_id', userId)
 }

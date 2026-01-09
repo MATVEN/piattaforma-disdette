@@ -10,7 +10,7 @@ export class StatusHistoryRepository {
    */
   async getHistoryByDisdettaId(disdettaId: number): Promise<StatusHistoryEntry[]> {
     const { data, error } = await this.supabase
-      .from('status_history')
+      .from('disdetta_status_history')
       .select('*')
       .eq('disdetta_id', disdettaId)
       .order('timestamp', { ascending: true })
@@ -27,7 +27,7 @@ export class StatusHistoryRepository {
    */
   async getLatestStatus(disdettaId: number): Promise<StatusHistoryEntry | null> {
     const { data, error } = await this.supabase
-      .from('status_history')
+      .from('disdetta_status_history')
       .select('*')
       .eq('disdetta_id', disdettaId)
       .order('timestamp', { ascending: false })

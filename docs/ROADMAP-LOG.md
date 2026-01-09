@@ -30,7 +30,7 @@
   - Adds a 7-second strategic delay to resolve the 404 race condition.
   - Implements manual Base64 file conversion.
   - Adds Google OAuth Access Token generation.
-  - Adds `documento_delega_path` column to the `extracted_data` table.
+  - Adds `documento_delega_path` column to the `disdette` table.
   - Updates the Edge Function to receive both `path` (Bolletta) and `delegaPath` (Delega).
   - Implements `upsert` (on `file_path` conflict) to save/update both file paths and prevent duplicate errors.
 
@@ -39,7 +39,7 @@
 
 - **Data Persistence & Review (C5):**
   - **Backend:**
-    - Creates `extracted_data` table with RLS policies.
+    - Creates `disdette` table with RLS policies.
     - Adds a new secure API route `/api/get-extracted-data` to fetch results via RLS.
   - **Frontend:**
     - Modifies the (C3) 2-step wizard to invoke the (C4) function and redirect to the review page on success.
@@ -58,12 +58,12 @@
   - **Backend:**
     - Creates the new API route `/api/confirm-data` (PATCH).
     - The API securely authenticates the user (ANON_KEY) and implements a safe `cookieAdapter`.
-    - On success, the API updates the `extracted_data` record with user-supplied data and sets the `status` to `CONFIRMED`.
+    - On success, the API updates the `disdette` record with user-supplied data and sets the `status` to `CONFIRMED`.
 
 - **User Dashboard (C7):**
   - **Backend:**
     - Creates the new API route `GET /api/get-my-disdette`.
-    - The API securely fetches all records from `extracted_data` matching the `user_id`.
+    - The API securely fetches all records from `disdette` matching the `user_id`.
   - **Frontend:**
     - Creates the new `/dashboard` page (Server Component) to act as the user's main hub, including a `Suspense` boundary.
     - Creates the `DashboardList` (Client Component) which calls the new API, handles loading/error states, and renders the list of submissions.
@@ -81,7 +81,7 @@
     - Invokes the `send-pec-disdetta` Edge Function.
   - **Backend (Edge Function):**
     - Creates the new `send-pec-disdetta` Edge Function.
-    - (Fase 1 - Recupero): Uses SERVICE_ROLE_KEY to fetch 'extracted_data' and 'profiles' data, and downloads the 'documento_delega' file from Storage.
+    - (Fase 1 - Recupero): Uses SERVICE_ROLE_KEY to fetch 'disdette' and 'profiles' data, and downloads the 'documento_delega' file from Storage.
     - (Fase 2 - Generazione PDF): Imports `pdf-lib` and dynamically generates the PDF disdetta letter populated with user and contract data.
     - (Fase 3 - Invio): **(Test Mode)** SMTP/PEC logic is implemented but commented out.
     - Updates the disdetta status to `SENT` upon successful PDF generation.
@@ -155,7 +155,7 @@
     - Updated the function to upload *both* the Lettera PDF and Delega PDF to storage for tracking.
 
 - **OCR Error Handling (C14):**
-  - **Database (Schema):** Adds `error_message` column to `extracted_data`.
+  - **Database (Schema):** Adds `error_message` column to `disdette`.
   - **C3 (Upload Page):** Refactored to create a record with `status: 'PROCESSING'` *before* invoking the function, passing only the record `id`.
   - **C4 (process-document):** Refactored to receive an `id`. Implements a `try...catch` block to update the record to `status: 'FAILED'` and save the `error_message` on failure, preventing a crash.
   - **C13 (ReviewForm):**
@@ -170,7 +170,7 @@
     - Creates Supabase server-side factory `(src/lib/supabase/server.ts)` with proper cookie handling and typing.
 
   - **Data Access Layer:**
-    - Adds DisdettaRepository `(src/repositories/disdetta.repository.ts)` for all queries on extracted_data.
+    - Adds DisdettaRepository `(src/repositories/disdetta.repository.ts)` for all queries on disdette.
     - Implements methods: getById, getByUser, create, updateStatus, confirmData, savePdfPath, countByStatus.
     - Supports pagination with `.range()` and `PaginatedResult` type for future infinite scroll.
     - Handles DB errors with specific codes.
@@ -582,15 +582,15 @@
       - Includes styled “Proceed Anyway” button and spinner for consistency with app UX.
 
   - **Database Changes:**
-    - Removes UNIQUE constraint on `extracted_data.file_path`:
+    - Removes UNIQUE constraint on `disdette.file_path`:
       ```sql
-      ALTER TABLE extracted_data DROP CONSTRAINT extracted_data_file_path_key;
+      ALTER TABLE disdette DROP CONSTRAINT disdette_file_path_key;
       ```
     - Adds performance indexes:
       ```sql
-      CREATE INDEX idx_extracted_data_user_created ON extracted_data(user_id, created_at DESC);
-      CREATE INDEX idx_extracted_data_user_status ON extracted_data(user_id, status);
-      CREATE INDEX idx_extracted_data_file_path ON extracted_data(file_path);
+      CREATE INDEX idx_disdette_user_created ON disdette(user_id, created_at DESC);
+      CREATE INDEX idx_disdette_user_status ON disdette(user_id, status);
+      CREATE INDEX idx_disdette_file_path ON disdette(file_path);
       ```
     - Performs cleanup of NULL/invalid rows and old `FAILED` / `PROCESSING` data.
 
@@ -795,7 +795,7 @@
 - **Advanced Status Tracking (C25):**
 
   - **Core Infrastructure:**
-    - Introduced full status audit trail via `status_history` table with triggers, RLS policies, and optimized indexes.
+    - Introduced full status audit trail via `disdetta_status_history` table with triggers, RLS policies, and optimized indexes.
     - Automatic duration calculation and backfill for existing records.
     - Secure repository + service layer with ownership verification and dedicated API endpoint.
 
@@ -826,7 +826,7 @@
     - Mobile-responsive, accessible, and visually consistent with the design system.
 
   - **Files Involved:**
-    - Database migrations and triggers for `status_history`.
+    - Database migrations and triggers for `disdetta_status_history`.
     - `StatusTimeline` and `StatusTimelineExpanded` components.
     - `useStatusPolling` hook.
     - Dashboard integration and repository updates.

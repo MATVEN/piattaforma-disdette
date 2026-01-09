@@ -695,7 +695,7 @@ serve(async (req: Request) => {
 
     // Select con TUTTI i campi B2C/B2B
     const { data: disdettaData, error: disdettaError } = await supabaseUser
-      .from('extracted_data')
+      .from('disdette')
       .select(`
         id, user_id, receiver_tax_id, supplier_tax_id, supplier_name, supplier_contract_number,
         status, tipo_intestatario,
@@ -836,7 +836,7 @@ serve(async (req: Request) => {
     const newStatus = TEST_MODE ? 'TEST_SENT' : 'SENT'
 
     const { data: existingRecord, error: fetchError } = await supabaseAdmin
-      .from('extracted_data')
+      .from('disdette')
       .select('supplier_contract_number, supplier_tax_id, receiver_tax_id, supplier_iban')
       .eq('id', disdettaId)
       .single()
@@ -848,7 +848,7 @@ serve(async (req: Request) => {
 
     // Update con MERGE esplicito - preserva supplier_contract_number!
     const { error: updateError, count } = await supabaseAdmin
-      .from('extracted_data')
+      .from('disdette')
       .update({
         status: newStatus,
         pdf_path: pdfDisdettaPath,

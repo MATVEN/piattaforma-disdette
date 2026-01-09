@@ -1,15 +1,15 @@
 /**
  * Disdetta Repository - Data Access Layer
- * Centralizza tutte le query al database per la tabella extracted_data
+ * Centralizza tutte le query al database per la tabella disdette
  */
 
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '@/lib/supabase/database.types'
 import { NotFoundError, DatabaseError } from '@/lib/errors/AppError';
 
-type ExtractedData = Database['public']['Tables']['extracted_data']['Row'];
-type ExtractedDataInsert = Database['public']['Tables']['extracted_data']['Insert'];
-type ExtractedDataUpdate = Database['public']['Tables']['extracted_data']['Update'];
+type ExtractedData = Database['public']['Tables']['disdette']['Row'];
+type ExtractedDataInsert = Database['public']['Tables']['disdette']['Insert'];
+type ExtractedDataUpdate = Database['public']['Tables']['disdette']['Update'];
 
 export interface PaginatedResult<T> {
   data: T[];
@@ -26,7 +26,7 @@ export class DisdettaRepository {
    */
   async getById(id: number, userId: string): Promise<ExtractedData> {
     const { data, error } = await this.supabase
-      .from('extracted_data')
+      .from('disdette')
       .select('*')
       .eq('id', id)
       .eq('user_id', userId)
@@ -55,7 +55,7 @@ export class DisdettaRepository {
     const to = from + pageSize - 1;
 
     const { data, error, count } = await this.supabase
-      .from('extracted_data')
+      .from('disdette')
       .select('*', { count: 'exact' })
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
@@ -80,7 +80,7 @@ export class DisdettaRepository {
    */
   async getByFilePath(filePath: string, userId: string): Promise<ExtractedData | null> {
     const { data, error } = await this.supabase
-      .from('extracted_data')
+      .from('disdette')
       .select('*')
       .eq('file_path', filePath)
       .eq('user_id', userId)
@@ -98,7 +98,7 @@ export class DisdettaRepository {
    */
   async create(data: ExtractedDataInsert): Promise<ExtractedData> {
     const { data: created, error } = await this.supabase
-      .from('extracted_data')
+      .from('disdette')
       .insert(data)
       .select()
       .single();
@@ -130,7 +130,7 @@ export class DisdettaRepository {
     }
 
     const { data, error } = await this.supabase
-      .from('extracted_data')
+      .from('disdette')
       .update(updateData)
       .eq('id', id)
       .eq('user_id', userId)
@@ -189,7 +189,7 @@ export class DisdettaRepository {
     }
   ): Promise<ExtractedData> {
     const { data, error } = await this.supabase
-      .from('extracted_data')
+      .from('disdette')
       .update({
         ...confirmedData,
         status: 'CONFIRMED',
@@ -220,7 +220,7 @@ export class DisdettaRepository {
     pdfPath: string
   ): Promise<ExtractedData> {
     const { data, error } = await this.supabase
-      .from('extracted_data')
+      .from('disdette')
       .update({
         pdf_path: pdfPath,
         updated_at: new Date().toISOString(),
@@ -258,7 +258,7 @@ export class DisdettaRepository {
    */
   async countByStatus(userId: string): Promise<Record<string, number>> {
     const { data, error } = await this.supabase
-      .from('extracted_data')
+      .from('disdette')
       .select('status')
       .eq('user_id', userId);
 
@@ -293,7 +293,7 @@ export class DisdettaRepository {
     supplierContractNumber: string
   ): Promise<ExtractedData | null> {
     const { data, error } = await this.supabase
-      .from('extracted_data')
+      .from('disdette')
       .select('*')
       .eq('user_id', userId)
       .eq('supplier_tax_id', supplierTaxId)
@@ -316,7 +316,7 @@ export class DisdettaRepository {
    */
   async delete(id: number, userId: string): Promise<void> {
     const { error } = await this.supabase
-      .from('extracted_data')
+      .from('disdette')
       .delete()
       .eq('id', id)
       .eq('user_id', userId);

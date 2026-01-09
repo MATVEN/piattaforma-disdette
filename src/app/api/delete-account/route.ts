@@ -55,7 +55,7 @@ export async function DELETE(request: NextRequest) {
 
       // Delete uploaded bills
       const { data: disdette } = await supabase
-        .from('extracted_data')
+        .from('disdette')
         .select('file_path')
         .eq('user_id', user.id)
 
@@ -78,7 +78,7 @@ export async function DELETE(request: NextRequest) {
     // Delete database records (cascade will handle related records)
     // Status history will be deleted automatically via foreign key cascade
     await supabase
-      .from('extracted_data')
+      .from('disdette')
       .delete()
       .eq('user_id', user.id)
 

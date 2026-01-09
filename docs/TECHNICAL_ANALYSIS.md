@@ -304,7 +304,7 @@ Frontend:
 CREATE TABLE payments (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES auth.users,
-  disdetta_id INTEGER REFERENCES extracted_data(id),
+  disdetta_id INTEGER REFERENCES disdette(id),
   stripe_payment_intent_id TEXT,
   amount INTEGER, -- in cents
   currency TEXT DEFAULT 'EUR',
@@ -401,14 +401,14 @@ export class GuestSessionManager {
 
 **Day 2: Database Schema**
 ```sql
--- Modifiche a extracted_data
-ALTER TABLE extracted_data 
+-- Modifiche a disdette
+ALTER TABLE disdette 
 ADD COLUMN is_guest BOOLEAN DEFAULT false,
 ADD COLUMN guest_session_id TEXT,
 ADD COLUMN guest_email TEXT;
 
 -- Indice per query performance
-CREATE INDEX idx_guest_sessions ON extracted_data(guest_session_id) 
+CREATE INDEX idx_guest_sessions ON disdette(guest_session_id) 
 WHERE is_guest = true;
 
 -- RLS policy update per guest access
@@ -501,7 +501,7 @@ async getByUser(params: {
   search?: string // search in file_path
 }) {
   let query = this.supabase
-    .from('extracted_data')
+    .from('disdette')
     .select('*', { count: 'exact' })
     .eq('user_id', userId)
   
@@ -607,7 +607,7 @@ CREATE TABLE admin_users (
 -- Note interne
 CREATE TABLE admin_notes (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  disdetta_id INTEGER REFERENCES extracted_data(id),
+  disdetta_id INTEGER REFERENCES disdette(id),
   admin_id UUID REFERENCES auth.users,
   note TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
@@ -797,8 +797,8 @@ export const revalidate = 60 // Cache for 60s
 
 // Database query optimization
 // Aggiungere indici:
-CREATE INDEX idx_user_disdette ON extracted_data(user_id, created_at DESC);
-CREATE INDEX idx_status ON extracted_data(status);
+CREATE INDEX idx_user_disdette ON disdette(user_id, created_at DESC);
+CREATE INDEX idx_status ON disdette(status);
 
 // Supabase Edge Function optimization
 // - Reduce cold starts
@@ -948,9 +948,9 @@ CREATE TABLE coupons (...); -- opzionale
 
 **C18 (Guest Flow):**
 ```sql
-ALTER TABLE extracted_data ADD COLUMN is_guest BOOLEAN;
-ALTER TABLE extracted_data ADD COLUMN guest_session_id TEXT;
-ALTER TABLE extracted_data ADD COLUMN guest_email TEXT;
+ALTER TABLE disdette ADD COLUMN is_guest BOOLEAN;
+ALTER TABLE disdette ADD COLUMN guest_session_id TEXT;
+ALTER TABLE disdette ADD COLUMN guest_email TEXT;
 ```
 
 **C24 (Admin):**

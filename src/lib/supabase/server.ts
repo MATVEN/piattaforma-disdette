@@ -67,7 +67,7 @@ export function createServiceRoleClient(): SupabaseClient {
 export type Database = {
   public: {
     Tables: {
-      extracted_data: {
+      disdette: {
         Row: {
           id: number;
           created_at: string;

@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     
     // Fetch disdetta data (no join for testing)
     const { data: disdetta, error: fetchError } = await supabaseAdmin
-      .from('extracted_data')
+      .from('disdette')
       .select('*')
       .eq('id', disdettaId)
       .single()

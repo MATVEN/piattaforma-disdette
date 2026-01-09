@@ -30,7 +30,7 @@ export type Database = {
         }
         Relationships: []
       }
-      extracted_data: {
+      disdette: {
         Row: {
           // Existing fields
           created_at: string
@@ -124,7 +124,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "extracted_data_user_id_fkey"
+            foreignKeyName: "disdette_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
