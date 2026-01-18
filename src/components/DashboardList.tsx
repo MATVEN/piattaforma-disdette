@@ -12,8 +12,6 @@ import { StatusTimeline } from '@/components/StatusTimeline'
 import { StatusTimelineExpanded } from '@/components/StatusTimelineExpanded'
 import { StatusTimelineExpandedSkeleton } from '@/components/StatusTimelineExpandedSkeleton'
 import type { StatusTimelineData } from '@/types/statusHistory'
-import type { DisdettaStatus } from '@/types/statusHistory'
-import { getStatusProgress } from '@/types/statusHistory'
 import {
   FileText,
   Calendar,
@@ -24,15 +22,21 @@ import {
   Loader2,
   Sparkles,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  CreditCard
 } from 'lucide-react'
+import { 
+  DISDETTA_STATUS, 
+  getStatusProgress,
+  type DisdettaStatus 
+} from '@/types/enums'
 
 // --- Tipi ---
 interface DisdettaData {
   id: number
   created_at: string
   file_path: string
-  status: 'PROCESSING' | 'PENDING_REVIEW' | 'CONFIRMED' | 'SENT' | 'TEST_SENT' | 'FAILED' | string 
+  status: DisdettaStatus 
   supplier_tax_id: string | null
   receiver_tax_id: string | null
   supplier_iban: string | null
@@ -189,7 +193,10 @@ export default function DashboardList() {
     // Build set of current IDs + statuses
     const currentIds = new Set(
       disdette
-        .filter(d => !['SENT', 'TEST_SENT', 'FAILED'].includes(d.status))
+        .filter(d => 
+          d.status !== DISDETTA_STATUS.SENT && 
+          d.status !== DISDETTA_STATUS.FAILED
+        )
         .map(d => d.id)
     )
     
@@ -320,7 +327,7 @@ export default function DashboardList() {
               onToggleExpand={() => toggleExpand(item.id)}
               historyData={historyData[item.id]}
               loadingHistory={loadingHistory[item.id] || false}
-              historyErrors={historyErrors[item.id] || false}  // ← ADD
+              historyErrors={historyErrors[item.id] || false}
             />
           )
         })}
@@ -528,14 +535,13 @@ function StatusBadgeAndAction({
   onSend,
   estimatedCompletion,
 }: {
-  status: string
+  status: DisdettaStatus
   isSending: boolean
   onSend: () => void
   estimatedCompletion?: string | null
 }) {
-  // Stili condivisi per evitare overflow
-  const badgeClass = "inline-flex items-center gap-2 rounded-full px-2.5 py-1.5 text-xs font-medium whitespace-nowrap";
-  const buttonClass = "flex items-center justify-center gap-2 rounded-lg px-3 py-1.5 text-xs sm:text-sm font-medium whitespace-nowrap w-full sm:w-auto max-w-full";
+  const badgeClass = "inline-flex items-center gap-2 rounded-full px-2.5 py-1.5 text-xs font-medium whitespace-nowrap"
+  const buttonClass = "flex items-center justify-center gap-2 rounded-lg px-3 py-1.5 text-xs sm:text-sm font-medium whitespace-nowrap w-full sm:w-auto max-w-full"
 
   // Helper: Format time remaining
   const getTimeRemaining = (): string | null => {
@@ -545,7 +551,7 @@ function StatusBadgeAndAction({
     const estimated = new Date(estimatedCompletion)
     const diffMs = estimated.getTime() - now.getTime()
 
-    if (diffMs <= 0) return null // Already passed
+    if (diffMs <= 0) return null
 
     const diffMinutes = Math.floor(diffMs / 1000 / 60)
 
@@ -564,7 +570,7 @@ function StatusBadgeAndAction({
   if (isSending) {
     return (
       <motion.div
-        key="sending" // ← Key fisso perché isSending è boolean
+        key="sending"
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", duration: 0.5 }}
@@ -577,7 +583,7 @@ function StatusBadgeAndAction({
   }
 
   // ✅ FAILED - RETRY BUTTON
-  if (status === 'FAILED') {
+  if (status === DISDETTA_STATUS.FAILED) {
     return (
       <motion.div
         key={status}
@@ -586,13 +592,11 @@ function StatusBadgeAndAction({
         transition={{ type: "spring", duration: 0.5 }}
         className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto"
       >
-        {/* Error Badge */}
         <div className={`${badgeClass} bg-danger-50 text-danger-700`}>
           <XCircle className="h-4 w-4 flex-shrink-0" />
           <span>Errore invio</span>
         </div>
         
-        {/* Retry Button */}
         <button
           onClick={onSend}
           className={`${buttonClass} bg-gradient-primary text-white shadow-glass transition-all hover:shadow-glass-hover hover:scale-105 active:scale-95`}
@@ -605,13 +609,12 @@ function StatusBadgeAndAction({
     )
   }
 
-  // ✅ CONFIRMED - IN SENDING (intermediate state)
-  if (status === 'CONFIRMED') {
-    const progress = getStatusProgress('CONFIRMED')
+  // ✅ CONFIRMED - IN SENDING
+  if (status === DISDETTA_STATUS.CONFIRMED) {
+    const progress = getStatusProgress(DISDETTA_STATUS.CONFIRMED)
     
     return (
       <div className="flex flex-col items-center gap-1.5 w-full sm:w-auto">
-        {/* Badge */}
         <motion.div
           key={status}
           initial={{ scale: 0.8, opacity: 0 }}
@@ -623,7 +626,6 @@ function StatusBadgeAndAction({
           <span>In invio...</span>
         </motion.div>
         
-        {/* Progress bar (below badge) */}
         <div className="w-full sm:max-w-[140px] h-1.5 bg-gray-200 rounded-full overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
@@ -633,7 +635,6 @@ function StatusBadgeAndAction({
           />
         </div>
         
-        {/* Time remaining */}
         {timeRemaining && (
           <motion.span
             initial={{ opacity: 0, y: -5 }}
@@ -648,7 +649,7 @@ function StatusBadgeAndAction({
   }
   
   // ✅ SENT - SUCCESS BADGE
-  if (status === 'SENT' || status === 'TEST_SENT') {
+  if (status === DISDETTA_STATUS.SENT) {
     return (
       <motion.div
         key={status}
@@ -658,51 +659,17 @@ function StatusBadgeAndAction({
         className={`${badgeClass} bg-success-50 text-success-700`}
       >
         <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
-        <span>
-          {status === 'TEST_SENT' ? 'Test inviata' : 'PEC inviata'}
-        </span>
+        <span>PEC inviata</span>
       </motion.div>
     )
   }
 
-  // ✅ PENDING_REVIEW - WARNING BADGE
-  if (status === 'PENDING_REVIEW') {
-    const progress = getStatusProgress('PENDING_REVIEW')
-    
-    return (
-      <div className="flex flex-col items-start gap-1.5 w-full sm:w-auto">
-        {/* Badge */}
-        <motion.div
-          key={status}
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", duration: 0.5 }}
-          className={`${badgeClass} bg-warning-50 text-warning-700`}
-        >
-          <Clock className="h-4 w-4 flex-shrink-0" />
-          <span>In revisione</span>
-        </motion.div>
-        
-        {/* Progress bar (below badge) - Hidden on mobile */}
-        <div className="hidden sm:flex w-full max-w-[140px] h-1.5 bg-gray-200 rounded-full overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="h-full bg-warning-500 rounded-full"
-          />
-        </div>
-      </div>
-    )
-  }
-
   // ✅ PROCESSING - LOADING BADGE
-  if (status === 'PROCESSING') {
-    const progress = getStatusProgress('PROCESSING')
+  if (status === DISDETTA_STATUS.PROCESSING) {
+    const progress = getStatusProgress(DISDETTA_STATUS.PROCESSING)
     
     return (
       <div className="flex flex-col items-center gap-1.5 w-full sm:w-auto">
-        {/* Badge */}
         <motion.div
           key={status}
           initial={{ scale: 0.8, opacity: 0 }}
@@ -714,7 +681,6 @@ function StatusBadgeAndAction({
           <span>Elaborazione...</span>
         </motion.div>
         
-        {/* Progress bar (below badge) */}
         <div className="w-full sm:max-w-[140px] h-1.5 bg-gray-200 rounded-full overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
@@ -724,7 +690,6 @@ function StatusBadgeAndAction({
           />
         </div>
         
-        {/* Time remaining */}
         {timeRemaining && (
           <motion.span
             initial={{ opacity: 0, y: -5 }}
@@ -738,13 +703,41 @@ function StatusBadgeAndAction({
     )
   }
 
-  // ✅ UNKNOWN STATUS - FALLBACK
+  if (status === DISDETTA_STATUS.PENDING_REVIEW) {
+    return (
+      <motion.div
+        key={status}
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", duration: 0.5 }}
+        className={`${badgeClass} bg-warning-50 text-warning-700`}
+      >
+        <Clock className="h-4 w-4 flex-shrink-0" />
+        <span>In revisione</span>
+      </motion.div>
+    )
+  }
+
+  // ✅ PENDING_PAYMENT - PAYMENT REQUIRED
+  if (status === DISDETTA_STATUS.PENDING_PAYMENT) {
+    return (
+      <motion.div
+        key={status}
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", duration: 0.5 }}
+        className={`${badgeClass} bg-purple-50 text-purple-700`}
+      >
+        <CreditCard className="h-4 w-4 flex-shrink-0" />
+        <span>Pagamento richiesto</span>
+      </motion.div>
+    )
+  }
+
+  // ✅ FALLBACK (should never happen with proper typing)
   return (
     <motion.div
       key={status}
-      initial={{ scale: 0.8, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ type: "spring", duration: 0.5 }}
       className={`${badgeClass} bg-gray-100 text-gray-600`}
     >
       <span className="truncate max-w-[120px]">{status}</span>

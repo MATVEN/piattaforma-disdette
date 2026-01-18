@@ -18,7 +18,7 @@ export interface B2CFieldsProps {
 
 export function B2CFields({ register, errors }: B2CFieldsProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t-2 border-gray-100 pt-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t-2 border-gray-100 py-6">
       <div className="md:col-span-2">
         <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
           <Users className="h-5 w-5 text-primary-600" />

@@ -53,7 +53,7 @@ export function SupplierFields({ register, errors }: SupplierFieldsProps) {
       </div>
 
       {/* POD / PDR / Codice Cliente */}
-      <div>
+      <div className="py-6">
         <Tooltip
           id={TOOLTIP_IDS.numeroContratto}
           content={TOOLTIP_CONTENT.numeroContratto}
@@ -90,7 +90,7 @@ export function SupplierFields({ register, errors }: SupplierFieldsProps) {
       </div>
 
       {/* IBAN Fornitore */}
-      <div className="md:col-span-2">
+      <div className="md:col-span-2 pb-6">
         <Tooltip
           id={TOOLTIP_IDS.iban}
           content={TOOLTIP_CONTENT.iban}

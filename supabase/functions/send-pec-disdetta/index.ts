@@ -10,7 +10,6 @@ import type { PDFFont } from 'https://esm.sh/pdf-lib@1.17.1'
 // ==========================
 // 1) COSTANTI & CONFIG
 // ==========================
-const TEST_MODE = true
 const PDF_BUCKET = Deno.env.get('PDF_BUCKET') ?? 'lettere-disdetta'
 const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') ?? 'http://localhost:3000')
   .split(',')
@@ -19,6 +18,14 @@ const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') ?? 'http://localhost:30
 // --- NUOVI LIMITI (da C11 Audit) ---
 const MAX_FILE_BYTES = Number(Deno.env.get("MAX_FILE_BYTES") ?? 10_000_000) // 10MB
 const ALLOWED_MIME = ["application/pdf", "image/png", "image/jpeg", "image/jpg", "image/tiff"]
+
+const DISDETTA_STATUS = {
+  PROCESSING: 'PROCESSING',
+  PENDING_REVIEW: 'PENDING_REVIEW',
+  CONFIRMED: 'CONFIRMED',
+  SENT: 'SENT',
+  FAILED: 'FAILED',
+} as const
 
 // --- Helper CORS (Definiti UNA SOLA VOLTA) ---
 function resolveCorsOrigin(req: Request): string {
@@ -92,8 +99,6 @@ function errorResponse(
   )
 }
 
-console.log("✅ Funzione 'send-pec-disdetta' (C23 Day 4 - Enhanced Error Handling) avviata.")
-
 // ==========================
 // 2) TIPI (B2C/B2B Support)
 // ==========================
@@ -104,6 +109,8 @@ interface ProfileData {
   documento_identita_path: string | null
 }
 
+type DisdettaStatus = typeof DISDETTA_STATUS[keyof typeof DISDETTA_STATUS]
+
 interface DisdettaData {
   id: number
   user_id: string
@@ -111,8 +118,9 @@ interface DisdettaData {
   supplier_tax_id: string | null
   supplier_name: string | null
   supplier_contract_number: string | null
-  status: string
+  status: DisdettaStatus
   tipo_intestatario: 'privato' | 'azienda' | null
+  is_test: boolean | null
   // B2C fields
   nome: string | null
   cognome: string | null
@@ -174,7 +182,6 @@ async function triggerEmailNotification(disdettaId: number, type: 'ready' | 'sen
     }
 
     const result = await response.json()
-    console.log('[EMAIL] Notification triggered successfully:', result)
     return { success: true, result }
   } catch (error) {
     console.error('[EMAIL] Error triggering notification:', error)
@@ -255,7 +262,6 @@ function wrapText(
 // 6) HELPER: CREA PDF B2C
 // ==========================
 async function creaPdfDisdettaB2C(disdetta: DisdettaData): Promise<Uint8Array> {
-  console.log('Generando PDF B2C...')
   const pdfDoc = await PDFDocument.create()
   const page = pdfDoc.addPage()
   const { width, height } = page.getSize()
@@ -399,7 +405,6 @@ async function creaPdfDisdettaB2C(disdetta: DisdettaData): Promise<Uint8Array> {
     color: rgb(0.4, 0.4, 0.4),
   })
 
-  console.log('PDF B2C generato con successo.')
   return await pdfDoc.save()
 }
 
@@ -407,7 +412,6 @@ async function creaPdfDisdettaB2C(disdetta: DisdettaData): Promise<Uint8Array> {
 // 7) HELPER: CREA PDF B2B
 // ==========================
 async function creaPdfDisdettaB2B(disdetta: DisdettaData): Promise<Uint8Array> {
-  console.log('Generando PDF B2B...')
   const pdfDoc = await PDFDocument.create()
   const page = pdfDoc.addPage()
   const { width, height } = page.getSize()
@@ -617,7 +621,6 @@ async function creaPdfDisdettaB2B(disdetta: DisdettaData): Promise<Uint8Array> {
     color: rgb(0.4, 0.4, 0.4),
   })
 
-  console.log('PDF B2B generato con successo.')
   return await pdfDoc.save()
 }
 
@@ -625,7 +628,6 @@ async function creaPdfDisdettaB2B(disdetta: DisdettaData): Promise<Uint8Array> {
 // 8) HELPER: CREA PDF DELEGA (C13)
 // ==========================
 async function creaPdfDelega(profile: ProfileData): Promise<Uint8Array> {
-  console.log('Inizio creazione PDF Delega...')
   const pdfDoc = await PDFDocument.create()
   const page = pdfDoc.addPage([300, 200])
   const { width, height } = page.getSize()
@@ -653,7 +655,6 @@ async function creaPdfDelega(profile: ProfileData): Promise<Uint8Array> {
     color: rgb(0, 0, 0),
   })
 
-  console.log('PDF Delega creato.')
   return await pdfDoc.save()
 }
 
@@ -684,7 +685,6 @@ serve(async (req: Request) => {
     try { body = await req.json() } catch { throw new Error('Body JSON non valido') }
     if (!isRequestBody(body)) { throw new Error("Parametro 'id' mancante o non numerico") }
     disdettaId = body.id
-    console.log(`[C23] Richiesta ricevuta per ID: ${disdettaId}`)
 
     // --- 1. Dual Client Auth (C12) ---
     const supabaseUser = createClient(
@@ -711,12 +711,13 @@ serve(async (req: Request) => {
     if (!disdettaData) throw new Error('Disdetta non trovata')
 
     // --- 2. State Transition Check (C12) ---
-    if (disdettaData.status !== 'CONFIRMED') {
+    if (disdettaData.status !== DISDETTA_STATUS.CONFIRMED) {
       throw new Error(`Impossibile inviare: lo stato è ${disdettaData.status} (atteso CONFIRMED)`)
     }
 
     userId = disdettaData.user_id
     const typedDisdettaData: DisdettaData = disdettaData
+    const isTest = typedDisdettaData.is_test ?? false
     const supabaseAdmin = getSupabaseAdmin()
 
     // 3. Recupera Profilo (invariato)
@@ -739,7 +740,6 @@ serve(async (req: Request) => {
     if (!idFile || !ALLOWED_MIME.includes(idFile.type) || idFile.size > MAX_FILE_BYTES) {
       throw new Error(`File ID non valido (tipo: ${idFile?.type}, size: ${idFile?.size})`)
     }
-    console.log(`File validati. ID=${idFile.size}B`)
 
     // --- 6. Genera PDF (B2C vs B2B) ---
     let pdfDisdettaBytes: Uint8Array
@@ -751,20 +751,17 @@ serve(async (req: Request) => {
 
     const pdfDelegaBytes = await creaPdfDelega(typedProfileData)
     const idBytes = await idFile.arrayBuffer()
-    console.log(`PDF generati: Disdetta (${pdfDisdettaBytes.length}B), Delega (${pdfDelegaBytes.length}B).`)
 
     // --- 7. Upload PDF ---
     const pdfDisdettaPath = `${typedDisdettaData.user_id}/${disdettaId}_lettera.pdf`
     const { error: upErrDisdetta } = await supabaseAdmin
       .storage.from(PDF_BUCKET).upload(pdfDisdettaPath, pdfDisdettaBytes, { contentType: 'application/pdf', upsert: true })
     if (upErrDisdetta) throw new Error(`Errore upload PDF Disdetta: ${upErrDisdetta.message}`)
-    console.log(`PDF Disdetta (Lettera) caricato su '${PDF_BUCKET}/${pdfDisdettaPath}'`)
 
     const pdfDelegaPath = `${typedDisdettaData.user_id}/${disdettaId}_delega.pdf`
     const { error: upErrDelega } = await supabaseAdmin
       .storage.from(PDF_BUCKET).upload(pdfDelegaPath, pdfDelegaBytes, { contentType: 'application/pdf', upsert: true })
     if (upErrDelega) throw new Error(`Errore upload PDF Delega: ${upErrDelega.message}`)
-    console.log(`PDF Delega (Auto-generato) caricato su '${PDF_BUCKET}/${pdfDelegaPath}'`)
 
     // 8. Prepare attachments array (for future PEC sending)
     const attachments: { filename: string; content: ArrayBuffer; contentType: string }[] = [
@@ -795,7 +792,6 @@ serve(async (req: Request) => {
               content: await visuraData.arrayBuffer(),
               contentType: 'application/pdf'
             })
-            console.log('✅ Visura Camerale aggiunta agli allegati')
           }
         } catch (error) {
           console.error('⚠️ Failed to attach Visura:', error)
@@ -815,7 +811,6 @@ serve(async (req: Request) => {
               content: await delegaData.arrayBuffer(),
               contentType: 'application/pdf'
             })
-            console.log('✅ Delega firmata aggiunta agli allegati')
           }
         } catch (error) {
           console.error('⚠️ Failed to attach Delega:', error)
@@ -823,17 +818,13 @@ serve(async (req: Request) => {
       }
     }
 
-    console.log(`Preparati ${attachments.length} allegati per PEC`)
-
     // 9. Invio PEC (DISABILITATO IN TEST)
-    if (TEST_MODE) {
-      console.log('MODALITÀ TEST: Invio PEC saltato.')
-      console.log(`Allegati preparati: ${attachments.map(a => a.filename).join(', ')}`)
+    if (isTest) {
       // (In futuro, la logica SMTP userà l'array attachments)
     }
 
     // --- 10. Aggiornamento Stato ---
-    const newStatus = TEST_MODE ? 'TEST_SENT' : 'SENT'
+    const newStatus = isTest ? 'SENT' : 'SENT'
 
     const { data: existingRecord, error: fetchError } = await supabaseAdmin
       .from('disdette')
@@ -843,8 +834,6 @@ serve(async (req: Request) => {
 
     if (fetchError) throw new Error(`Errore recupero record: ${fetchError.message}`)
     if (!existingRecord) throw new Error(`Record ${disdettaId} non trovato`)
-
-    console.log(`[send-pec-disdetta] Record esistente - supplier_contract_number: ${existingRecord.supplier_contract_number}`)
 
     // Update con MERGE esplicito - preserva supplier_contract_number!
     const { error: updateError, count } = await supabaseAdmin
@@ -859,7 +848,7 @@ serve(async (req: Request) => {
         supplier_iban: existingRecord.supplier_iban,
       })
       .eq('id', disdettaId)
-      .eq('status', 'CONFIRMED')
+      .eq('status', DISDETTA_STATUS.CONFIRMED)
 
     if (updateError) throw new Error(`Errore aggiornamento stato: ${updateError.message}`)
     if (count === 0) { console.warn(`[send-pec-disdetta] Doppio invio bloccato per ID: ${disdettaId}`) }
@@ -870,11 +859,12 @@ serve(async (req: Request) => {
     // 11. Risposta
     return new Response(JSON.stringify({
       success: true,
-      message: TEST_MODE ? 'Invio SIMULATO con successo.' : 'Invio completato.',
+      message: isTest ? 'Invio SIMULATO con successo (test)' : 'Invio completato',
       pdf_path: `${PDF_BUCKET}/${pdfDisdettaPath}`,
       status: newStatus,
       attachments_count: attachments.length,
-      tipo_intestatario: typedDisdettaData.tipo_intestatario
+      tipo_intestatario: typedDisdettaData.tipo_intestatario,
+      is_test: isTest
     }), { headers: { ...headers, "Content-Type": "application/json" } })
 
   } catch (error: unknown) {

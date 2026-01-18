@@ -12,11 +12,12 @@ import { useAuth } from '@/context/AuthContext'
 import toast from 'react-hot-toast'
 import { supabase } from '@/lib/supabaseClient'
 import { logger } from '@/lib/logger'
+import { DISDETTA_STATUS, type DisdettaStatus } from '@/types/enums'
 
 interface ExtractedData {
   id: number
   file_path: string
-  status: 'PROCESSING' | 'PENDING_REVIEW' | 'CONFIRMED' | 'SENT' | 'TEST_SENT' | 'FAILED' | string
+  status: DisdettaStatus
   supplier_tax_id: string | null
   receiver_tax_id: string | null
   supplier_contract_number: string | null
@@ -107,7 +108,7 @@ export function useReviewForm(): UseReviewFormReturn {
       
       setProfile(data)
     } catch (error) {
-      console.error('❌ DEBUG: Unexpected error:', error)
+      console.error(error)
     }
   }
   
@@ -183,22 +184,22 @@ export function useReviewForm(): UseReviewFormReturn {
         // ===== HANDLE STATUS =====
         const status = disdettaData.status
 
-        if (status === 'FAILED') {
-          setCurrentStatus('FAILED')
+        if (status === DISDETTA_STATUS.FAILED) {
+          setCurrentStatus(DISDETTA_STATUS.FAILED)
           setErrorMessage(disdettaData.error_message || 'Errore elaborazione documento')
           setLoading(false)
           return
         }
 
-        if (status === 'PROCESSING') {
-          setCurrentStatus('PROCESSING')
+        if (status === DISDETTA_STATUS.PROCESSING) {
+          setCurrentStatus(DISDETTA_STATUS.PROCESSING)
           // Poll again after 2 seconds
           await sleep(2000)
           fetchAndPollData() // Recursive call for polling
           return
         }
 
-        if (status === 'PENDING_REVIEW' || status === 'CONFIRMED' || status === 'SENT') {
+        if (status === DISDETTA_STATUS.PENDING_REVIEW || status === DISDETTA_STATUS.CONFIRMED || status === DISDETTA_STATUS.SENT) {
           // ===== CHECK 5: Dati incompleti =====
           if (!disdettaData.supplier_tax_id) {
             toast('⚠️ P.IVA fornitore non trovata. Compilala manualmente nel form.', {

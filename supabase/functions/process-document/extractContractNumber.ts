@@ -236,7 +236,6 @@ export function extractContractNumber(
   if (document.entities) {
     const entityResult = extractFromEntities(document.entities)
     if (entityResult) {
-      console.log('[C21] Contract number trovato via entity extraction:', entityResult)
       return entityResult
     }
   }
@@ -245,7 +244,6 @@ export function extractContractNumber(
   if (document.text) {
     const textResult = extractFromText(document.text)
     if (textResult) {
-      console.log('[C21] Contract number trovato via regex:', textResult)
       return textResult
     }
   }
@@ -254,7 +252,6 @@ export function extractContractNumber(
   if (document.text) {
     const heuristicResult = extractHeuristic(document.text, supplierTaxId)
     if (heuristicResult) {
-      console.log('[C21] Contract number trovato via heuristic:', heuristicResult)
       return heuristicResult
     }
   }

@@ -1118,7 +1118,7 @@
     - `src/app/terms-of-service/page.tsx`
     - `src/app/profileUser/page.tsx`
 
-- **Homepage Redesign (CXX):**
+- **Homepage Redesign (C36):**
 
   - **Overview:**
     - Implemented a completely redesigned homepage focused on clarity, conversion, and guided onboarding.
@@ -1162,3 +1162,51 @@
 
   - **Files Involved:**
     - `src/app/page.tsx` (complete homepage implementation)
+
+- **Stripe Payment Enforcement & Flow Stabilization (C38):**
+
+  - **Stripe Payment Integration:**
+    - Mandatory Stripe Checkout before PEC sending; no free service usage.
+    - Checkout session API with idempotency to safely handle retries.
+    - Webhook handler with signature verification and secure event processing.
+    - Full payment tracking in database (status, amount, method, timestamp).
+    - Email confirmation sent on successful payment.
+    - Review flow updated: `editing → pending_payment → paid → sending → sent`.
+    - “Send PEC” action enabled only after confirmed payment.
+
+  - **Timeline Simplification (3-Step UX):**
+    - Reduced visible timeline from 5 to 3 steps.
+    - Steps now shown: **Review → Payment → Sending**.
+    - Removed redundant `PROCESSING` and `DRAFT` states from UI.
+    - Unified background processing under a single internal status.
+    - Fixed color inheritance so completed steps reflect the current status color.
+
+  - **Duplicate Handling & Data Persistence:**
+    - Fixed duplicate chronology entries caused by trigger + webhook inserts.
+    - Webhook now updates existing CONFIRMED entries instead of inserting new ones.
+    - Added Service Role DELETE endpoint to bypass RLS for cleanup.
+    - Automatic draft deletion on modal close with cache revalidation.
+    - Flow state synchronized with backend status on reload (no data loss).
+    - SENT state guarded with redirect and “Already sent” messaging.
+
+  - **Backend & Database Improvements:**
+    - Added payment-related columns and indexes.
+    - Corrected status defaults and enum ordering (`PENDING_PAYMENT` included).
+    - Recreated trigger without unsafe `::text` casts.
+    - Kept legacy `DRAFT` enum value for compatibility (unused by app).
+
+  - **Security & Reliability:**
+    - PEC Edge Function now verifies payment status before sending.
+    - Idempotent Stripe session reuse via stored `stripe_session_id`.
+    - Deprecated Stripe APIs removed to prevent retry failures.
+
+  - **Files Involved:**
+    - `src/app/api/stripe/*` (checkout, verification, webhook handlers)
+    - `src/components/PaymentButton.tsx`
+    - `src/components/StatusTimeline.tsx`
+    - `src/components/ReviewForm/*` (flow state & persistence)
+    - `src/repositories/disdetta.repository.ts`
+    - `src/services/disdetta.service.ts`
+    - `supabase/functions/send-pec-disdetta/index.ts`
+    - `supabase/migrations/*_add_payment_tracking.sql`
+    - `STRIPE_SETUP_GUIDE.md`

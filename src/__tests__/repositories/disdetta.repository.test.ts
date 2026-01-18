@@ -6,6 +6,7 @@
 import { DisdettaRepository } from '@/repositories/disdetta.repository'
 import { SupabaseClient } from '@supabase/supabase-js'
 import { NotFoundError, DatabaseError } from '@/lib/errors/AppError'
+import { DISDETTA_STATUS} from '@/types/enums'
 
 // Mock Supabase client
 const createMockSupabaseClient = () => {
@@ -55,7 +56,7 @@ describe('DisdettaRepository', () => {
         supplier_tax_id: '12345678901',
         receiver_tax_id: 'RSSMRA80A01H501U',
         supplier_contract_number: 'IT001E12345678',
-        status: 'CONFIRMED',
+        status: DISDETTA_STATUS.CONFIRMED,
         created_at: '2024-11-24T10:00:00Z',
       }
 
@@ -79,7 +80,7 @@ describe('DisdettaRepository', () => {
 
       expect(result).toEqual(mockDuplicate)
       expect(result?.id).toBe(42)
-      expect(result?.status).toBe('CONFIRMED')
+      expect(result?.status).toBe(DISDETTA_STATUS.CONFIRMED)
     })
 
     test('should throw DatabaseError on database failure', async () => {
@@ -153,11 +154,10 @@ describe('DisdettaRepository', () => {
 
       // Verify that FAILED status is excluded (only active statuses included)
       expect(mockChain.in).toHaveBeenCalledWith('status', [
-        'PROCESSING',
-        'PENDING_REVIEW',
-        'CONFIRMED',
-        'SENT',
-        'TEST_SENT',
+        DISDETTA_STATUS.PROCESSING,
+        DISDETTA_STATUS.PENDING_REVIEW,
+        DISDETTA_STATUS.CONFIRMED,
+        DISDETTA_STATUS.SENT
       ])
     })
   })
@@ -182,9 +182,9 @@ describe('DisdettaRepository', () => {
 
     test('should return paginated results with hasMore true', async () => {
       const mockData = [
-        { id: 1, user_id: 'user-123', status: 'CONFIRMED' },
-        { id: 2, user_id: 'user-123', status: 'PENDING_REVIEW' },
-        { id: 3, user_id: 'user-123', status: 'SENT' },
+        { id: 1, user_id: 'user-123', status: DISDETTA_STATUS.CONFIRMED },
+        { id: 2, user_id: 'user-123', status: DISDETTA_STATUS.PENDING_REVIEW },
+        { id: 3, user_id: 'user-123', status: DISDETTA_STATUS.SENT },
       ]
 
       const mockChain = {
@@ -205,8 +205,8 @@ describe('DisdettaRepository', () => {
 
     test('should return hasMore false on last page', async () => {
       const mockData = [
-        { id: 1, user_id: 'user-123', status: 'CONFIRMED' },
-        { id: 2, user_id: 'user-123', status: 'PENDING_REVIEW' },
+        { id: 1, user_id: 'user-123', status: DISDETTA_STATUS.CONFIRMED },
+        { id: 2, user_id: 'user-123', status: DISDETTA_STATUS.FAILED },
       ]
 
       const mockChain = {
@@ -260,7 +260,7 @@ describe('DisdettaRepository', () => {
       const mockRecord = {
         id: 42,
         user_id: 'user-123',
-        status: 'CONFIRMED',
+        status: DISDETTA_STATUS.CONFIRMED,
         supplier_tax_id: '12345678901',
       }
 
@@ -312,7 +312,7 @@ describe('DisdettaRepository', () => {
       const mockUpdated = {
         id: 42,
         user_id: 'user-123',
-        status: 'CONFIRMED',
+        status: DISDETTA_STATUS.CONFIRMED,
         supplier_tax_id: '99999999999',
         receiver_tax_id: 'NEWCOD80A01H501U',
         supplier_contract_number: 'NEW123456',
@@ -333,14 +333,14 @@ describe('DisdettaRepository', () => {
         supplier_contract_number: 'NEW123456',
       })
 
-      expect(result.status).toBe('CONFIRMED')
+      expect(result.status).toBe(DISDETTA_STATUS.CONFIRMED)
       expect(result.supplier_tax_id).toBe('99999999999')
       expect(mockChain.update).toHaveBeenCalledWith(
         expect.objectContaining({
           supplier_tax_id: '99999999999',
           receiver_tax_id: 'NEWCOD80A01H501U',
           supplier_contract_number: 'NEW123456',
-          status: 'CONFIRMED',
+          status: DISDETTA_STATUS.CONFIRMED,
         })
       )
     })

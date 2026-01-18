@@ -1,9 +1,12 @@
 // src/services/statusHistory.service.ts
 import type { StatusHistoryRepository } from '@/repositories/statusHistory.repository'
 import type { DisdettaRepository } from '@/repositories/disdetta.repository'
+import { 
+  DISDETTA_STATUS, 
+  type DisdettaStatus 
+} from '@/types/enums'
 import type { 
   StatusTimelineData, 
-  DisdettaStatus, 
   StatusHistoryEntry 
 } from '@/types/statusHistory'
 import { NotFoundError, ForbiddenError } from '@/lib/errors/AppError'
@@ -56,7 +59,7 @@ export class StatusHistoryService {
     history: StatusHistoryEntry[]
   ): string | null {
     // Terminal states don't have estimated completion
-    const terminalStates: DisdettaStatus[] = ['SENT', 'TEST_SENT', 'FAILED']
+    const terminalStates: DisdettaStatus[] = [DISDETTA_STATUS.SENT, DISDETTA_STATUS.FAILED]
     if (terminalStates.includes(currentStatus)) {
       return null
     }

@@ -13,7 +13,8 @@
       "Bash(deno check:*)",
       "Bash(npm run dev:*)",
       "Bash(taskkill:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

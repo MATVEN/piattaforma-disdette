@@ -5,10 +5,12 @@
 
 import * as Icons from 'lucide-react'
 import {
-  getStatusConfig,
-  formatTimestamp,
-  formatDuration,
-  getRelativeTime,
+ getStatusConfig,
+ formatDuration,
+ formatTimestamp,
+ getRelativeTime
+} from '@/types/enums'
+import {
   type StatusTimelineData
 } from '@/types/statusHistory'
 
@@ -120,7 +122,7 @@ export function StatusTimelineExpanded({ timeline }: StatusTimelineExpandedProps
                         
                         return (
                           <div key={key} className="flex items-start gap-2 text-xs">
-                            <span className="font-medium text-gray-700 min-w-[80px]">
+                            <span className="font-medium text-gray-700 min-w-[10px]">
                               {formattedKey}:
                             </span>
                             <span className="text-gray-600 flex-1">

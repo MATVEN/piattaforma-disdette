@@ -8,6 +8,7 @@ import toast from 'react-hot-toast'
 import { logger } from '@/lib/logger'
 import { OnboardingSteps } from '@/components/OnboardingSteps'
 import { onboardingFlowSteps } from '@/config/onboardingSteps'
+import { DISDETTA_STATUS } from '@/types/enums'
 
 export default function UploadPage() {
   const { user, isAuthLoading } = useAuth()
@@ -102,7 +103,6 @@ export default function UploadPage() {
         .insert({
           user_id: user.id,
           file_path: filePath,
-          status: 'PROCESSING'
         })
         .select('id')
         .single()

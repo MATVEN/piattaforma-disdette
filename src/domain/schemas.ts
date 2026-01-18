@@ -219,8 +219,9 @@ export const confirmDataSchema = z.object({
   customer_code: z.string().nullable().optional(),
   pod_pdr: z.string().nullable().optional(),
   
+  
   // Tipo intestatario (discriminator)
-  tipo_intestatario: z.enum(['privato', 'azienda']).optional(),
+  tipo_intestatario: z.enum(['privato', 'azienda']).nullable().optional(),
   
   // Campi B2C (privato)
   nome: z.string().nullable().optional(),

@@ -6,14 +6,15 @@
 import { motion } from 'framer-motion'
 import * as Icons from 'lucide-react'
 import { 
+  DISDETTA_STATUS, 
   STATUS_ORDER, 
-  STATUS_CONFIG,
-  getStatusConfig,
-  isStatusCompleted,
-  type DisdettaStatus,
+  type DisdettaStatus, 
+  isStatusCompleted, 
+  getStatusConfig, 
+  getRelativeTime
+} from '@/types/enums'
+import { 
   type StatusHistoryEntry,
-  formatTimestamp,
-  getRelativeTime,
 } from '@/types/statusHistory'
 import { Fragment } from 'react'
 
@@ -32,9 +33,7 @@ export function StatusTimeline({
 }: StatusTimelineProps) {
   
     // Get visible statuses (exclude FAILED from timeline, handle TEST_SENT)
-    const visibleStatuses = currentStatus === 'TEST_SENT' 
-        ? [...STATUS_ORDER.slice(0, -1), 'TEST_SENT' as DisdettaStatus]
-        : STATUS_ORDER
+    const visibleStatuses = STATUS_ORDER
   
     // Get history entry for each status
     const getHistoryForStatus = (status: DisdettaStatus): StatusHistoryEntry | undefined => {
@@ -49,7 +48,7 @@ export function StatusTimeline({
     // Check if status is current
     const isCurrent = (status: DisdettaStatus): boolean => {
         // Special case: CONFIRMED is shown as "in progress" on SENT step
-        if (currentStatus === 'CONFIRMED' && status === 'SENT') {
+        if (currentStatus === DISDETTA_STATUS.CONFIRMED && status === DISDETTA_STATUS.SENT) {
             return true // Show SENT as current (in progress)
         }
         return currentStatus === status

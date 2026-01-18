@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { DISDETTA_STATUS } from '@/types/enums'
 
 // Test Supabase client (uses existing free tier project)
 export const supabaseTest = createClient(
@@ -10,7 +11,7 @@ export const supabaseTest = createClient(
 export const createTestDisdetta = (overrides = {}) => ({
   user_id: 'test-user-id',
   file_path: `test-user-id/test-service/${Date.now()}_test.pdf`,
-  status: 'PENDING_REVIEW',
+  status: DISDETTA_STATUS.PENDING_REVIEW,
   supplier_tax_id: '12345678901',
   receiver_tax_id: 'RSSMRA80A01H501U',
   supplier_contract_number: 'IT001E12345678',

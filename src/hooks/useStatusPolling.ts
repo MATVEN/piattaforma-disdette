@@ -4,7 +4,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
-import type { DisdettaStatus } from '@/types/statusHistory'
+import { DISDETTA_STATUS, type DisdettaStatus } from '@/types/enums'
 
 interface UseStatusPollingOptions {
   enabled: boolean // Start/stop polling
@@ -29,7 +29,7 @@ export function useStatusPolling({
 
     // Add disdetta to polling list (stable reference)
     const addDisdetta = useCallback((id: number, status: DisdettaStatus) => {
-        const terminalStates: DisdettaStatus[] = ['SENT', 'TEST_SENT', 'FAILED']
+        const terminalStates: DisdettaStatus[] = [DISDETTA_STATUS.SENT, DISDETTA_STATUS.FAILED]
         if (!terminalStates.includes(status)) {
             const sizeBefore = disdettesToPoll.current.size
             disdettesToPoll.current.add(id)

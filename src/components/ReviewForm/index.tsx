@@ -1,9 +1,12 @@
 // src/components/ReviewForm/index.tsx
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Loader2, XCircle } from 'lucide-react'
+import { Loader2, XCircle, CheckCircle, CreditCard } from 'lucide-react'
+import toast from 'react-hot-toast'
+import { PaymentButton } from '@/components/PaymentButton'
 import { TipoIntestatarioSelector } from './components/TipoIntestatarioSelector'
 import { SupplierFields } from './components/SupplierFields'
 import { B2CFields } from './components/B2CFields'
@@ -18,85 +21,122 @@ import { useReviewForm } from './hooks/useReviewForm'
 import { useFileUploads } from './hooks/useFileUploads'
 import { useFormSubmission } from './hooks/useFormSubmission'
 import type { ReviewFormData } from '@/domain/schemas'
-import toast from 'react-hot-toast'
+import { DISDETTA_STATUS } from '@/types/enums'
 
-// Status Display Component
+/* ================================== */
+/*         Status Display             */
+/* ================================== */
+
 function StatusDisplay({
-  message,
-  isError,
-  isProcessing,
+ message,
+ isError,
+ isProcessing,
 }: {
-  message: string
-  isError: boolean
-  isProcessing?: boolean
+ message: string
+ isError: boolean
+ isProcessing?: boolean
 }) {
-  if (isError) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="rounded-xl border border-danger-200 bg-danger-50 p-6"
-      >
-        <div className="flex items-start space-x-3">
-          <XCircle className="h-6 w-6 text-danger-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <h3 className="font-semibold text-danger-900">Errore</h3>
-            <p className="text-sm text-danger-700 mt-1">{message}</p>
-          </div>
-        </div>
-      </motion.div>
-    )
-  }
+ if (isError) {
+   return (
+     <motion.div
+       initial={{ opacity: 0, scale: 0.95 }}
+       animate={{ opacity: 1, scale: 1 }}
+       className="rounded-xl border border-danger-200 bg-danger-50 p-6"
+     >
+       <div className="flex items-start space-x-3">
+         <XCircle className="h-6 w-6 text-danger-600 mt-0.5" />
+         <div>
+           <h3 className="font-semibold text-danger-900">Errore</h3>
+           <p className="text-sm text-danger-700 mt-1">{message}</p>
+         </div>
+       </div>
+     </motion.div>
+   )
+ }
 
-  return (
-    <div className="flex flex-col items-center justify-center py-12 space-y-4">
-      {isProcessing ? (
-        <Loader2 className="h-12 w-12 animate-spin text-primary-500" />
-      ) : (
-        <div className="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-primary-600" />
-        </div>
-      )}
-      <p className="text-lg text-gray-700">{message}</p>
-    </div>
-  )
+ return (
+   <div className="flex flex-col items-center justify-center py-12 space-y-4">
+     <Loader2 className="h-12 w-12 animate-spin text-primary-500" />
+     <p className="text-lg text-gray-700">{message}</p>
+   </div>
+ )
 }
 
+/* ================================== */
+/*         Main Component             */
+/* ================================== */
+
 export default function ReviewForm() {
-  // Hooks
+ const searchParams = useSearchParams()
+ const router = useRouter()
+
+ /* ---------- Hooks ---------- */
+
   const {
     form,
     tipoIntestatario,
     setTipoIntestatario,
-    loading: dataLoading,
     currentStatus,
     errorMessage,
+    data,
   } = useReviewForm()
 
-  const { 
-    files, 
-    handleFileChange, 
+  const {
+    files,
+    handleFileChange,
     uploadStates,
     startUpload,
     setUploadProgress,
     completeUpload,
   } = useFileUploads()
 
-  const { onSubmit, loading: submitting, progress } = useFormSubmission({
-    files,
-    uploadControls: {
-      startUpload,
-      setUploadProgress,
-      completeUpload,
-    },
-  })
+  const { onSubmit, sendPEC, loading: submitting, progress } =
+    useFormSubmission({
+      files,
+      uploadControls: {
+        startUpload,
+        setUploadProgress,
+        completeUpload,
+      },
+    })
 
-  // ✅ NEW: Duplicate Detection State
+  /* ---------- State Management ---------- */
+
+  // Duplicate detection
   const [showDuplicateModal, setShowDuplicateModal] = useState(false)
   const [duplicateData, setDuplicateData] = useState<any>(null)
   const [isBypassSubmitting, setIsBypassSubmitting] = useState(false)
 
-  // Form methods
+  /* ---------- State Management ---------- */
+  type FlowState = 'editing' | 'pending_payment' | 'paid' | 'sending' | 'sent'
+  const [flowState, setFlowState] = useState<FlowState>('editing')
+  const [confirmedDisdettaId, setConfirmedDisdettaId] = useState<number | null>(null)
+
+  // ✅ AGGIUNGI QUESTO - Sincronizza flowState con backend status
+  useEffect(() => {
+    if (!data) return
+
+    // Set disdetta ID
+    if (data.id && !confirmedDisdettaId) {
+      setConfirmedDisdettaId(data.id)
+    }
+
+    // Sync flowState based on backend status
+    if (data.status === DISDETTA_STATUS.PENDING_PAYMENT) {
+      setFlowState('pending_payment')
+    } else if (data.status === DISDETTA_STATUS.CONFIRMED) {
+      setFlowState('paid')
+    } else if (data.status === DISDETTA_STATUS.SENT) {
+      setFlowState('sent')
+    } else if (data.status === DISDETTA_STATUS.PENDING_REVIEW) {
+      setFlowState('editing')
+    }
+  }, [data])
+
+
+  // Payment verification in progress (for UX feedback)
+  const [verifyingPayment, setVerifyingPayment] = useState(false)
+
   const {
     register,
     handleSubmit,
@@ -106,118 +146,378 @@ export default function ReviewForm() {
     getValues,
   } = form
 
-  // ✅ NEW: Handle form submission with duplicate detection
-  const handleFormSubmit = async (data: ReviewFormData) => {
-    const result = await onSubmit(data, false) // bypassDuplicate = false
+  /* ---------- Form Submission ---------- */
 
-    // Check if duplicate detected
+  const handleFormSubmit = async (data: ReviewFormData) => {
+    const result = await onSubmit(data, false)
+
     if (result?.isDuplicate && result.duplicateData) {
       setDuplicateData(result.duplicateData)
       setShowDuplicateModal(true)
+      return
+    }
+
+    if (result?.requiresPayment && result.disdettaId) {
+      setConfirmedDisdettaId(result.disdettaId)
+      setFlowState('pending_payment')
     }
   }
 
-  // ✅ NEW: Handle bypass duplicate
   const handleBypassDuplicate = async () => {
     setIsBypassSubmitting(true)
     setShowDuplicateModal(false)
 
-    const formData = form.getValues()
-    await onSubmit(formData, true) // bypassDuplicate = true
+    const result = await onSubmit(getValues(), true)
 
     setIsBypassSubmitting(false)
     setDuplicateData(null)
+
+    if (result?.requiresPayment && result.disdettaId) {
+      setConfirmedDisdettaId(result.disdettaId)
+      setFlowState('pending_payment')
+    }
   }
 
-  // ✅ NEW: Handle close duplicate modal
-  const handleCloseDuplicateModal = () => {
+  const handleCloseDuplicateModal = async () => {
     setShowDuplicateModal(false)
+    
+    const idToDelete = searchParams.get('id')
+    
+    if (idToDelete) {
+      try {
+        await fetch('/api/delete-disdetta', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ id: parseInt(idToDelete, 10) })
+        })
+        
+        // ✅ Attendi che DB propaghi
+        await new Promise(resolve => setTimeout(resolve, 300))
+      } catch (err) {
+        console.error('DELETE error:', err)
+      }
+    }
+    
     setDuplicateData(null)
-    toast('ℹ️ Puoi modificare i dati e riprovare', {
-      duration: 3000,
-      id: 'duplicate-cancel'
-    })
+    window.location.href = '/dashboard'
   }
 
-  // Loading states
-  if (currentStatus === 'LOADING')
+ /* ---------- PEC Sending ---------- */
 
-  // Loading states
-  if (currentStatus === 'LOADING')
+  const handleSendPEC = async () => {
+    if (!confirmedDisdettaId) {
+      toast.error('ID disdetta non trovato')
+      return
+    }
+
+    setFlowState('sending')
+    const success = await sendPEC(confirmedDisdettaId)
+    setFlowState(success ? 'sent' : 'paid')
+  }
+
+ /* ---------- Payment Success Detection ---------- */
+
+  useEffect(() => {
+    // 🔒 Cleanup flag to prevent setState after unmount
+    let isMounted = true
+
+    const paymentSuccess = searchParams.get('payment_success')
+    const paymentCancelled = searchParams.get('payment_cancelled')
+    const sessionId = searchParams.get('session_id')
+    const idParam = searchParams.get('id')
+
+    // ✅ 1. Robust ID parsing with NaN check
+    const parsedId = idParam ? parseInt(idParam, 10) : null
+    const validParsedId =
+      parsedId !== null && Number.isInteger(parsedId) && parsedId > 0
+        ? parsedId
+        : null
+
+    // Determine target disdetta ID with fallback cascade
+    const targetId = validParsedId ?? confirmedDisdettaId ?? data?.id ?? null
+
+    if (paymentSuccess === 'true') {
+      // 🔐 Server-side verification if sessionId available
+      if (sessionId) {
+        setVerifyingPayment(true)
+
+        ;(async () => {
+          try {
+            const res = await fetch('/api/stripe/verify-session', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ sessionId }),
+            })
+
+            const payload = await res.json().catch(() => ({}))
+
+            if (!isMounted) return // ✅ 2. Prevent setState after unmount
+
+            if (res.ok && payload.ok && payload.paid) {
+              if (targetId) setConfirmedDisdettaId(targetId)
+              setFlowState('paid')
+
+              toast.success('✅ Pagamento completato! Ora puoi inviare la PEC.', {
+                duration: 4000,
+                id: 'payment-confirmed',
+              })
+
+              // ✅ 3. Refetch server data to ensure DB is up-to-date
+              router.refresh()
+            } else {
+              toast(
+                '⏳ Pagamento in verifica. Controlla la tua email per la conferma.',
+                {
+                  duration: 6000,
+                  id: 'payment-pending',
+                }
+              )
+            }
+          } catch (err) {
+            // ✅ 5. Enhanced error logging
+            console.error('Errore verifica pagamento:', err)
+            if (err instanceof Error) {
+              console.error('Error message:', err.message)
+              console.error('Stack trace:', err.stack)
+            }
+
+            if (isMounted) {
+              toast(
+                '⚠️ Errore nella verifica. Controlla la tua email per la conferma.',
+                {
+                  duration: 4000,
+                  id: 'payment-verification-error',
+                }
+              )
+            }
+          } finally {
+            if (isMounted) {
+              setVerifyingPayment(false)
+
+              // Clean payment params, preserve 'id'
+              const url = new URL(window.location.href)
+              url.searchParams.delete('payment_success')
+              url.searchParams.delete('session_id')
+              window.history.replaceState({}, '', url.pathname + url.search)
+            }
+          }
+        })()
+      } else {
+        // Fallback UX (less secure, no sessionId to verify)
+        if (targetId) setConfirmedDisdettaId(targetId)
+        setFlowState('paid')
+
+        toast.success('✅ Pagamento completato! Ora puoi inviare la PEC.', {
+          duration: 4000,
+          id: 'payment-confirmed',
+        })
+
+        // Refetch data
+        router.refresh()
+
+        const url = new URL(window.location.href)
+        url.searchParams.delete('payment_success')
+        window.history.replaceState({}, '', url.pathname + url.search)
+      }
+    } else if (paymentCancelled === 'true') {
+      toast('ℹ️ Pagamento annullato. Puoi riprovare quando vuoi.', {
+        duration: 4000,
+        id: 'payment-cancelled',
+      })
+
+      const url = new URL(window.location.href)
+      url.searchParams.delete('payment_cancelled')
+      url.searchParams.delete('session_id')
+      window.history.replaceState({}, '', url.pathname + url.search)
+    }
+
+    // ✅ 2. Cleanup function to prevent memory leaks
+    return () => {
+      isMounted = false
+    }
+  }, [searchParams, data, confirmedDisdettaId, router])
+
+  /* ---------- Loading States ---------- */
+
+  if (currentStatus === 'LOADING') {
     return <StatusDisplay message="Caricamento dati..." isError={false} />
-  if (currentStatus === 'PROCESSING')
-    return <StatusDisplay message="Il tuo documento è in elaborazione..." isError={false} isProcessing />
-  if (currentStatus === 'FAILED')
-    return <StatusDisplay message={errorMessage || 'Errore sconosciuto'} isError={true} />
+  }
 
-  // Main Form
+  if (currentStatus === DISDETTA_STATUS.PROCESSING) {
+    return (
+      <StatusDisplay
+        message="Il tuo documento è in elaborazione..."
+        isError={false}
+        isProcessing
+      />
+    )
+  }
+
+  if (currentStatus === 'SUCCESS' && data?.status === DISDETTA_STATUS.SENT) {
+    return (
+      <div className="text-center py-12 space-y-4">
+        <CheckCircle className="h-16 w-16 text-green-600 mx-auto" />
+        <h3 className="text-xl font-semibold text-gray-900">
+          Disdetta già inviata!
+        </h3>
+        <p className="text-gray-600">
+          La tua disdetta è stata inviata con successo. Controlla la dashboard per i dettagli.
+        </p>
+        <button
+          onClick={() => router.push('/dashboard')}
+          className="mt-4 px-6 py-2 bg-gradient-primary text-white rounded-lg"
+        >
+          Torna alla Dashboard
+        </button>
+      </div>
+    )
+  }
+
+  if (currentStatus === DISDETTA_STATUS.FAILED) {
+    return (
+      <StatusDisplay message={errorMessage || 'Errore sconosciuto'} isError />
+    )
+  }
+
+  const isFormDisabled = flowState !== 'editing'
+
+  /* ================================== */
+  /*            Render                  */
+  /* ================================== */
+
   return (
     <motion.form
-      id="review-form"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
       onSubmit={handleSubmit(handleFormSubmit)}
       className="space-y-6"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
     >
-      {/* Tipo Intestatario Selector */}
-      <TipoIntestatarioSelector
-        value={tipoIntestatario}
-        onChange={setTipoIntestatario}
-        setValue={setValue}
-        register={register}
-      />
+      {/* Form Fields - Disabled when not editing */}
+      <div className={isFormDisabled ? 'pointer-events-none opacity-60' : ''}>
+        <TipoIntestatarioSelector
+          value={tipoIntestatario}
+          onChange={setTipoIntestatario}
+          setValue={setValue}
+          register={register}
+        />
 
-      {/* Common Supplier Fields */}
-      <SupplierFields register={register} errors={errors} />
+        <SupplierFields register={register} errors={errors} />
 
-      {/* Conditional B2C Fields */}
-      {tipoIntestatario === 'privato' && <B2CFields register={register} errors={errors} />}
+        {tipoIntestatario === 'privato' && (
+          <B2CFields register={register} errors={errors} />
+        )}
 
-      {/* Conditional B2B Fields */}
-      {tipoIntestatario === 'azienda' && (
-        <div className="space-y-0">
-          <B2BCompanyFields
-            register={register}
-            errors={errors}
-            setValue={setValue}
-            getValues={getValues}
-          />
-          <B2BLegalRepFields register={register} errors={errors} />
-            <div id="b2b-documents-section">
-              <B2BDocumentsSection
-                files={files}
-                onFileChange={handleFileChange}
-                uploadStates={uploadStates}
-                richiedenteRuolo={watch('richiedente_ruolo')}
-                errors={errors}
-              />
+        {tipoIntestatario === 'azienda' && (
+          <>
+            <B2BCompanyFields
+              register={register}
+              errors={errors}
+              setValue={setValue}
+              getValues={getValues}
+            />
+            <B2BLegalRepFields register={register} errors={errors} />
+            <B2BDocumentsSection
+              files={files}
+              onFileChange={handleFileChange}
+              uploadStates={uploadStates}
+              richiedenteRuolo={watch('richiedente_ruolo')}
+              errors={errors}
+            />
+          </>
+        )}
+
+        <DelegationCheckbox register={register} errors={errors} />
+      </div>
+
+      {/* State: EDITING - Submit Button */}
+      {flowState === 'editing' && (
+        <SubmitButton
+          loading={submitting}
+          disabled={submitting || currentStatus !== 'SUCCESS'}
+          currentStatus={currentStatus}
+        />
+      )}
+
+      {/* State: PENDING_PAYMENT - Payment UI */}
+      {flowState === 'pending_payment' && confirmedDisdettaId && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl border-2 border-amber-300 bg-amber-50 p-6 space-y-4"
+        >
+          <div className="flex items-start gap-3">
+            <CheckCircle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="font-semibold text-amber-900 text-lg">
+                Dati confermati!
+              </h3>
+              <p className="text-sm text-amber-700 mt-1">
+                Procedi al pagamento per completare l'invio della tua disdetta.
+              </p>
             </div>
-        </div>
+          </div>
+
+          {/* ✅ 4. Pass disabled prop explicitly for idempotency */}
+          <PaymentButton
+            disdettaId={confirmedDisdettaId}
+            disabled={verifyingPayment}
+          />
+        </motion.div>
       )}
 
-      {/* Delegation Checkbox */}
-      <DelegationCheckbox register={register} errors={errors} />
+      {/* State: PAID - Send PEC Button */}
+      {flowState === 'paid' && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-4"
+        >
+          <div className="rounded-xl border-2 border-green-300 bg-green-50 p-6">
+            <div className="flex items-start gap-3">
+              <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-green-900 text-lg">
+                  Pagamento completato!
+                </h3>
+                <p className="text-sm text-green-700 mt-1">
+                  Ora puoi procedere con l'invio della PEC alla compagnia.
+                </p>
+              </div>
+            </div>
+          </div>
 
-      {/* Submit Button */}
-      <SubmitButton
-        loading={submitting}
-        disabled={submitting || currentStatus !== 'SUCCESS'}
-        currentStatus={currentStatus}
-      />
-
-      {/* Progress Modal (C23 Day 4 - Phase 2.1) */}
-      {progress.step !== 'idle' && !showDuplicateModal && (
-        <ProgressModal progress={progress} />
+          <button
+            type="button"
+            onClick={handleSendPEC}
+            disabled={submitting}
+            className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-gradient-primary text-white font-bold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-[1.02]"
+          >
+            {submitting ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Invio PEC in corso...
+              </>
+            ) : (
+              <>
+                <CreditCard className="h-5 w-5" />
+                Invia PEC
+              </>
+            )}
+          </button>
+        </motion.div>
       )}
 
-      {/* Duplicate Detection Modal - z-60 (above Progress!) */}
+      {/* Modals */}
+      {flowState === 'sending' && progress.step !== 'idle' && (
+          <ProgressModal progress={progress} />
+        )}
+
       <DuplicateDetectionModal
-        isOpen={showDuplicateModal}
-        duplicateData={duplicateData}
-        isSubmitting={isBypassSubmitting}
-        onClose={handleCloseDuplicateModal}
-        onProceed={handleBypassDuplicate}
-      />
+          isOpen={showDuplicateModal}
+          duplicateData={duplicateData}
+          onClose={handleCloseDuplicateModal}
+        />
     </motion.form>
   )
 }

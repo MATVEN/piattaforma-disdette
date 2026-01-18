@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createClient } from '@supabase/supabase-js'
 import { login } from '../helpers/auth'
+import { DISDETTA_STATUS } from '@/types/enums'
 
 // Create Admin client for testing (not browser client)
 const supabaseAdmin = createClient(
@@ -89,7 +90,7 @@ test.describe('Duplicate Detection (C21)', () => {
        user_id: userId,
        service_type_id: 1,
        contract_number: testContractNumber,
-       status: 'DRAFT'
+       status: DISDETTA_STATUS.PROCESSING
      })
      .select()
    

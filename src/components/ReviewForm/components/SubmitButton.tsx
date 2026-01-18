@@ -6,10 +6,12 @@
 import { motion } from 'framer-motion'
 import { Loader2, CheckCircle2 } from 'lucide-react'
 
+type FormSubmissionStatus = 'IDLE' | 'SUBMITTING' | 'SUCCESS' | 'ERROR'
+
 export interface SubmitButtonProps {
   loading: boolean
   disabled: boolean
-  currentStatus: string
+  currentStatus: FormSubmissionStatus
 }
 
 export function SubmitButton({ loading, disabled, currentStatus }: SubmitButtonProps) {
@@ -29,7 +31,7 @@ export function SubmitButton({ loading, disabled, currentStatus }: SubmitButtonP
       ) : (
         <>
           <CheckCircle2 className="h-5 w-5" />
-          <span>Conferma e Invia PEC</span>
+          <span>Conferma Dati</span>
         </>
       )}
     </motion.button>

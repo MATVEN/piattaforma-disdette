@@ -6,6 +6,7 @@
 import { DisdettaService } from '@/services/disdetta.service'
 import { DisdettaRepository } from '@/repositories/disdetta.repository'
 import { ValidationError, AppError } from '@/lib/errors/AppError'
+import { DISDETTA_STATUS } from '@/types/enums'
 
 describe('DisdettaService', () => {
   let service: DisdettaService
@@ -32,7 +33,7 @@ describe('DisdettaService', () => {
     const mockDisdetta = {
       id: 100,
       user_id: testUserId,
-      status: 'PENDING_REVIEW',
+      status: DISDETTA_STATUS.PENDING_REVIEW,
       supplier_tax_id: '12345678901',
       receiver_tax_id: 'RSSMRA80A01H501U',
       supplier_contract_number: 'IT001E12345678',
@@ -45,7 +46,7 @@ describe('DisdettaService', () => {
       const existingDuplicate = {
         id: 42,
         user_id: testUserId,
-        status: 'CONFIRMED',
+        status: DISDETTA_STATUS.CONFIRMED,
         supplier_contract_number: 'IT001E12345678',
         created_at: '2024-11-20T10:00:00Z',
       }
@@ -61,7 +62,7 @@ describe('DisdettaService', () => {
       }
 
       await expect(
-        service.confirmAndPrepareForSend(input.id, input, false)
+        service.confirmAndPrepareForSend(input.id, input)
       ).rejects.toThrow(ValidationError)
     })
 
@@ -69,7 +70,7 @@ describe('DisdettaService', () => {
       const existingDuplicate = {
         id: 42,
         user_id: testUserId,
-        status: 'CONFIRMED',
+        status: DISDETTA_STATUS.CONFIRMED,
         supplier_contract_number: 'IT001E12345678',
         created_at: '2024-11-20T10:00:00Z',
       }
@@ -85,13 +86,13 @@ describe('DisdettaService', () => {
       }
 
       try {
-        await service.confirmAndPrepareForSend(input.id, input, false)
+        await service.confirmAndPrepareForSend(input.id, input)
         fail('Should have thrown ValidationError')
       } catch (error: any) {
         expect(error).toBeInstanceOf(ValidationError)
         expect(error.details).toMatchObject({
           duplicateId: 42,
-          status: 'CONFIRMED',
+          status: DISDETTA_STATUS.CONFIRMED,
           contractNumber: 'IT001E12345678',
         })
         expect(error.details.createdAt).toBeDefined()
@@ -102,7 +103,7 @@ describe('DisdettaService', () => {
       const existingDuplicate = {
         id: 42,
         user_id: testUserId,
-        status: 'CONFIRMED',
+        status: DISDETTA_STATUS.CONFIRMED,
         supplier_contract_number: 'IT001E12345678',
         created_at: '2024-11-20T10:00:00Z',
       }
@@ -111,7 +112,7 @@ describe('DisdettaService', () => {
       mockRepository.checkDuplicate.mockResolvedValue(existingDuplicate as any)
       mockRepository.confirmData.mockResolvedValue({
         ...mockDisdetta,
-        status: 'CONFIRMED',
+        status: DISDETTA_STATUS.CONFIRMED,
       } as any)
 
       const input = {
@@ -123,7 +124,7 @@ describe('DisdettaService', () => {
 
       // Should NOT throw when bypass is true
       await expect(
-        service.confirmAndPrepareForSend(input.id, input, true)
+        service.confirmAndPrepareForSend(input.id, input)
       ).resolves.toBeDefined()
 
       // Verify confirmData was called (duplicate check was bypassed)
@@ -154,11 +155,11 @@ describe('DisdettaService', () => {
       }
 
       await expect(
-        service.confirmAndPrepareForSend(input.id, input, false)
+        service.confirmAndPrepareForSend(input.id, input)
       ).rejects.toThrow(AppError)
 
       try {
-        await service.confirmAndPrepareForSend(input.id, input, false)
+        await service.confirmAndPrepareForSend(input.id, input)
       } catch (error: any) {
         expect(error.code).toBe('MISSING_CONTRACT_NUMBER')
         expect(error.message).toContain('Codice contratto mancante')
@@ -170,7 +171,7 @@ describe('DisdettaService', () => {
       const sameDisdetta = {
         id: 100, // Same ID as the one being confirmed
         user_id: testUserId,
-        status: 'CONFIRMED',
+        status: DISDETTA_STATUS.CONFIRMED,
         supplier_contract_number: 'IT001E12345678',
         created_at: '2024-11-20T10:00:00Z',
       }
@@ -179,7 +180,7 @@ describe('DisdettaService', () => {
       mockRepository.checkDuplicate.mockResolvedValue(sameDisdetta as any)
       mockRepository.confirmData.mockResolvedValue({
         ...mockDisdetta,
-        status: 'CONFIRMED',
+        status: DISDETTA_STATUS.CONFIRMED,
       } as any)
 
       const input = {
@@ -191,7 +192,7 @@ describe('DisdettaService', () => {
 
       // Should succeed because duplicate.id === id
       await expect(
-        service.confirmAndPrepareForSend(input.id, input, false)
+        service.confirmAndPrepareForSend(input.id, input)
       ).resolves.toBeDefined()
     })
 
@@ -200,7 +201,7 @@ describe('DisdettaService', () => {
       mockRepository.checkDuplicate.mockResolvedValue(null) // No duplicate
       mockRepository.confirmData.mockResolvedValue({
         ...mockDisdetta,
-        status: 'CONFIRMED',
+        status: DISDETTA_STATUS.CONFIRMED,
       } as any)
 
       const input = {
@@ -210,10 +211,10 @@ describe('DisdettaService', () => {
         supplier_contract_number: 'IT001E12345678',
       }
 
-      const result = await service.confirmAndPrepareForSend(input.id, input, false)
+      const result = await service.confirmAndPrepareForSend(input.id, input)
 
       expect(result).toBeDefined()
-      expect(result.status).toBe('CONFIRMED')
+      expect(result.status).toBe(DISDETTA_STATUS.CONFIRMED)
       expect(mockRepository.confirmData).toHaveBeenCalled()
     })
 
@@ -222,7 +223,7 @@ describe('DisdettaService', () => {
       mockRepository.checkDuplicate.mockResolvedValue(null)
       mockRepository.confirmData.mockResolvedValue({
         ...mockDisdetta,
-        status: 'CONFIRMED',
+        status: DISDETTA_STATUS.CONFIRMED,
       } as any)
 
       const input = {
@@ -232,7 +233,7 @@ describe('DisdettaService', () => {
         supplier_contract_number: 'IT001E12345678',
       }
 
-      await service.confirmAndPrepareForSend(input.id, input, false)
+      await service.confirmAndPrepareForSend(input.id, input)
 
       // Verify checkDuplicate was called with correct parameters
       expect(mockRepository.checkDuplicate).toHaveBeenCalledWith(
@@ -249,7 +250,7 @@ describe('DisdettaService', () => {
       const confirmedDisdetta = {
         id: 100,
         user_id: testUserId,
-        status: 'CONFIRMED', // Already confirmed
+        status: DISDETTA_STATUS.CONFIRMED,
         supplier_tax_id: '12345678901',
         receiver_tax_id: 'RSSMRA80A01H501U',
         supplier_contract_number: 'IT001E12345678',
@@ -264,14 +265,14 @@ describe('DisdettaService', () => {
       }
 
       await expect(
-        service.confirmAndPrepareForSend(input.id, input, false)
+        service.confirmAndPrepareForSend(input.id, input)
       ).rejects.toThrow(AppError)
 
       try {
-        await service.confirmAndPrepareForSend(input.id, input, false)
+        await service.confirmAndPrepareForSend(input.id, input)
       } catch (error: any) {
         expect(error.code).toBe('INVALID_STATUS')
-        expect(error.message).toContain('CONFIRMED')
+        expect(error.message).toContain(DISDETTA_STATUS.CONFIRMED)
       }
     })
 
@@ -279,7 +280,7 @@ describe('DisdettaService', () => {
       const disdettaWithoutTaxId = {
         id: 100,
         user_id: testUserId,
-        status: 'PENDING_REVIEW',
+        status: DISDETTA_STATUS.PENDING_REVIEW,
         supplier_tax_id: null, // Missing
         receiver_tax_id: 'RSSMRA80A01H501U',
         supplier_contract_number: 'IT001E12345678',
@@ -294,11 +295,11 @@ describe('DisdettaService', () => {
       }
 
       await expect(
-        service.confirmAndPrepareForSend(input.id, input, false)
+        service.confirmAndPrepareForSend(input.id, input)
       ).rejects.toThrow(AppError)
 
       try {
-        await service.confirmAndPrepareForSend(input.id, input, false)
+        await service.confirmAndPrepareForSend(input.id, input)
       } catch (error: any) {
         expect(error.code).toBe('INCOMPLETE_DATA')
       }
@@ -308,7 +309,7 @@ describe('DisdettaService', () => {
       const disdettaWithoutReceiverTaxId = {
         id: 100,
         user_id: testUserId,
-        status: 'PENDING_REVIEW',
+        status: DISDETTA_STATUS.PENDING_REVIEW,
         supplier_tax_id: '12345678901',
         receiver_tax_id: null, // Missing
         supplier_contract_number: 'IT001E12345678',
@@ -323,11 +324,11 @@ describe('DisdettaService', () => {
       }
 
       await expect(
-        service.confirmAndPrepareForSend(input.id, input, false)
+        service.confirmAndPrepareForSend(input.id, input)
       ).rejects.toThrow(AppError)
 
       try {
-        await service.confirmAndPrepareForSend(input.id, input, false)
+        await service.confirmAndPrepareForSend(input.id, input)
       } catch (error: any) {
         expect(error.code).toBe('INCOMPLETE_DATA')
       }
@@ -378,7 +379,7 @@ describe('DisdettaService', () => {
       const sentDisdetta = {
         id: 100,
         user_id: testUserId,
-        status: 'SENT',
+        status: DISDETTA_STATUS.SENT,
       }
 
       mockRepository.getById.mockResolvedValue(sentDisdetta as any)
@@ -394,11 +395,11 @@ describe('DisdettaService', () => {
       }
     })
 
-    test('should return canEdit false for FAILED status', async () => {
+    test('should return FAILED status with error message', async () => {
       const failedDisdetta = {
         id: 100,
         user_id: testUserId,
-        status: 'FAILED',
+        status: DISDETTA_STATUS.FAILED,
         error_message: 'OCR failed',
       }
 
@@ -406,30 +407,31 @@ describe('DisdettaService', () => {
 
       const result = await service.getDisdettaForReview(100)
 
-      expect(result.canEdit).toBe(false)
-      expect(result.errorInfo).toBe('OCR failed')
+      expect(result.status).toBe(DISDETTA_STATUS.FAILED)
+      expect(result.error_message).toBe('OCR failed')
     })
 
-    test('should return canEdit false for PROCESSING status', async () => {
+    test('should return disdetta in PROCESSING status', async () => {
       const processingDisdetta = {
         id: 100,
         user_id: testUserId,
-        status: 'PROCESSING',
+        status: DISDETTA_STATUS.PROCESSING,
+        error_message: null,
       }
 
       mockRepository.getById.mockResolvedValue(processingDisdetta as any)
 
       const result = await service.getDisdettaForReview(100)
 
-      expect(result.canEdit).toBe(false)
-      expect(result.isProcessing).toBe(true)
+      expect(result.status).toBe(DISDETTA_STATUS.PROCESSING)
+      expect(result.error_message).toBeNull()
     })
 
     test('should return canEdit true for editable statuses', async () => {
       const editableDisdetta = {
         id: 100,
         user_id: testUserId,
-        status: 'PENDING_REVIEW',
+        status: DISDETTA_STATUS.PENDING_REVIEW,
       }
 
       mockRepository.getById.mockResolvedValue(editableDisdetta as any)

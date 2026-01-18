@@ -18,6 +18,13 @@ const ALLOWED_ORIGINS = (Deno.env.get("ALLOWED_ORIGINS") ?? "http://localhost:30
 
 const GOOGLE_SCOPE = "https://www.googleapis.com/auth/cloud-platform"
 const BUCKET_NAME = 'documenti_utente'
+const DISDETTA_STATUS = {
+  PROCESSING: 'PROCESSING',
+  PENDING_REVIEW: 'PENDING_REVIEW',
+  CONFIRMED: 'CONFIRMED',
+  SENT: 'SENT',
+  FAILED: 'FAILED',
+} as const
 
 // -----------------------------
 // 1) TIPI & SCHEMI
@@ -101,7 +108,6 @@ async function triggerEmailNotification(disdettaId: number, type: 'ready' | 'sen
     }
 
     const result = await response.json()
-    console.log('[EMAIL] Notification triggered successfully:', result)
     return { success: true, result }
   } catch (error) {
     console.error('[EMAIL] Error triggering notification:', error)
@@ -144,8 +150,6 @@ async function getGoogleAccessToken(sa: GoogleServiceAccount): Promise<string> {
 // -----------------------------
 // 4) MAIN SERVER (C14)
 // -----------------------------
-console.log("Funzione process-document (C14) avviata")
-
 serve(async (req: Request) => {
   const origin = resolveCorsOrigin(req)
   const headers = corsHeaders(origin)
@@ -171,7 +175,6 @@ serve(async (req: Request) => {
       throw new Error(`Payload non valido (atteso {id: number}): ${parsed.error.issues.map(i => i.path.join(".") + ":" + i.message).join(", ")}`);
     }
     recordId = parsed.data.id;
-    console.log(`[C14] Richiesta ricevuta per ID: ${recordId}`);
 
     // 2) Env strict
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!
@@ -186,7 +189,6 @@ serve(async (req: Request) => {
     // Blocco try/catch interno per gestire FAILED
     try {
       // 4) Recupera il record
-      console.log(`[C14] Recupero record ID: ${recordId}`);
       const { data: record, error: selectError } = await sb
         .from("disdette")
         .select("file_path")
@@ -217,7 +219,6 @@ serve(async (req: Request) => {
       // 7) Base64 encode
       const fileBytes = new Uint8Array(await fileBlob.arrayBuffer());
       const fileBase64 = encodeBase64(fileBytes);
-      console.log(`[C14] file ok`, { bucket: BUCKET_NAME, pathLen: logPath?.length ?? 0, mimeType, size });
 
       // 8) Google Access Token
       const accessToken = await getGoogleAccessToken(serviceAccount);
@@ -258,20 +259,9 @@ serve(async (req: Request) => {
       const supplierTaxId = extracted.get("supplier_tax_id") ?? undefined
       const contractResult = extractContractNumber(aiJson, supplierTaxId)
 
-      // Log per debugging
-      if (contractResult.contractNumber) {
-        console.log(`[C21] Contract number estratto:`, {
-          number: contractResult.contractNumber,
-          method: contractResult.method,
-          confidence: contractResult.confidence
-        })
-      } else {
-        console.warn(`[C21] Contract number NON trovato per record ${recordId}`)
-      }
-
       // 11) UPDATE
       const successRow = {
-        status: "PENDING_REVIEW",
+        status: DISDETTA_STATUS.PENDING_REVIEW,
         supplier_tax_id: extracted.get("supplier_tax_id") ?? null,
         receiver_tax_id: extracted.get("receiver_tax_id") ?? null,
         supplier_iban: extracted.get("supplier_iban") ?? null,
@@ -280,13 +270,6 @@ serve(async (req: Request) => {
         error_message: null 
       };
 
-      console.log(`[C21-DEBUG] Tentativo UPDATE con dati:`, {
-        recordId,
-        supplier_contract_number: successRow.supplier_contract_number,
-        supplier_contract_number_type: typeof successRow.supplier_contract_number,
-        supplier_contract_number_length: successRow.supplier_contract_number?.length
-      })
-
       const { data: updatedData, error: updateSuccessError } = await sb
         .from("disdette")
         .update(successRow)
@@ -294,29 +277,9 @@ serve(async (req: Request) => {
         .select()
 
       if (updateSuccessError) throw new Error(`DB update (success) failed: ${updateSuccessError.message}`);
-
-      // DOPO riga ~300 (dove triggera email)
-      console.log('[EMAIL-TEST] Attempting to trigger email:', {
-        baseUrl: Deno.env.get('NEXT_PUBLIC_BASE_URL') || 'http://localhost:3000',
-        disdettaId: recordId,
-        type: 'ready'
-      })
       
       // Trigger email notification: disdetta ready for review
       await triggerEmailNotification(recordId, 'ready');
-
-      console.log('[EMAIL-TEST] Trigger completed')
-
-      // --- MONITORING & ANALYTICS ---
-      if (contractResult.method !== 'none') {
-        console.log(`[C21-ANALYTICS]`, {
-          recordId,
-          method: contractResult.method,
-          confidence: contractResult.confidence,
-          lengthContractNumber: contractResult.contractNumber?.length,
-          supplierTaxId: supplierTaxId?.substring(0, 5)
-        })
-      }
 
     } catch (workError: unknown) {  
       // --- BLOCCO CATCH INTERNO (C14) ---

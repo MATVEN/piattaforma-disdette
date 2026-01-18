@@ -24,9 +24,7 @@ export function TourSpotlight({ target, isActive, onClickOutside }: TourSpotligh
     }
 
     const updateSpotlight = () => {
-      console.log('🔦 TourSpotlight updateSpotlight chiamato', { target, isActive })
       const targetEl = document.querySelector(target)
-      console.log('🔦 Element found?', { found: !!targetEl, target })
       if (!targetEl) {
         setSpotlight(null)
         retryCountRef.current = 0
@@ -34,14 +32,12 @@ export function TourSpotlight({ target, isActive, onClickOutside }: TourSpotligh
       }
       // Special handling for body element
       if (target === 'body') {
-        console.log('🔦 Target is body, no spotlight')
         setSpotlight(null)
         retryCountRef.current = 0
         return
       }
 
       const rect = targetEl.getBoundingClientRect()
-      console.log('🔦 Rect:', rect, { valid: rect.width > 0 && rect.height > 0 })
       // Caso speciale: se target è [href="/login"], includi anche [href="/register"]
       let finalRect = rect
       if (target === '[href="/login"]') {
@@ -63,7 +59,6 @@ export function TourSpotlight({ target, isActive, onClickOutside }: TourSpotligh
             x: left,
             y: top,
           } as DOMRect
-          console.log('🔦 Combined rect (Login + Register):', finalRect)
         }
       }
 
@@ -75,17 +70,14 @@ export function TourSpotlight({ target, isActive, onClickOutside }: TourSpotligh
           width: finalRect.width + 16,
           height: finalRect.height + 16,
         }
-        console.log('✅ Setting spotlight!', spotlightData)
         setSpotlight(spotlightData)
         retryCountRef.current = 0
       } else {
         // Max 15 retry (2.25 secondi) per aspettare animazione menu
         if (retryCountRef.current < 15) {
-          console.log(`⏳ Retry ${retryCountRef.current + 1}/15...`)
           retryCountRef.current++
           setTimeout(updateSpotlight, 150)
         } else {
-          console.log('❌ Max retry, no spotlight')
           setSpotlight(null)
           retryCountRef.current = 0
         }

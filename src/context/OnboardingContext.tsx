@@ -94,7 +94,6 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, [state.isFirstVisit, state.completedSteps, state.dismissedTooltips, state.isLoading])
 
   const startTour = () => {
-    console.log('🎯 Starting tour!')
     setState(prev => ({
       ...prev,
       tourActive: true,

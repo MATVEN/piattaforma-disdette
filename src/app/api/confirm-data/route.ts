@@ -40,9 +40,6 @@ export async function PATCH(request: NextRequest) {
       throw new ValidationError("Body JSON non valido o mancante");
     }
 
-    // 3. Extract bypass flag (C21)
-    const bypassDuplicateCheck = body.bypassDuplicateCheck === true;
-
     // 4. Business logic delegata al service
     // Il service esegue:
     // - Validazione Zod automatica
@@ -53,7 +50,7 @@ export async function PATCH(request: NextRequest) {
     const repository = new DisdettaRepository(supabase);
     const service = new DisdettaService(repository, user.id);
 
-    const confirmed = await service.confirmAndPrepareForSend(body.id, body, bypassDuplicateCheck);
+    const confirmed = await service.confirmAndPrepareForSend(body.id, body);
 
     // 5. Response
     return NextResponse.json(confirmed);

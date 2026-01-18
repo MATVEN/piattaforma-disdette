@@ -12,7 +12,6 @@ export function WelcomeModal() {
 
     if (isLoading) return null
 
-    // ✅ Don't render until Context has loaded from localStorage
     if (isLoading) {
         return null
     }
@@ -22,9 +21,7 @@ export function WelcomeModal() {
         return null
     }
 
-    console.log('✅ Rendering WelcomeModal!')
-
-  // handleStartTour
+    // handleStartTour
     const handleStartTour = () => {
         if (dontShowAgain) {
             markAsReturningUser()
