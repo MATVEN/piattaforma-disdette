@@ -1210,3 +1210,45 @@
     - `supabase/functions/send-pec-disdetta/index.ts`
     - `supabase/migrations/*_add_payment_tracking.sql`
     - `STRIPE_SETUP_GUIDE.md`
+
+- **Mandatory Identity Document & PDF Merge (C39):**
+
+  - **Documento Identità – B2C Enforcement:**
+    - Added mandatory **documento di identità** upload for B2C users in Review flow.
+    - Auto-population from user profile when available, with replacement support.
+    - Submission blocked if document is missing (B2C only).
+    - Identity documents uploaded to `documenti-identita` bucket.
+    - Persisted `documento_identita_path` in `profiles` table for future reuse.
+    - Removed hard dependency from middleware (profile document now optional).
+
+  - **Review Form & Upload Flow Enhancements:**
+    - Extended `B2CFields` with identity document input and preview.
+    - Unified file upload handling via `useFileUploads`.
+    - Improved form orchestration and validation flow in ReviewForm.
+    - Delega checkbox auto-checked after successful payment (CONFIRMED / SENT).
+
+  - **PDF Generation & Merge Pipeline:**
+    - Introduced `mergePDFs` helper in `send-pec-disdetta` Edge Function.
+    - Automatic merge of **Delega + Documento Identità** into single PDF.
+    - Generated `delega_con_documento.pdf` stored in `lettere-disdetta` bucket.
+    - Merged PDF included in PEC attachments array.
+    - Fixed initialization-order bug (`Cannot access before initialization`).
+
+  - **Upload Page UX Improvements:**
+    - Replaced technical identifiers `(ID: x)` with readable `Operator – Service Type`.
+    - Fetch and display `service_types` and `operators` metadata.
+    - Added loading state for service information fetch.
+
+  - **Edge Function Deployment & Validation:**
+    - Deployed updated `send-pec-disdetta` with PDF merge support.
+    - End-to-end test confirmed successful merged PDF generation and PEC attachment.
+
+  - **Files Involved:**
+    - `src/components/ReviewForm/components/B2CFields.tsx`
+    - `src/components/ReviewForm/hooks/useFileUploads.ts`
+    - `src/components/ReviewForm/hooks/useFormSubmission.ts`
+    - `src/components/ReviewForm/hooks/useReviewForm.ts`
+    - `src/components/ReviewForm/index.tsx`
+    - `src/app/upload/[serviceId]/page.tsx`
+    - `src/middleware.ts`
+    - `supabase/functions/send-pec-disdetta/index.ts`

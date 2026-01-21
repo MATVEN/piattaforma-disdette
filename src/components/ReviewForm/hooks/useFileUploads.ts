@@ -1,9 +1,10 @@
 // hooks/useFileUploads.ts
 //
-// Manages file state for B2B document uploads:
-// - Documento Identità Legale Rappresentante
-// - Visura Camerale
-// - Delega Firma (conditional on richiedente_ruolo)
+// Manages file state for document uploads:
+// - Documento Identità (B2C) 
+// - Documento Identità Legale Rappresentante (B2B)
+// - Visura Camerale (B2B)
+// - Delega Firma (B2B conditional on richiedente_ruolo)
 
 import { useState } from 'react'
 
@@ -14,31 +15,37 @@ interface UploadState {
 
 interface UseFileUploadsReturn {
   files: {
+    documentoIdentita: File | null      
     documentoLR: File | null
     visuraCamerale: File | null
     delegaFirma: File | null
   }
   handleFileChange: {
+    handleDocumentoIdentitaChange: (file: File | null) => void
     handleDocumentoLRChange: (file: File | null) => void
     handleVisuraCameraleChange: (file: File | null) => void
     handleDelegaFirmaChange: (file: File | null) => void
   }
   uploadStates: {
+    documentoIdentita: UploadState      
     documentoLR: UploadState
     visuraCamerale: UploadState
     delegaFirma: UploadState
   }
   setUploadProgress: {
+    setDocumentoIdentitaProgress: (progress: number) => void
     setDocumentoLRProgress: (progress: number) => void
     setVisuraCameraleProgress: (progress: number) => void
     setDelegaFirmaProgress: (progress: number) => void
   }
   startUpload: {
+    startDocumentoIdentitaUpload: () => void
     startDocumentoLRUpload: () => void
     startVisuraCameraleUpload: () => void
     startDelegaFirmaUpload: () => void
   }
   completeUpload: {
+    completeDocumentoIdentitaUpload: () => void
     completeDocumentoLRUpload: () => void
     completeVisuraCameraleUpload: () => void
     completeDelegaFirmaUpload: () => void
@@ -47,27 +54,40 @@ interface UseFileUploadsReturn {
 }
 
 export function useFileUploads(): UseFileUploadsReturn {
-  // File states (existing)
+  // File states
+  const [documentoIdentita, setDocumentoIdentita] = useState<File | null>(null)
   const [documentoLR, setDocumentoLR] = useState<File | null>(null)
   const [visuraCamerale, setVisuraCamerale] = useState<File | null>(null)
   const [delegaFirma, setDelegaFirma] = useState<File | null>(null)
 
-  // ✅ NEW: Upload progress states
+  // Upload progress states
   const [uploadStates, setUploadStates] = useState<{
+    documentoIdentita: UploadState      
     documentoLR: UploadState
     visuraCamerale: UploadState
     delegaFirma: UploadState
   }>({
+    documentoIdentita: { uploading: false, progress: 0 },
     documentoLR: { uploading: false, progress: 0 },
     visuraCamerale: { uploading: false, progress: 0 },
     delegaFirma: { uploading: false, progress: 0 },
   })
 
+  // Handler Documento Identità (B2C)
+  const handleDocumentoIdentitaChange = (file: File | null) => {
+    setDocumentoIdentita(file)
+    if (file) {
+      setUploadStates(prev => ({
+        ...prev,
+        documentoIdentita: { uploading: false, progress: 0 }
+      }))
+    }
+  }
+
   // File change handlers (existing)
   const handleDocumentoLRChange = (file: File | null) => {
     setDocumentoLR(file)
     if (file) {
-      // Reset upload state when new file selected
       setUploadStates(prev => ({
         ...prev,
         documentoLR: { uploading: false, progress: 0 }
@@ -95,7 +115,15 @@ export function useFileUploads(): UseFileUploadsReturn {
     }
   }
 
-  // ✅ NEW: Progress setters
+  // Progress setter
+  const setDocumentoIdentitaProgress = (progress: number) => {
+    setUploadStates(prev => ({
+      ...prev,
+      documentoIdentita: { ...prev.documentoIdentita, progress }
+    }))
+  }
+
+  // Progress setters (existing)
   const setDocumentoLRProgress = (progress: number) => {
     setUploadStates(prev => ({
       ...prev,
@@ -117,7 +145,15 @@ export function useFileUploads(): UseFileUploadsReturn {
     }))
   }
 
-  // ✅ NEW: Start upload
+  // Start upload
+  const startDocumentoIdentitaUpload = () => {
+    setUploadStates(prev => ({
+      ...prev,
+      documentoIdentita: { uploading: true, progress: 0 }
+    }))
+  }
+
+  // Start upload (existing)
   const startDocumentoLRUpload = () => {
     setUploadStates(prev => ({
       ...prev,
@@ -139,7 +175,15 @@ export function useFileUploads(): UseFileUploadsReturn {
     }))
   }
 
-  // ✅ NEW: Complete upload
+  // Complete upload
+  const completeDocumentoIdentitaUpload = () => {
+    setUploadStates(prev => ({
+      ...prev,
+      documentoIdentita: { uploading: false, progress: 100 }
+    }))
+  }
+
+  // Complete upload (existing)
   const completeDocumentoLRUpload = () => {
     setUploadStates(prev => ({
       ...prev,
@@ -161,9 +205,10 @@ export function useFileUploads(): UseFileUploadsReturn {
     }))
   }
 
-  // ✅ NEW: Reset all upload states
+  // Reset all upload states
   const resetUploadStates = () => {
     setUploadStates({
+      documentoIdentita: { uploading: false, progress: 0 },
       documentoLR: { uploading: false, progress: 0 },
       visuraCamerale: { uploading: false, progress: 0 },
       delegaFirma: { uploading: false, progress: 0 },
@@ -172,27 +217,32 @@ export function useFileUploads(): UseFileUploadsReturn {
 
   return {
     files: {
+      documentoIdentita,    
       documentoLR,
       visuraCamerale,
       delegaFirma,
     },
     handleFileChange: {
+      handleDocumentoIdentitaChange,
       handleDocumentoLRChange,
       handleVisuraCameraleChange,
       handleDelegaFirmaChange,
     },
     uploadStates,
     setUploadProgress: {
+      setDocumentoIdentitaProgress,
       setDocumentoLRProgress,
       setVisuraCameraleProgress,
       setDelegaFirmaProgress,
     },
     startUpload: {
+      startDocumentoIdentitaUpload,
       startDocumentoLRUpload,
       startVisuraCameraleUpload,
       startDelegaFirmaUpload,
     },
     completeUpload: {
+      completeDocumentoIdentitaUpload,
       completeDocumentoLRUpload,
       completeVisuraCameraleUpload,
       completeDelegaFirmaUpload,

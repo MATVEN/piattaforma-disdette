@@ -30,7 +30,6 @@ import { DISDETTA_STATUS } from '@/types/enums'
 function StatusDisplay({
  message,
  isError,
- isProcessing,
 }: {
  message: string
  isError: boolean
@@ -79,6 +78,7 @@ export default function ReviewForm() {
     currentStatus,
     errorMessage,
     data,
+    profile
   } = useReviewForm()
 
   const {
@@ -93,6 +93,7 @@ export default function ReviewForm() {
   const { onSubmit, sendPEC, loading: submitting, progress } =
     useFormSubmission({
       files,
+      profile,
       uploadControls: {
         startUpload,
         setUploadProgress,
@@ -111,32 +112,8 @@ export default function ReviewForm() {
   type FlowState = 'editing' | 'pending_payment' | 'paid' | 'sending' | 'sent'
   const [flowState, setFlowState] = useState<FlowState>('editing')
   const [confirmedDisdettaId, setConfirmedDisdettaId] = useState<number | null>(null)
-
-  // ✅ AGGIUNGI QUESTO - Sincronizza flowState con backend status
-  useEffect(() => {
-    if (!data) return
-
-    // Set disdetta ID
-    if (data.id && !confirmedDisdettaId) {
-      setConfirmedDisdettaId(data.id)
-    }
-
-    // Sync flowState based on backend status
-    if (data.status === DISDETTA_STATUS.PENDING_PAYMENT) {
-      setFlowState('pending_payment')
-    } else if (data.status === DISDETTA_STATUS.CONFIRMED) {
-      setFlowState('paid')
-    } else if (data.status === DISDETTA_STATUS.SENT) {
-      setFlowState('sent')
-    } else if (data.status === DISDETTA_STATUS.PENDING_REVIEW) {
-      setFlowState('editing')
-    }
-  }, [data])
-
-
   // Payment verification in progress (for UX feedback)
   const [verifyingPayment, setVerifyingPayment] = useState(false)
-
   const {
     register,
     handleSubmit,
@@ -145,6 +122,24 @@ export default function ReviewForm() {
     watch,
     getValues,
   } = form
+
+  useEffect(() => {
+    if (!data) return
+    if (data.id && !confirmedDisdettaId) {
+      setConfirmedDisdettaId(data.id)
+    }
+    if (data.status === DISDETTA_STATUS.PENDING_PAYMENT) {
+      setFlowState('pending_payment')
+    } else if (data.status === DISDETTA_STATUS.CONFIRMED) {
+      setFlowState('paid')
+      setValue('delegaCheckbox', true)
+    } else if (data.status === DISDETTA_STATUS.SENT) {
+      setFlowState('sent')
+      setValue('delegaCheckbox', true)
+    } else if (data.status === DISDETTA_STATUS.PENDING_REVIEW) {
+      setFlowState('editing')
+    }
+  }, [data, setValue])
 
   /* ---------- Form Submission ---------- */
 
@@ -192,7 +187,6 @@ export default function ReviewForm() {
           body: JSON.stringify({ id: parseInt(idToDelete, 10) })
         })
         
-        // ✅ Attendi che DB propaghi
         await new Promise(resolve => setTimeout(resolve, 300))
       } catch (err) {
         console.error('DELETE error:', err)
@@ -405,7 +399,14 @@ export default function ReviewForm() {
         <SupplierFields register={register} errors={errors} />
 
         {tipoIntestatario === 'privato' && (
-          <B2CFields register={register} errors={errors} />
+          <B2CFields 
+            register={register} 
+            errors={errors}
+            profile={profile}
+            documentoIdentita={files.documentoIdentita}
+            onDocumentoChange={handleFileChange.handleDocumentoIdentitaChange}
+            uploadingDocumento={uploadStates.documentoIdentita?.uploading ?? false}
+          />
         )}
 
         {tipoIntestatario === 'azienda' && (

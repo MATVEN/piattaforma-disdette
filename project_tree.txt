@@ -1,5 +1,6 @@
 ﻿.env.example
 .env.vercel
+.gitattributes
 .gitignore
 .vercel
 .vercel\project.json
@@ -214,7 +215,6 @@ supabase\migrations\20250101000000_create_contact_messages.sql
 supabase\migrations\20251128_add_b2b_support.sql
 supabase\migrations\20260108000000_add_payment_tracking.sql
 tailwind.config.js
-TASK_STRIPE.md
 test-results
 test-results.json
 test-results\.last-run.json

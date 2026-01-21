@@ -305,8 +305,6 @@ Utente entra → Capisce il processo in 3 step → Vede benefici e FAQ → Si fi
 
 ---
 
-## 💰 FEATURE CON COSTI (Post-Test / Lancio Reale)
-
 Queste feature richiedono servizi a pagamento o hanno senso solo con il servizio reale attivo.
 
 ---
@@ -328,35 +326,33 @@ Quando sei pronto a mandare PEC vere ai provider. Fino ad allora, test mode simu
 
 ### **C38 - Payment Integration** 🔴 CRITICO (Monetizzazione)✅
 **Effort:** 5-6 giorni  
-**Costo:** Stripe (commissione ~2% + €0.25 per transazione)
+**Costo:** Stripe (commissione ~2% + €0.25 per transazione) solo in produzione
 
 **Cosa fa:**  
 Integra pagamenti con carta di credito/debito. Crea pagina checkout, gestisce pagamenti, genera ricevute. Protegge la review page fino a pagamento completato.
 
-**Perché è importante:**  
+**Perché è importante:**
 Senza questo, non puoi monetizzare. Ma per testare il servizio non serve.
 
-**Quando farlo:**  
+**Quando farlo:**
 Quando decidi il pricing e sei pronto a monetizzare. Prima testa tutto gratis con utenti beta.
 
 ---
 
-### **C39 - Guest Checkout Flow** 🎯 (Post-Payment)
-**Effort:** 5-6 giorni  
-**Costo:** Nessuno diretto, ma richiede C38 (Payment)
+### **C39 - Documento Identità Obbligatorio & PDF Merge** ✅
 
-**Cosa fa:**  
-Permette di creare disdette senza registrazione obbligatoria. L'utente paga come ospite, poi può eventualmente registrarsi per salvare la pratica nel profilo.
+**Effort**: 1 giorno
+**Costo**: Nessuno
 
-**Perché è importante:**  
-Riduce friction, aumenta conversioni. Ma ha senso solo DOPO aver implementato pagamenti (C38).
+**Cosa fa**:
+Rende obbligatorio il caricamento del documento d’identità per le disdette B2C. Il documento viene richiesto in Review, validato al submit, salvato nel profilo e automaticamente unito alla delega in un unico PDF allegato alla PEC.
 
-**Quando farlo:**  
-Dopo C38, quando vedi che molti utenti abbandonano alla registrazione.
+**Perché è importante**:
+Garantisce la piena validità legale delle disdette. Senza documento d’identità allegato alla delega, la richiesta può essere rifiutata. Il merge automatico riduce errori manuali e semplifica il flusso per l’utente.
 
 ---
 
-### **C40 - Admin Dashboard** 🎯 (Post-Launch)
+### **C40 - Admin Dashboard**  (Post-Launch)
 **Effort:** 6-8 giorni  
 **Costo:** Nessuno diretto
 
@@ -411,6 +407,7 @@ SEO e UX. Ma ha senso ottimizzare con traffico reale per capire i veri bottlenec
 - C20: Duplicate Detection (1d)
 - C21: Testing & QA Suite (3-4d)
 - C23: PDF Generator & B2B Support (3-4d)
+- C39: Documento Identità Obbligatorio & PDF Merge
 
 🟠 ✨PRIORITÀ ALTA - CORE UX / FIDUCIA (Settimana 3-4):
 - C22: UI Polish (2-3d)
@@ -432,7 +429,6 @@ SEO e UX. Ma ha senso ottimizzare con traffico reale per capire i veri bottlenec
 - C34: Wizard Save & Resume (2-3d)
 - C35: E2E Testing Suite (3-4h)
 
-
 ```
 
 **Totale Feature Gratuite:** ~30-38 giorni (6-8 settimane)
@@ -449,7 +445,6 @@ SEO e UX. Ma ha senso ottimizzare con traffico reale per capire i veri bottlenec
 - C38: Payment Integration (5-6d) 💰 ~2% commissioni
 
 🎯 POST-LAUNCH
-- C39: Guest Checkout (5-6d) - Richiede C38
 - C40: Admin Dashboard (6-8d)
 
 ✨ PRE-LAUNCH

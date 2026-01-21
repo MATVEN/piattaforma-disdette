@@ -78,7 +78,7 @@ export async function middleware(request: NextRequest) {
     // Dobbiamo controllare il profilo
     const { data: profile, error } = await supabase
       .from('profiles')
-      .select('nome, cognome, indirizzo_residenza, documento_identita_path') // <-- 1. Seleziona il path
+      .select('nome, cognome, indirizzo_residenza')
       .eq('user_id', user.id)
       .maybeSingle()
 
@@ -87,15 +87,12 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next()
     }
     
-    // 2. Aggiungi il controllo del documento
     const isProfileComplete = profile &&
                               profile.nome &&
                               profile.cognome &&
-                              profile.indirizzo_residenza &&
-                              profile.documento_identita_path // <-- 3. Controlla che esista
+                              profile.indirizzo_residenza
 
     if (!isProfileComplete) {
-      console.log("C11: Profilo incompleto (mancano dati o documento ID), reindirizzo a /profileUser")
       const url = request.nextUrl.clone()
       url.pathname = '/profileUser'
       return NextResponse.redirect(url)
@@ -103,7 +100,7 @@ export async function middleware(request: NextRequest) {
 
   }
 
-  // Se nessuno dei casi scatta, l'utente può procedere
+
   return NextResponse.next()
 }
 

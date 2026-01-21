@@ -4,19 +4,41 @@
 // - Nome, Cognome
 // - Codice Fiscale (16 chars, uppercase)
 // - Indirizzo Residenza
+// - Documento Identità
 
 import { UseFormRegister, FieldErrors } from 'react-hook-form'
 import { type ReviewFormData } from '@/domain/schemas'
-import { Users, User, CreditCard, MapPin } from 'lucide-react'
+import { Users, User, CreditCard, MapPin, FileText, CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react'
 import { Tooltip } from '@/components/onboarding/Tooltip'
 import { TOOLTIP_CONTENT, TOOLTIP_IDS } from '@/constants/tooltipContent'
+
+// ✅ Type per UserProfile
+interface UserProfile {
+  nome: string | null
+  cognome: string | null
+  codice_fiscale: string | null
+  indirizzo_residenza: string | null
+  documento_identita_path: string | null
+}
 
 export interface B2CFieldsProps {
   register: UseFormRegister<ReviewFormData>
   errors: FieldErrors<ReviewFormData>
+  // ✅ AGGIUNTE
+  profile: UserProfile | null
+  documentoIdentita: File | null
+  onDocumentoChange: (file: File | null) => void
+  uploadingDocumento: boolean
 }
 
-export function B2CFields({ register, errors }: B2CFieldsProps) {
+export function B2CFields({ 
+  register, 
+  errors,
+  profile,              
+  documentoIdentita,    
+  onDocumentoChange,    
+  uploadingDocumento    
+}: B2CFieldsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t-2 border-gray-100 py-6">
       <div className="md:col-span-2">
@@ -84,7 +106,6 @@ export function B2CFields({ register, errors }: B2CFieldsProps) {
             id="codice_fiscale"
             {...register('codice_fiscale', {
               onChange: (e) => {
-                // ✅ Transform live: trim + uppercase
                 const value = e.target.value.trim().toUpperCase()
                 e.target.value = value
               }
@@ -124,6 +145,94 @@ export function B2CFields({ register, errors }: B2CFieldsProps) {
         </div>
         {(errors as any).indirizzo_residenza && (
           <p className="mt-1 text-sm text-red-600">{(errors as any).indirizzo_residenza.message}</p>
+        )}
+      </div>
+
+      {/* ✅ Documento Identità */}
+      <div className="md:col-span-2 space-y-2">
+        <label className="block text-sm font-medium text-gray-700">
+          Documento d'identità *
+          <span className="text-xs text-gray-500 ml-2">
+            (Carta d'identità o passaporto, fronte e retro)
+          </span>
+        </label>
+        
+        {/* Documento già presente nel profilo */}
+        {profile?.documento_identita_path && !documentoIdentita && (
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-blue-600" />
+                <span className="text-sm text-blue-800">
+                  Documento dal tuo profilo
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const input = document.getElementById('documento-identita-b2c') as HTMLInputElement
+                  if (input) input.click()
+                }}
+                className="text-sm text-indigo-600 hover:text-indigo-700 hover:underline"
+              >
+                Sostituisci
+              </button>
+            </div>
+          </div>
+        )}
+        
+        {/* Campo upload */}
+        <input
+          id="documento-identita-b2c"
+          type="file"
+          accept=".pdf,.jpg,.jpeg,.png"
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (file) {
+              onDocumentoChange(file)
+            }
+          }}
+          className={`
+            block w-full text-sm text-gray-500
+            file:mr-4 file:py-2 file:px-4
+            file:rounded-lg file:border-0
+            file:text-sm file:font-semibold
+            file:bg-indigo-50 file:text-indigo-700
+            hover:file:bg-indigo-100
+            cursor-pointer
+            ${profile?.documento_identita_path && !documentoIdentita ? 'hidden' : ''}
+          `}
+        />
+        
+        {/* File uploadato */}
+        {documentoIdentita && (
+          <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 p-2 rounded-lg">
+            <CheckCircle className="h-4 w-4" />
+            <span>{documentoIdentita.name}</span>
+            <button
+              type="button"
+              onClick={() => onDocumentoChange(null)}
+              className="ml-auto text-red-600 hover:text-red-700"
+            >
+              <XCircle className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+        
+        {/* Warning se manca */}
+        {!profile?.documento_identita_path && !documentoIdentita && (
+          <p className="text-xs text-amber-600 flex items-start gap-1">
+            <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+            <span>Il documento è obbligatorio per procedere</span>
+          </p>
+        )}
+        
+        {/* Upload in corso */}
+        {uploadingDocumento && (
+          <div className="flex items-center gap-2 text-sm text-blue-600">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Caricamento in corso...</span>
+          </div>
         )}
       </div>
     </div>

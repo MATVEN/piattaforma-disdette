@@ -19,6 +19,11 @@ export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [serviceInfo, setServiceInfo] = useState<{
+    serviceName: string
+    operatorName: string
+  } | null>(null)
+  const [loadingServiceInfo, setLoadingServiceInfo] = useState(true)
 
   // Create Supabase client dynamically with current env vars and cookie handling
   const supabase = createBrowserClient(
@@ -47,6 +52,47 @@ export default function UploadPage() {
       router.push('/login')
     }
   }, [user, isAuthLoading, router])
+
+  // Fetch service info for display
+  useEffect(() => {
+  const fetchServiceInfo = async () => {
+    if (!serviceId) return
+    setLoadingServiceInfo(true)
+    try {
+      // 1. Get service type
+      const { data: service, error: serviceError } = await supabase
+        .from('service_types')
+        .select('name, operator_id')
+        .eq('id', serviceId)
+        .single()
+      if (serviceError || !service) {
+        console.error('Service not found:', serviceError)
+        setLoadingServiceInfo(false)
+        return
+      }
+      // 2. Get operator
+      const { data: operator, error: operatorError } = await supabase
+        .from('operators')
+        .select('name')
+        .eq('id', service.operator_id)
+        .single()
+      if (operatorError || !operator) {
+        console.error('Operator not found:', operatorError)
+        setLoadingServiceInfo(false)
+        return
+      }
+      setServiceInfo({
+        serviceName: service.name,
+        operatorName: operator.name
+      })
+    } catch (err) {
+      console.error('Error fetching service info:', err)
+    } finally {
+      setLoadingServiceInfo(false)
+    }
+  }
+  fetchServiceInfo()
+  }, [serviceId, supabase])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -168,13 +214,21 @@ export default function UploadPage() {
 
       <div className="bg-white">
         <div className="mx-auto max-w-2xl p-8">
-          {/* ... (resto del JSX invariato) ... */}
-          <h1 className="mb-6 text-3xl font-bold">
-            Carica il tuo documento
-          </h1>
+          <h1 className="mb-6 text-3xl font-bold">Carica il tuo documento</h1>
         <p className="mb-4 text-gray-600">
-          Stai per avviare la disdetta per il servizio (ID: {serviceId}). Carica il
-          documento richiesto (es. bolletta, contratto, modulo).
+          {loadingServiceInfo ? (
+            <>Stai per avviare la disdetta. Carica il documento richiesto (es. bolletta, contratto, modulo).</>
+          ) : serviceInfo ? (
+            <>
+              Stai per avviare la disdetta per{' '}
+              <span className="font-semibold text-indigo-600">
+                    {serviceInfo.operatorName} - {serviceInfo.serviceName}
+              </span>
+              . Carica il documento richiesto (es. bolletta, contratto, modulo).
+            </>
+          ) : (
+            <>Stai per avviare la disdetta. Carica il documento richiesto (es. bolletta, contratto, modulo).</>
+          )}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border bg-white p-6 shadow-sm">

@@ -74,22 +74,29 @@ interface SubmissionResult {
 
 interface UseFormSubmissionProps {
   files: {
+    documentoIdentita: File | null
     documentoLR: File | null
     visuraCamerale: File | null
     delegaFirma: File | null
   }
+  profile: {
+    documento_identita_path: string | null
+  } | null
   uploadControls?: {
     startUpload: {
+      startDocumentoIdentitaUpload: () => void
       startDocumentoLRUpload: () => void
       startVisuraCameraleUpload: () => void
       startDelegaFirmaUpload: () => void
     }
     setUploadProgress: {
+      setDocumentoIdentitaProgress: (progress: number) => void
       setDocumentoLRProgress: (progress: number) => void
       setVisuraCameraleProgress: (progress: number) => void
       setDelegaFirmaProgress: (progress: number) => void
     }
     completeUpload: {
+      completeDocumentoIdentitaUpload: () => void
       completeDocumentoLRUpload: () => void
       completeVisuraCameraleUpload: () => void
       completeDelegaFirmaUpload: () => void
@@ -110,6 +117,7 @@ export interface UseFormSubmissionReturn {
 
 export function useFormSubmission({
   files,
+  profile,
   uploadControls,
 }: UseFormSubmissionProps): UseFormSubmissionReturn {
   const router = useRouter()
@@ -270,6 +278,81 @@ export function useFormSubmission({
         return { success: false }
       }
 
+      /* ===== STEP 1.5: Documento Identità (B2C) ===== */
+      
+      let documentoIdentitaPath: string | null = null
+      
+      if (data.tipo_intestatario === 'privato') {
+        // Verifica documento obbligatorio
+        if (!profile?.documento_identita_path && !files.documentoIdentita) {
+          toast.error('📄 Documento d\'identità obbligatorio. Caricalo per procedere.', {
+            duration: 6000,
+            id: 'documento-identita-required',
+          })
+          return { success: false }
+        }
+        
+        // Upload nuovo documento se presente
+        if (files.documentoIdentita) {
+          try {
+            setProgressSafe({ 
+              step: 'uploading', 
+              message: 'Caricamento documento d\'identità...', 
+              progress: 15 
+            })
+            
+            const docPath = `${user.id}/documento_identita_${Date.now()}.pdf`
+            
+            const progressPromise = uploadControls
+              ? simulateFileProgress(
+                  uploadControls.startUpload.startDocumentoIdentitaUpload,
+                  uploadControls.setUploadProgress.setDocumentoIdentitaProgress,
+                  uploadControls.completeUpload.completeDocumentoIdentitaUpload,
+                  1500
+                )
+              : Promise.resolve()
+            
+            const { error: docError } = await supabase.storage
+              .from('documenti-identita')
+              .upload(docPath, files.documentoIdentita, { upsert: true })
+            
+            await progressPromise
+            
+            if (docError) throw docError
+            
+            documentoIdentitaPath = docPath
+            
+            // Salva path in profilo per riutilizzo futuro
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .update({ documento_identita_path: docPath })
+              .eq('user_id', user.id)
+            
+            if (profileError) {
+              logger.warn('Failed to update profile with documento path', {
+                error: profileError.message,
+                userId: user.id,
+              })
+              // Non blocchiamo il flusso, il documento è comunque uploadato
+            }
+            
+          } catch (err) {
+            logger.error('Errore upload Documento Identità', {
+              error: err instanceof Error ? err.message : String(err),
+              userId: user?.id,
+              step: 'upload-documento-identita',
+            })
+            const errorMsg = getErrorMessage(err, 'Documento Identità')
+            toast.error(errorMsg, { duration: 6000 })
+            setProgressSafe({ step: 'error', message: errorMsg, progress: 0 })
+            return { success: false }
+          }
+        } else {
+          // Usa documento esistente dal profilo
+          documentoIdentitaPath = profile?.documento_identita_path ?? null
+        }
+      }
+
       /* ===== STEP 2: File Upload (B2B) ===== */
 
       let visuraPath: string | null = null
@@ -277,7 +360,7 @@ export function useFormSubmission({
       let documentoPath: string | null = null
 
       if (data.tipo_intestatario === 'azienda') {
-        setProgressSafe({ step: 'uploading', message: 'Caricamento documenti...', progress: 20 })
+        setProgressSafe({ step: 'uploading', message: 'Caricamento documenti...', progress: 25 })
 
         // Validate files exist AND are PDFs
         if (!files.visuraCamerale || !isPdfFile(files.visuraCamerale)) {
@@ -303,7 +386,7 @@ export function useFormSubmission({
 
         // Upload Visura Camerale
         try {
-          setProgressSafe({ step: 'uploading', message: 'Caricamento Visura Camerale...', progress: 25 })
+          setProgressSafe({ step: 'uploading', message: 'Caricamento Visura Camerale...', progress: 30 })
           const visuraFilePath = `${user.id}/${Date.now()}_visura.pdf`
 
           const progressPromise = uploadControls
@@ -337,7 +420,7 @@ export function useFormSubmission({
 
         // Upload Documento LR
         try {
-          setProgressSafe({ step: 'uploading', message: 'Caricamento Documento LR...', progress: 35 })
+          setProgressSafe({ step: 'uploading', message: 'Caricamento Documento LR...', progress: 40 })
           const docFilePath = `${user.id}/${Date.now()}_documento_lr.pdf`
 
           const progressPromise = uploadControls
@@ -372,7 +455,7 @@ export function useFormSubmission({
         // Upload Delega (if delegato)
         if (data.richiedente_ruolo === 'delegato' && files.delegaFirma) {
           try {
-            setProgressSafe({ step: 'uploading', message: 'Caricamento Delega...', progress: 45 })
+            setProgressSafe({ step: 'uploading', message: 'Caricamento Delega...', progress: 50 })
 
             const delegaFilePath = `${user.id}/${Date.now()}_delega.pdf`
 

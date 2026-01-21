@@ -1,6 +1,4 @@
 // supabase/functions/send-pec-disdetta/index.ts
-// C23 - Updated for B2C/B2B PDF Generation
-// C23 Day 4 - Enhanced error handling and logging
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
@@ -256,6 +254,21 @@ function wrapText(
     lines.push(line)
   }
   return lines
+}
+
+// ==========================
+// HELPER: MERGE PDF
+// ==========================
+async function mergePDFs(pdfs: Uint8Array[]): Promise<Uint8Array> {
+  const mergedPdf = await PDFDocument.create()
+  
+  for (const pdfBytes of pdfs) {
+    const pdf = await PDFDocument.load(pdfBytes)
+    const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices())
+    pages.forEach((page) => mergedPdf.addPage(page))
+  }
+  
+  return await mergedPdf.save()
 }
 
 // ==========================
@@ -659,7 +672,7 @@ async function creaPdfDelega(profile: ProfileData): Promise<Uint8Array> {
 }
 
 // ==========================
-// 9) HANDLER (C23 - B2C/B2B PDF)
+// 9) HANDLER (B2C/B2B PDF)
 // ==========================
 serve(async (req: Request) => {
   const origin = resolveCorsOrigin(req)
@@ -752,18 +765,24 @@ serve(async (req: Request) => {
     const pdfDelegaBytes = await creaPdfDelega(typedProfileData)
     const idBytes = await idFile.arrayBuffer()
 
-    // --- 7. Upload PDF ---
+    // --- 7. Merge delega + documento identità  ---
+    const delegaConDocumento = await mergePDFs([
+      pdfDelegaBytes,
+      new Uint8Array(idBytes)
+    ])
+
+    // --- 8. Upload PDF ---
     const pdfDisdettaPath = `${typedDisdettaData.user_id}/${disdettaId}_lettera.pdf`
     const { error: upErrDisdetta } = await supabaseAdmin
       .storage.from(PDF_BUCKET).upload(pdfDisdettaPath, pdfDisdettaBytes, { contentType: 'application/pdf', upsert: true })
     if (upErrDisdetta) throw new Error(`Errore upload PDF Disdetta: ${upErrDisdetta.message}`)
 
-    const pdfDelegaPath = `${typedDisdettaData.user_id}/${disdettaId}_delega.pdf`
+    const pdfDelegaPath = `${typedDisdettaData.user_id}/${disdettaId}_delega_con_documento.pdf`
     const { error: upErrDelega } = await supabaseAdmin
-      .storage.from(PDF_BUCKET).upload(pdfDelegaPath, pdfDelegaBytes, { contentType: 'application/pdf', upsert: true })
+      .storage.from(PDF_BUCKET).upload(pdfDelegaPath, delegaConDocumento, { contentType: 'application/pdf', upsert: true })
     if (upErrDelega) throw new Error(`Errore upload PDF Delega: ${upErrDelega.message}`)
 
-    // 8. Prepare attachments array (for future PEC sending)
+    // --- 9. Prepare attachments array ---
     const attachments: { filename: string; content: ArrayBuffer; contentType: string }[] = [
       {
         filename: 'lettera_disdetta.pdf',
@@ -771,8 +790,8 @@ serve(async (req: Request) => {
         contentType: 'application/pdf'
       },
       {
-        filename: 'delega.pdf',
-        content: pdfDelegaBytes.buffer,
+        filename: 'delega_con_documento.pdf',
+        content: delegaConDocumento.buffer,
         contentType: 'application/pdf'
       }
     ]
@@ -818,7 +837,7 @@ serve(async (req: Request) => {
       }
     }
 
-    // 9. Invio PEC (DISABILITATO IN TEST)
+    // 10. Invio PEC (DISABILITATO IN TEST)
     if (isTest) {
       // (In futuro, la logica SMTP userà l'array attachments)
     }

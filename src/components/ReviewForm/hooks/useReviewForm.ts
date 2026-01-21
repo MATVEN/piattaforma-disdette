@@ -30,6 +30,7 @@ interface UserProfile {
   cognome: string | null
   codice_fiscale: string | null
   indirizzo_residenza: string | null
+  documento_identita_path: string | null
 }
 
 const safeJson = async <T,>(res: Response): Promise<T | undefined> => {
@@ -50,6 +51,7 @@ export interface UseReviewFormReturn {
   currentStatus: 'LOADING' | 'PROCESSING' | 'FAILED' | 'SUCCESS'
   errorMessage: string | null
   data: ExtractedData | null
+  profile: UserProfile | null
 }
 
 export function useReviewForm(): UseReviewFormReturn {
@@ -98,7 +100,7 @@ export function useReviewForm(): UseReviewFormReturn {
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('nome, cognome, codice_fiscale, indirizzo_residenza')
+        .select('nome, cognome, codice_fiscale, indirizzo_residenza, documento_identita_path')
         .eq('user_id', user.id)
         .single()
       
@@ -274,5 +276,6 @@ export function useReviewForm(): UseReviewFormReturn {
     currentStatus,
     errorMessage,
     data,
+    profile
   }
 }
