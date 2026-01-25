@@ -43,7 +43,7 @@ const steps = [
   {
     icon: Send,
     title: '2. Noi spediamo',
-    description: 'Invieremo la tua disdetta tramite PEC o Raccomandata A/R con pieno valore legale.'
+    description: 'Invieremo la tua disdetta tramite PEC con pieno valore legale.'
   },
   {
     icon: CheckCircle,
@@ -71,12 +71,12 @@ const faqs = [
   {
     id: 1,
     question: 'La disdetta è legalmente valida?',
-    answer: 'Assolutamente sì. Utilizziamo la PEC (Posta Elettronica Certificata) o la Raccomandata A/R, che hanno pieno valore legale e probatorio di fronte a qualsiasi ente, azienda o fornitore.'
+    answer: 'Assolutamente sì. Utilizziamo la PEC (Posta Elettronica Certificata), che ha pieno valore legale e probatorio di fronte a qualsiasi ente, azienda o fornitore.'
   },
   {
     id: 2,
     question: 'Quanto costa il servizio?',
-    answer: 'Il prezzo parte da soli 6,99€ per pratica. Il costo finale è trasparente e dipende dal metodo di spedizione scelto (es. PEC vs Raccomandata A/R), ma non ci sono mai costi nascosti o abbonamenti ricorrenti.'
+    answer: 'Il prezzo parte da soli 6,99€ per pratica. Il costo finale è trasparente e dipende dal costo della PEC, ma non ci sono mai costi nascosti o abbonamenti ricorrenti.'
   },
   {
     id: 3,
@@ -137,7 +137,7 @@ export default function HomePage() {
                 <path d="M0 5 Q 50 10 100 5" fill="none" stroke="currentColor" strokeWidth="8" />
               </svg>
             </span>
-            . Solo 6,99€ a pratica.
+            <br/>Solo 6,99€ a pratica
           </motion.h1>
 
           <motion.p
@@ -332,10 +332,10 @@ export default function HomePage() {
           </div>
           <div className="shrink-0">
             <Link
-              href="/operators"
+              href="/contact"
               className="inline-flex items-center justify-center rounded-lg bg-white px-8 py-4 text-base font-bold text-indigo-600 shadow-lg hover:bg-gray-50 transition-all"
             >
-              Scopri soluzioni B2B
+              Contattaci per un preventivo
             </Link>
           </div>
         </div>

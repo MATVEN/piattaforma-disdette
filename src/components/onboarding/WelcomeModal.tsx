@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Sparkles, CheckCircle, FileText, Send } from 'lucide-react'
+import Image from 'next/image'
 import { useOnboarding } from '@/context/OnboardingContext'
 
 export function WelcomeModal() {
@@ -70,57 +71,25 @@ export function WelcomeModal() {
               onClick={(e) => e.stopPropagation()} // ✅ Prevent close when clicking inside
             >
               {/* Gradient Header - Ridotto su mobile */}
-              <div className="relative h-16 sm:h-28 bg-gradient-to-r from-indigo-600 to-pink-500 overflow-hidden flex-shrink-0">
-                {/* Animated sparkles - Ridotti */}
-                <motion.div
-                  animate={{
-                    scale: [1, 1.2, 1],
-                    rotate: [0, 180, 360],
-                  }}
-                  transition={{
-                    duration: 20,
-                    repeat: Infinity,
-                    ease: 'linear',
-                  }}
-                  className="absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"
+              <div className="relative h-16 sm:h-28 bg-gradient-to-r from-indigo-600 to-pink-500 overflow-visible flex-shrink-0">
+                {/* Logo decorativo centrato */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[90]">
+                <Image
+                  src="/images/disdeasy-logo.png"
+                  alt=""
+                  width={150}
+                  height={0}
+                  className="h-auto w-auto max-w-[200px] sm:max-w-[250px]"
                 />
-                <motion.div
-                  animate={{
-                    scale: [1.2, 1, 1.2],
-                    rotate: [360, 180, 0],
-                  }}
-                  transition={{
-                    duration: 15,
-                    repeat: Infinity,
-                    ease: 'linear',
-                  }}
-                  className="absolute -bottom-8 -left-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"
-                />
+                </div>
                 {/* Close button */}
                 <button
                   onClick={handleClose}
-                  className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 p-1.5 sm:p-2 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors cursor-pointer"
+                  className="absolute top-2 right-2 sm:top-4 sm:right-4 z-[110] p-1.5 sm:p-2 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors cursor-pointer"
                   aria-label="Chiudi"
                 >
                   <X className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                 </button>
-                {/* Icon - Più piccolo su mobile */}
-                <div className="relative h-full flex items-center justify-center">
-                  <motion.div
-                    animate={{
-                      rotate: [0, 5, -5, 0],
-                      scale: [1, 1.1, 1],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: 'easeInOut',
-                    }}
-                    className="w-10 h-10 sm:w-16 sm:h-16 bg-white rounded-full flex items-center justify-center shadow-lg"
-                  >
-                    <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600" />
-                  </motion.div>
-                </div>
               </div>
 
               {/* Content - Scrollable */}

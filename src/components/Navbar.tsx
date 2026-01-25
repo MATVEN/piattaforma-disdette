@@ -18,7 +18,6 @@ import {
   Home, 
   Menu, 
   X,
-  Sparkles,
   Plus
 } from 'lucide-react';
 
@@ -71,18 +70,19 @@ export default function Navbar() {
           <div className="flex h-16 items-center justify-between">
             
             {/* Logo */}
-            <Link 
-              href="/" 
-              className="group flex items-center space-x-2 text-xl font-bold"
+            <Link
+            href="/"
+            className="group flex items-center"
             >
               <div className="relative">
-                <Sparkles className="h-6 w-6 text-white transition-transform group-hover:rotate-12 group-hover:scale-110" />
-                {/* Glow effect */}
-                <div className="absolute inset-0 bg-gradient-primary blur-lg opacity-60 group-hover:opacity-100 transition-opacity" />
+                <img
+                    src="/images/disdeasy-logo.png"
+                    alt="DisdEasy Logo"
+                    className="h-10 w-auto transition-transform group-hover:scale-105"
+                  />
+                  {/* Glow effect opzionale */}
+                <div className="absolute inset-0 blur-md opacity-0 group-hover:opacity-30 transition-opacity bg-white/20 rounded-lg" />
               </div>
-              <span className="text-white drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]">
-                DisdEasy
-              </span>
             </Link>
 
             {/* Desktop Navigation */}

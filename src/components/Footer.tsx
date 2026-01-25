@@ -2,7 +2,8 @@
 // Footer completo con link legali e social (C19)
 
 import Link from 'next/link'
-import { Sparkles, Github, Twitter, Linkedin } from 'lucide-react'
+import Image from 'next/image'
+import { Linkedin } from 'lucide-react'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -14,9 +15,14 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Column 1 - Brand */}
           <div>
-            <Link href="/" className="flex items-center space-x-2 mb-4">
-              <Sparkles className="h-6 w-6 text-primary-400" />
-              <span className="text-white font-bold text-xl">DisdEasy</span>
+            <Link href="/" className="flex items-center mb-4">
+              <Image
+                src="/images/disdeasy-logo.png"
+                alt="DisdEasy"
+                width={150}
+                height={40}
+                className="h-10 w-auto"
+              />
             </Link>
             <p className="text-gray-400 text-sm mt-2">
               Semplifichiamo le tue disdette

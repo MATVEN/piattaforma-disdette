@@ -106,7 +106,6 @@ export default function RegisterPage() {
       >
         {/* Logo/Header */}
         <AuthHeader 
-          title="DisdEasy"
           subtitle="Crea il tuo account gratuito"
         />
 
