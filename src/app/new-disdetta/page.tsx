@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuth } from '@/context/AuthContext'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { OnboardingSteps } from '@/components/OnboardingSteps'
 import { onboardingFlowSteps } from '@/config/onboardingSteps'
 
@@ -30,6 +30,8 @@ type ServiceType = {
 export default function NewDisdettaPage() {
     const { user, isAuthLoading } = useAuth()
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const categoryParam = searchParams.get('category')
 
     // Stati per il wizard
     const [step, setStep] = useState(1) // Step 1: Categorie, 2: Operatori, 3: Servizi
@@ -59,23 +61,31 @@ export default function NewDisdettaPage() {
     // Carica le categorie al montaggio del componente
     useEffect(() => {
         const fetchCategories = async () => {
-        setIsLoading(true)
-        const { data, error } = await supabase
-            .from('categories')
-            .select('*')
-        
-        if (error) {
-            setError(error.message)
-        } else if (data) {
-            setCategories(data)
+            setIsLoading(true)
+            const { data, error } = await supabase
+                .from('categories')
+                .select('*')
+            if (error) {
+                setError(error.message)
+            } else if (data) {
+                setCategories(data)
+                // AUTO-SELECT se c'è categoryParam
+                if (categoryParam && data.length > 0) {
+                    const matchedCategory = data.find(
+                        cat => cat.name.toLowerCase() === categoryParam.toLowerCase() ||
+                        cat.name.toLowerCase().includes(categoryParam.toLowerCase())
+                    )
+                    if (matchedCategory) {
+                        setSelectedCategory(matchedCategory)
+                    }
+                }
+            }
+            setIsLoading(false)
         }
-        setIsLoading(false)
-        }
-        // Esegui solo se l'utente è loggato
         if (user) {
-        fetchCategories()
+            fetchCategories()
         }
-    }, [user]) // Dipende da 'user'
+    }, [user, categoryParam])
 
     // Carica gli operatori QUANDO l'utente seleziona una categoria
     useEffect(() => {

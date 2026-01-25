@@ -26,12 +26,12 @@ import {
 import Link from 'next/link'
 
 const categories = [
-  { id: 'mobile', name: 'Telefonia Mobile', icon: Smartphone },
-  { id: 'internet', name: 'Telefonia fissa / Internet', icon: Wifi },
-  { id: 'tv', name: 'Pay TV', icon: Tv },
-  { id: 'energy', name: 'Energia', icon: Zap },
-  { id: 'insurance', name: 'Assicurazioni', icon: Shield },
-  { id: 'gym', name: 'Palestre / abbonamenti vari', icon: Dumbbell }
+  { id: 'mobile', name: 'Telefonia Mobile', icon: Smartphone, dbName: 'telefonia', available: true },
+  { id: 'internet', name: 'Telefonia fissa / Internet', icon: Wifi, dbName: 'telefonia', available: true },
+  { id: 'tv', name: 'Pay TV', icon: Tv, dbName: 'pay-tv', available: false },
+  { id: 'energy', name: 'Energia', icon: Zap, dbName: 'energia', available: true },
+  { id: 'insurance', name: 'Assicurazioni', icon: Shield, dbName: 'assicurazioni', available: false },
+  { id: 'gym', name: 'Palestre / abbonamenti vari', icon: Dumbbell, dbName: 'palestre', available: false }
 ]
 
 const steps = [
@@ -196,16 +196,30 @@ export default function HomePage() {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.4 + index * 0.05 }}
                     >
-                      <Link href="/new-disdetta">
-                        <div className="h-full flex flex-col items-center justify-center gap-3 p-4 rounded-xl border border-gray-200 bg-gray-50 hover:border-primary-600 hover:bg-primary-50 hover:shadow-md transition-all group cursor-pointer">
-                          <div className="p-3 rounded-full bg-white shadow-sm text-gray-600 group-hover:text-primary-600 group-hover:bg-white">
+                      {category.available ? (
+                        <Link href={`/new-disdetta?category=${category.dbName}`}>
+                          <div className="h-full flex flex-col items-center justify-center gap-3 p-4 rounded-xl border border-gray-200 bg-gray-50 hover:border-primary-600 hover:bg-primary-50 hover:shadow-md transition-all group cursor-pointer">
+                            <div className="p-3 rounded-full bg-white shadow-sm text-gray-600 group-hover:text-primary-600 group-hover:bg-white">
+                              <Icon className="h-6 w-6" />
+                            </div>
+                            <span className="text-sm font-semibold text-gray-800 group-hover:text-primary-600 text-center">
+                              {category.name}
+                            </span>
+                          </div>
+                        </Link>
+                      ) : (
+                        <div className="h-full flex flex-col items-center justify-center gap-3 p-4 rounded-xl border border-gray-200 bg-gray-100 opacity-60 cursor-not-allowed relative">
+                          <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
+                            Presto
+                          </div>
+                          <div className="p-3 rounded-full bg-white shadow-sm text-gray-400">
                             <Icon className="h-6 w-6" />
                           </div>
-                          <span className="text-sm font-semibold text-gray-800 group-hover:text-primary-600 text-center">
-                              {category.name}
+                          <span className="text-sm font-semibold text-gray-500 text-center">
+                            {category.name}
                           </span>
                         </div>
-                      </Link>
+                      )}
                     </motion.div>
                   )
                 })}
