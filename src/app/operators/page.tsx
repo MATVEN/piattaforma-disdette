@@ -23,8 +23,8 @@ interface Operator {
 const categoryColors: Record<string, { bg: string; text: string }> = {
   'Energia': { bg: 'bg-yellow-100', text: 'text-yellow-800' },
   'Gas': { bg: 'bg-blue-100', text: 'text-blue-800' },
-  'Telecom': { bg: 'bg-purple-100', text: 'text-purple-800' },
-  'Internet': { bg: 'bg-indigo-100', text: 'text-indigo-800' }
+  'Telecom': { bg: 'bg-cyan-100', text: 'text-cyan-800' },
+  'Internet': { bg: 'bg-primary-100', text: 'text-primary-800' }
 }
 
 const categoryIcons: Record<string, any> = {
@@ -115,7 +115,7 @@ export default function OperatorsPage() {
   }, [operators, activeFilter, searchQuery])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-primary-100 to-secondary-50">
       {/* Hero Section */}
       <div className="bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -124,7 +124,14 @@ export default function OperatorsPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4">
+            <h1 className="text-4xl sm:text-5xl font-bold mb-4"
+              style={{
+                backgroundImage: 'linear-gradient(135deg, #00C4B4 0%, #0D417D 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}
+            >
               Operatori Supportati
             </h1>
             <p className="text-sm sm:text-base text-gray-600 text-lg">
@@ -142,7 +149,7 @@ export default function OperatorsPage() {
                     placeholder="Cerca operatore..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none text-gray-900 placeholder-gray-400"
+                    className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none text-gray-900 placeholder-gray-400"
                   />
                 </div>
 
@@ -155,7 +162,7 @@ export default function OperatorsPage() {
                       className={`px-4 py-2 rounded-full font-medium transition-all ${
                         activeFilter === category
                           ? 'bg-gradient-primary text-white shadow-lg scale-105'
-                          : 'bg-white text-gray-700 border border-gray-300 hover:border-indigo-500 hover:scale-105'
+                          : 'bg-white text-gray-700 border border-gray-300 hover:border-primary-500 hover:scale-105'
                       }`}
                     >
                       {category}
@@ -172,7 +179,7 @@ export default function OperatorsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {loading ? (
           <div className="text-center py-12">
-            <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-indigo-600 border-r-transparent"></div>
+            <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-primary-600 border-r-transparent"></div>
             <p className="text-sm sm:text-base mt-4 text-gray-600">Caricamento operatori...</p>
           </div>
         ) : filteredOperators.length === 0 ? (
@@ -187,7 +194,7 @@ export default function OperatorsPage() {
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="text-indigo-600 hover:text-indigo-700 font-medium"
+                className="text-primary-600 hover:text-primary-700 font-medium"
               >
                 Cancella ricerca
               </button>
@@ -200,7 +207,7 @@ export default function OperatorsPage() {
               animate={{ opacity: 1 }}
               className="text-center text-gray-600 mb-8"
             >
-              Trovati <span className="font-semibold text-indigo-600">{filteredOperators.length}</span> operatori
+              Trovati <span className="font-semibold text-primary-600">{filteredOperators.length}</span> operatori
             </motion.p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -249,7 +256,7 @@ export default function OperatorsPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-8 border border-indigo-100 text-center"
+          className="bg-gradient-to-r from-primary-50 to-primary-100 rounded-2xl p-8 border border-primary-100 text-center"
         >
           <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
             Non trovi il tuo operatore?

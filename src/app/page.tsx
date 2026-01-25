@@ -115,11 +115,11 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative pt-12 pb-24 lg:pt-20 lg:pb-20 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 overflow-hidden">
+      <section className="relative pt-12 pb-24 lg:pt-20 lg:pb-20 bg-gradient-to-br from-primary-50 via-primary-100 to-secondary-50 overflow-hidden">
         {/* Gradient orbs */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none opacity-40">
-          <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-gradient-to-br from-indigo-500/20 to-pink-500/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-gradient-to-tr from-pink-500/10 to-indigo-500/10 rounded-full blur-3xl" />
+          <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-gradient-to-br from-primary-500/20 to-secondary-600/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-gradient-to-tr from-secondary-600/10 to-primary-500/10 rounded-full blur-3xl" />
         </div>
 
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
@@ -131,9 +131,11 @@ export default function HomePage() {
             className="mx-auto max-w-5xl text-4xl font-black leading-tight tracking-tight text-gray-900 sm:text-5xl md:text-6xl lg:leading-[1.1]"
           >
             Disdire i tuoi contratti non è mai stato così{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-primary relative inline-block">
-              easy
-              <svg className="absolute bottom-1 left-0 w-full h-3 text-indigo-600 -z-10" preserveAspectRatio="none" viewBox="0 0 100 10">
+            <span className="relative inline-block">
+              <span className="text-gradient-primary">
+                easy
+              </span>
+              <svg className="absolute bottom-1 left-0 w-full h-3 text-primary-600 -z-10" preserveAspectRatio="none" viewBox="0 0 100 10">
                 <path d="M0 5 Q 50 10 100 5" fill="none" stroke="currentColor" strokeWidth="8" />
               </svg>
             </span>
@@ -147,7 +149,7 @@ export default function HomePage() {
             className="mx-auto mt-6 max-w-3xl text-lg text-gray-600 sm:text-xl"
           >
             Il servizio online numero 1 in Italia per inviare disdette con pieno valore legale.<br className="hidden sm:block" />
-            <span className="font-bold text-indigo-600">Nessun costo nascosto, nessun abbonamento, nessuna fregatura.</span>
+            <span className="font-bold text-primary-600">Nessun costo nascosto, nessun abbonamento, nessuna fregatura.</span>
           </motion.p>
 
           {/* Category Selector Card */}
@@ -161,22 +163,22 @@ export default function HomePage() {
               <h3 className="text-2xl font-bold text-gray-900">Inizia subito</h3>
 
               {/* Progress indicator */}
-              <div className="relative w-full mb-4">
-                <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 -translate-y-1/2 rounded-full -z-10" />
-                <div className="flex justify-between items-center w-full max-w-3xl mx-auto px-2">
-                  <div className="flex flex-col items-center gap-2 bg-white px-2">
+              <div className="relative w-full mb-4 pt-2">
+                <div className="absolute top-[calc(50%-0.5rem)] left-0 w-full h-1 bg-gray-200 rounded-full -z-10" />
+                  <div className="flex justify-between items-center w-full max-w-3xl mx-auto px-2">
+                  <div className="flex flex-col items-center gap-2 px-2">
                     <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-primary text-white text-xs font-bold ring-4 ring-white">1</div>
-                    <span className="text-xs font-bold text-indigo-600">Categoria</span>
+                    <span className="text-xs font-bold text-primary-600">Categoria</span>
                   </div>
-                  <div className="flex flex-col items-center gap-2 bg-white px-2">
+                  <div className="flex flex-col items-center gap-2 px-2">
                     <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-500 text-xs font-bold ring-4 ring-white">2</div>
                     <span className="text-xs font-medium text-gray-500 hidden sm:block">Operatore</span>
                   </div>
-                  <div className="flex flex-col items-center gap-2 bg-white px-2">
+                  <div className="flex flex-col items-center gap-2 px-2">
                     <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-500 text-xs font-bold ring-4 ring-white">3</div>
                     <span className="text-xs font-medium text-gray-500 hidden sm:block">Servizio</span>
                   </div>
-                  <div className="flex flex-col items-center gap-2 bg-white px-2">
+                  <div className="flex flex-col items-center gap-2 px-2">
                     <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-500 text-xs font-bold ring-4 ring-white">4</div>
                     <span className="text-xs font-medium text-gray-500 hidden sm:block">Caricamento</span>
                   </div>
@@ -195,11 +197,11 @@ export default function HomePage() {
                       transition={{ delay: 0.4 + index * 0.05 }}
                     >
                       <Link href="/new-disdetta">
-                        <div className="h-full flex flex-col items-center justify-center gap-3 p-4 rounded-xl border border-gray-200 bg-gray-50 hover:border-indigo-600 hover:bg-indigo-50 hover:shadow-md transition-all group cursor-pointer">
-                          <div className="p-3 rounded-full bg-white shadow-sm text-gray-600 group-hover:text-indigo-600 group-hover:bg-white">
+                        <div className="h-full flex flex-col items-center justify-center gap-3 p-4 rounded-xl border border-gray-200 bg-gray-50 hover:border-primary-600 hover:bg-primary-50 hover:shadow-md transition-all group cursor-pointer">
+                          <div className="p-3 rounded-full bg-white shadow-sm text-gray-600 group-hover:text-primary-600 group-hover:bg-white">
                             <Icon className="h-6 w-6" />
                           </div>
-                          <span className="text-sm font-semibold text-gray-800 group-hover:text-indigo-600 text-center">
+                          <span className="text-sm font-semibold text-gray-800 group-hover:text-primary-600 text-center">
                               {category.name}
                           </span>
                         </div>
@@ -219,11 +221,11 @@ export default function HomePage() {
             className="mt-12 flex flex-col items-center justify-center gap-6 sm:flex-row sm:gap-12 opacity-80"
           >
             <div className="flex items-center gap-2">
-              <ShieldCheck className="text-indigo-500 h-6 w-6" />
+              <ShieldCheck className="text-primary-500 h-6 w-6" />
               <span className="text-sm font-medium text-gray-600">Valore Legale Garantito</span>
             </div>
             <div className="flex items-center gap-2">
-              <Users className="text-indigo-500 h-6 w-6" />
+              <Users className="text-primary-500 h-6 w-6" />
               <span className="text-sm font-medium text-gray-600">50.000+ Utenti Soddisfatti</span>
             </div>
             <div className="flex items-center gap-2">
@@ -246,7 +248,7 @@ export default function HomePage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <p className="text-indigo-500 text-sm font-bold tracking-widest uppercase mb-3">Come funziona</p>
+              <p className="text-primary-500 text-sm font-bold tracking-widest uppercase mb-3">Come funziona</p>
               <h2 className="text-3xl font-bold text-gray-900 md:text-4xl">Disdire in 3 semplici passi</h2>
               <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
                 Non serve fare la fila alla posta o cercare moduli incomprensibili. Ci pensiamo noi a tutto.
@@ -266,13 +268,13 @@ export default function HomePage() {
                   transition={{ delay: index * 0.1 }}
                   className="relative flex flex-col items-center text-center group"
                 >
-                  <div className="mb-6 flex size-20 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600 transition-transform group-hover:scale-110">
+                  <div className="mb-6 flex size-20 items-center justify-center rounded-2xl bg-primary-100 text-primary-600 transition-transform group-hover:scale-110">
                     <Icon className="h-10 w-10" />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-3">{step.title}</h3>
                   <p className="text-gray-600">{step.description}</p>
                   {index < steps.length - 1 && (
-                    <div className="hidden md:block absolute top-10 left-[60%] w-[80%] h-[2px] bg-gradient-to-r from-pink-200 to-transparent z-0" />
+                    <div className="hidden md:block absolute top-10 left-[60%] w-[80%] h-[2px] bg-gradient-to-r from-secondary-100 to-transparent z-0" />
                   )}
                 </motion.div>
               )
@@ -282,7 +284,7 @@ export default function HomePage() {
       </section>
 
       {/* Why Choose Us */}
-      <section className="py-16 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      <section className="py-16 bg-gradient-to-br from-primary-50 via-primary-100 to-secondary-50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -303,9 +305,9 @@ export default function HomePage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.05 }}
-                  className="flex flex-col gap-4 rounded-xl bg-white/80 backdrop-blur-sm p-6 shadow-card hover:border-indigo-500/50 transition-colors border border-transparent"
+                  className="flex flex-col gap-4 rounded-xl bg-white/80 backdrop-blur-sm p-6 shadow-card hover:border-primary-500/50 transition-colors border border-transparent"
                 >
-                  <div className="flex size-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+                  <div className="flex size-12 items-center justify-center rounded-lg bg-primary-100 text-primary-600">
                     <Icon className="h-6 w-6" />
                   </div>
                   <div>
@@ -320,7 +322,7 @@ export default function HomePage() {
       </section>
 
       {/* B2B Banner */}
-      <section className="relative py-24 bg-gradient-to-r from-indigo-600 to-pink-500">
+      <section className="relative py-24 bg-gradient-to-r from-primary-500 to-secondary-600">
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-8">
           <div className="max-w-2xl">
             <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
@@ -333,7 +335,7 @@ export default function HomePage() {
           <div className="shrink-0">
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center rounded-lg bg-white px-8 py-4 text-base font-bold text-indigo-600 shadow-lg hover:bg-gray-50 transition-all"
+              className="inline-flex items-center justify-center rounded-lg bg-white px-8 py-4 text-base font-bold text-primary-600 shadow-lg hover:bg-gray-50 transition-all"
             >
               Contattaci per un preventivo
             </Link>
@@ -361,7 +363,7 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="flex flex-col rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 p-6"
+                className="flex flex-col rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100 p-6"
               >
                 <div className="flex gap-1 text-yellow-400 mb-4">
                   {[...Array(5)].map((_, i) => (
@@ -391,7 +393,7 @@ export default function HomePage() {
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 to-pink-500 px-6 py-12 text-center shadow-2xl sm:px-12 sm:py-16"
+            className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary-500 to-secondary-600 px-6 py-12 text-center shadow-2xl sm:px-12 sm:py-16"
           >
             <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
             <div className="relative z-10">
@@ -404,7 +406,7 @@ export default function HomePage() {
               <div className="mt-8 flex justify-center gap-4">
                 <Link
                   href="/new-disdetta"
-                  className="flex items-center justify-center rounded-lg bg-white px-8 py-3 text-base font-bold text-indigo-600 shadow-lg hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-center rounded-lg bg-white px-8 py-3 text-base font-bold text-primary-600 shadow-lg hover:bg-gray-50 transition-colors"
                 >
                   Inizia ora la tua disdetta
                 </Link>
@@ -435,7 +437,7 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.05 }}
-                className="rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 shadow-card overflow-hidden"
+                className="rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 shadow-card overflow-hidden"
               >
                 <button
                   onClick={() => toggleFaq(faq.id)}
@@ -446,7 +448,7 @@ export default function HomePage() {
                     animate={{ rotate: expandedFaq === faq.id ? 180 : 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <ChevronDown className="h-5 w-5 text-indigo-600 flex-shrink-0" />
+                    <ChevronDown className="h-5 w-5 text-primary-600 flex-shrink-0" />
                   </motion.div>
                 </button>
 

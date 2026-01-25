@@ -49,7 +49,7 @@ export default function PrivacyPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-primary-100 to-secondary-50">
       {/* Hero */}
       <div className="bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -58,7 +58,14 @@ export default function PrivacyPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4 pb-2">
+            <h1 className="text-4xl sm:text-5xl font-bold mb-4"
+              style={{
+                backgroundImage: 'linear-gradient(135deg, #00C4B4 0%, #0D417D 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}
+            >
               Privacy & Cookie Policy
             </h1>
             <div className="flex items-center justify-center gap-2 text-gray-600 mb-8">
@@ -70,9 +77,9 @@ export default function PrivacyPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-2xl mx-auto">
               <button
                 onClick={() => scrollToSection('privacy-policy')}
-                className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-white border-2 border-indigo-200 rounded-xl hover:border-indigo-500 hover:shadow-lg transition-all group"
+                className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-white border-2 border-primary-200 rounded-xl hover:border-primary-500 hover:shadow-lg transition-all group"
               >
-                <FileText className="h-6 w-6 text-indigo-600 group-hover:scale-110 transition-transform" />
+                <FileText className="h-6 w-6 text-primary-600 group-hover:scale-110 transition-transform" />
                 <div className="text-left">
                   <div className="text-sm sm:text-base font-bold text-gray-900">Privacy Policy</div>
                   <div className="text-xs sm:text-sm text-gray-600">Come trattiamo i tuoi dati</div>
@@ -81,9 +88,9 @@ export default function PrivacyPage() {
 
               <button
                 onClick={() => scrollToSection('cookie-policy')}
-                className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-white border-2 border-purple-200 rounded-xl hover:border-purple-500 hover:shadow-lg transition-all group"
+                className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-white border-2 border-secondary-200 rounded-xl hover:border-secondary-500 hover:shadow-lg transition-all group"
               >
-                <Cookie className="h-6 w-6 text-purple-600 group-hover:scale-110 transition-transform" />
+                <Cookie className="h-6 w-6 text-secondary-600 group-hover:scale-110 transition-transform" />
                 <div className="text-left">
                   <div className="text-sm sm:text-base font-bold text-gray-900">Cookie Policy</div>
                   <div className="text-xs sm:text-sm text-gray-600">Gestione cookie e tracking</div>
@@ -105,7 +112,7 @@ export default function PrivacyPage() {
           className="fixed top-16 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-lg"
         >
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex gap-3 py-4 overflow-x-auto">
+            <div className="flex gap-3 py-4 px-2 overflow-x-auto">
               <button
                 onClick={() => scrollToSection('privacy-policy')}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium whitespace-nowrap transition-all ${
@@ -148,7 +155,7 @@ export default function PrivacyPage() {
                 PRIVACY POLICY
             ======================================== */}
             <div id="privacy-policy" className="scroll-mt-32">
-              <h1 className="text-2xl font-bold text-gray-900 mb-8 pb-4 border-b-2 border-indigo-200">
+              <h1 className="text-2xl font-bold text-gray-900 mb-8 pb-4 border-b-2 border-primary-200">
                 📋 Privacy Policy
               </h1>
 
@@ -158,7 +165,7 @@ export default function PrivacyPage() {
                 <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-4">
                   Il Titolare del trattamento è:
                 </p>
-                <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
+                <div className="bg-primary-50 rounded-xl p-6 border border-primary-100">
                   <p className="text-gray-800 mb-2"><strong>[DA COMPILARE: NOME SOCIETÀ]</strong></p>
                   <p className="text-sm sm:text-base text-gray-700 mb-1">Sede legale: <strong>[DA COMPILARE: SEDE LEGALE]</strong></p>
                   <p className="text-sm sm:text-base text-gray-700 mb-1">P.IVA: <strong>[DA COMPILARE: P.IVA]</strong></p>
@@ -208,7 +215,7 @@ export default function PrivacyPage() {
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">3. Finalità del trattamento e basi giuridiche</h2>
                 <div className="overflow-x-auto">
                   <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-                    <thead className="bg-indigo-50">
+                    <thead className="bg-primary-50">
                       <tr>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b">Finalità</th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b">Base giuridica</th>
@@ -335,11 +342,11 @@ export default function PrivacyPage() {
                   <li className="text-sm sm:text-base text-gray-700">opposizione;</li>
                   <li className="text-sm sm:text-base text-gray-700">revoca del consenso.</li>
                 </ul>
-                <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
+                <div className="bg-primary-50 rounded-xl p-6 border border-primary-100">
                   <h3 className="font-bold text-gray-900 mb-2">Reclamo al Garante</h3>
                   <p className="text-sm sm:text-base text-gray-700">
                     L'Utente può proporre reclamo a:{' '}
-                    <a href="https://www.garanteprivacy.it" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">
+                    <a href="https://www.garanteprivacy.it" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">
                       www.garanteprivacy.it
                     </a>
                   </p>
@@ -412,7 +419,7 @@ export default function PrivacyPage() {
                 COOKIE POLICY
             ======================================== */}
             <div id="cookie-policy" className="scroll-mt-36 border-t-2 border-gray-200 pt-4">
-              <h1 className="text-2xl font-bold text-gray-900 mb-8 pb-4 border-b-2 border-indigo-200">
+              <h1 className="text-2xl font-bold text-gray-900 mb-8 pb-4 border-b-2 border-primary-200">
                 🍪 Cookie Policy
               </h1>
 
@@ -422,7 +429,7 @@ export default function PrivacyPage() {
                 <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-4">
                   Il presente sito è gestito da:
                 </p>
-                <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
+                <div className="bg-primary-50 rounded-xl p-6 border border-primary-100">
                   <p className="text-gray-800 mb-2"><strong>[DA COMPILARE: NOME SOCIETÀ]</strong></p>
                   <p className="text-sm sm:text-base text-gray-700 mb-1">Sede legale: <strong>[DA COMPILARE: SEDE LEGALE]</strong></p>
                   <p className="text-sm sm:text-base text-gray-700 mb-1">P.IVA: <strong>[DA COMPILARE: P.IVA]</strong></p>
@@ -615,13 +622,13 @@ export default function PrivacyPage() {
                   <li className="text-sm sm:text-base text-gray-700">portabilità;</li>
                   <li className="text-sm sm:text-base text-gray-700">revoca del consenso.</li>
                 </ul>
-                <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
+                <div className="bg-primary-50 rounded-xl p-6 border border-primary-100">
                   <p className="text-sm sm:text-base text-gray-700 mb-2">
                     <strong>Richieste:</strong> [DA COMPILARE: Email Titolare]
                   </p>
                   <p className="text-sm sm:text-base text-gray-700">
                     <strong>Reclamo:</strong>{' '}
-                    <a href="https://www.garanteprivacy.it" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">
+                    <a href="https://www.garanteprivacy.it" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">
                       www.garanteprivacy.it
                     </a>
                   </p>

@@ -71,7 +71,7 @@ export function WelcomeModal() {
               onClick={(e) => e.stopPropagation()} // ✅ Prevent close when clicking inside
             >
               {/* Gradient Header - Ridotto su mobile */}
-              <div className="relative h-16 sm:h-28 bg-gradient-to-r from-indigo-600 to-pink-500 overflow-visible flex-shrink-0">
+              <div className="relative h-16 sm:h-28 bg-gradient-to-r from-primary-500 to-secondary-600 overflow-visible flex-shrink-0">
                 {/* Logo decorativo centrato */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[90]">
                 <Image
@@ -104,17 +104,17 @@ export function WelcomeModal() {
                 {/* Features Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                   <FeatureCard
-                    icon={<FileText className="h-6 w-6 text-indigo-600" />}
+                    icon={<FileText className="h-6 w-6 text-primary-600" />}
                     title="Carica bolletta"
                     description="Upload facile del tuo documento"
                   />
                   <FeatureCard
-                    icon={<CheckCircle className="h-6 w-6 text-indigo-600" />}
+                    icon={<CheckCircle className="h-6 w-6 text-primary-600" />}
                     title="Verifica dati"
                     description="Controlla le info estratte"
                   />
                   <FeatureCard
-                    icon={<Send className="h-6 w-6 text-indigo-600" />}
+                    icon={<Send className="h-6 w-6 text-primary-600" />}
                     title="Invio automatico"
                     description="PEC inviata per te"
                   />
@@ -127,7 +127,7 @@ export function WelcomeModal() {
                     id="dontShowAgain"
                     checked={dontShowAgain}
                     onChange={(e) => setDontShowAgain(e.target.checked)}
-                    className="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                    className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
                   />
                   <label
                     htmlFor="dontShowAgain"
@@ -141,7 +141,7 @@ export function WelcomeModal() {
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={handleStartTour}
-                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-pink-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95"
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95"
                   >
                     <Sparkles className="h-5 w-5" />
                     <span>Inizia il tour guidato</span>
@@ -179,7 +179,7 @@ function FeatureCard({
     description: string
 }) {
   return (
-    <div className="flex flex-col items-center text-center p-4 bg-gradient-to-br from-indigo-50 to-pink-50 rounded-xl border border-indigo-100">
+    <div className="flex flex-col items-center text-center p-4 bg-gradient-to-br from-primary-50 to-secondary-50 rounded-xl border border-primary-100">
         <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm mb-3">
             {icon}
         </div>

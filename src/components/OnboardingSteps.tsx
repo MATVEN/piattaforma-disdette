@@ -40,12 +40,12 @@ export function OnboardingSteps({ steps, currentStep, className = '' }: Onboardi
                     initial={false}
                     animate={{
                       scale: isActive ? 1.1 : 1,
-                      backgroundColor: isCompleted || isActive ? '#6366f1' : '#e5e7eb',
+                      background: isCompleted || isActive ? 'linear-gradient(135deg, #00C4B4 0%, #0D417D 100%)' : '#e5e7eb',
                     }}
                     className={`
                       w-10 h-10 rounded-full flex items-center justify-center
                       transition-all duration-300
-                      ${isActive ? 'ring-4 ring-indigo-200' : ''}
+                      ${isActive ? 'ring-4 ring-primary-200' : ''}
                     `}
                   >
                     {isCompleted ? (
@@ -62,7 +62,7 @@ export function OnboardingSteps({ steps, currentStep, className = '' }: Onboardi
                   {/* Label */}
                   <div className="ml-3">
                     <p className={`text-sm font-medium transition-colors ${
-                      isActive ? 'text-indigo-600' : 
+                      isActive ? 'text-primary-600' :
                       isCompleted ? 'text-gray-700' : 
                       'text-gray-400'
                     }`}>
@@ -79,7 +79,7 @@ export function OnboardingSteps({ steps, currentStep, className = '' }: Onboardi
                 {/* Arrow (except last) */}
                 {index < steps.length - 1 && (
                   <ChevronRight className={`mx-3 flex-shrink-0 ${
-                    isCompleted ? 'text-indigo-400' : 'text-gray-300'
+                    isCompleted ? 'text-primary-400' : 'text-gray-300'
                   }`} />
                 )}
               </div>
@@ -98,8 +98,8 @@ export function OnboardingSteps({ steps, currentStep, className = '' }: Onboardi
                 {/* Small Circle */}
                 <div className={`
                   w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold
-                  ${isCompleted || isActive ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-500'}
-                  ${isActive ? 'ring-2 ring-indigo-300' : ''}
+                  ${isCompleted || isActive ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-500'}
+                  ${isActive ? 'ring-2 ring-primary-300' : ''}
                 `}>
                   {isCompleted ? '✓' : index + 1}
                 </div>
@@ -114,7 +114,7 @@ export function OnboardingSteps({ steps, currentStep, className = '' }: Onboardi
         </div>
 
         {/* Current step label (mobile only) */}
-        <p className="md:hidden text-sm font-medium text-indigo-600 mb-3">
+        <p className="md:hidden text-sm font-medium text-primary-600 mb-3">
           {steps[currentStep].label}
         </p>
 
@@ -124,7 +124,7 @@ export function OnboardingSteps({ steps, currentStep, className = '' }: Onboardi
             initial={{ width: 0 }}
             animate={{ width: `${progressPercentage}%` }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
-            className="h-full bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full"
+            className="h-full bg-gradient-to-r from-primary-600 to-secondary-600 rounded-full"
           />
         </div>
       </div>

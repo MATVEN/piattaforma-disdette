@@ -39,6 +39,21 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+@layer utilities {
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, #00C4B4 0%, #0D417D 100%);
+  }
+  .text-gradient-primary {
+    background: linear-gradient(135deg, #00C4B4 0%, #0D417D 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .border-gradient-primary {
+    border-image: linear-gradient(135deg, #00C4B4 0%, #0D417D 100%) 1;
+  }
+}
+
 input[type="text"],
 input[type="email"],
 input[type="password"],

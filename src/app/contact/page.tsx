@@ -106,7 +106,7 @@ export default function ContactPage() {
   const maxCharacters = 1000
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-primary-100 to-secondary-50">
       {/* Hero Section */}
       <div className="bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
@@ -115,7 +115,14 @@ export default function ContactPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4">
+            <h1 className="text-4xl sm:text-5xl font-bold mb-4"
+              style={{
+                backgroundImage: 'linear-gradient(135deg, #00C4B4 0%, #0D417D 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}
+            >
               Contattaci
             </h1>
             <p className="text-gray-600 text-lg">
@@ -149,7 +156,7 @@ export default function ContactPage() {
                   onChange={handleChange}
                   className={`w-full pl-11 pr-4 py-3 rounded-xl border-2 ${
                     errors.name ? 'border-red-500' : 'border-gray-200'
-                  } focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none`}
+                  } focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none`}
                   placeholder="Il tuo nome"
                 />
               </div>
@@ -176,7 +183,7 @@ export default function ContactPage() {
                   onChange={handleChange}
                   className={`w-full pl-11 pr-4 py-3 rounded-xl border-2 ${
                     errors.email ? 'border-red-500' : 'border-gray-200'
-                  } focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none`}
+                  } focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none`}
                   placeholder="tua@email.com"
                 />
               </div>
@@ -198,7 +205,7 @@ export default function ContactPage() {
                 name="subject"
                 value={formData.subject}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none"
               >
                 {subjects.map(subject => (
                   <option key={subject} value={subject}>
@@ -231,7 +238,7 @@ export default function ContactPage() {
                   maxLength={maxCharacters}
                   className={`w-full pl-11 pr-4 py-3 rounded-xl border-2 ${
                     errors.message ? 'border-red-500' : 'border-gray-200'
-                  } focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none resize-none`}
+                  } focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none resize-none`}
                   placeholder="Scrivi qui il tuo messaggio..."
                 />
               </div>
@@ -281,7 +288,7 @@ export default function ContactPage() {
             <h3 className="font-semibold text-gray-900 mb-2">Supporto Email</h3>
             <p className="text-gray-600 text-sm">
               Puoi anche scriverci direttamente a{' '}
-              <a href="mailto:support@DisdEasy.it" className="text-indigo-600 hover:text-indigo-700 font-medium">
+              <a href="mailto:support@DisdEasy.it" className="text-primary-600 hover:text-primary-700 font-medium">
                 support@DisdEasy.it
               </a>
             </p>

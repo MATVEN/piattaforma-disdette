@@ -53,7 +53,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center px-4 py-12">
+    <div className="bg-gradient-to-br from-primary-50 via-primary-100 to-secondary-50 flex items-center justify-center px-4 py-12">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -108,7 +108,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tua@email.com"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none"
                 />
               </div>
             </div>
@@ -132,7 +132,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none"
                 />
               </div>
             </div>
@@ -141,7 +141,7 @@ export default function LoginPage() {
             <div className="text-right">
               <Link
                 href="/reset-password"
-                className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                className="text-sm text-primary-600 hover:text-primary-700 font-medium"
               >
                 Password dimenticata?
               </Link>
@@ -175,7 +175,7 @@ export default function LoginPage() {
               Non hai un account?{' '}
               <Link
                 href="/register"
-                className="text-indigo-600 font-semibold hover:text-indigo-700 transition-colors"
+                className="text-primary-600 font-semibold hover:text-primary-700 transition-colors"
               >
                 Registrati
               </Link>

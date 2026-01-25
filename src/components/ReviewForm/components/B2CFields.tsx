@@ -59,7 +59,7 @@ export function B2CFields({
             id="nome"
             {...register('nome')}
             placeholder="Mario"
-            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none"
           />
         </div>
         {(errors as any).nome && (
@@ -78,7 +78,7 @@ export function B2CFields({
             id="cognome"
             {...register('cognome')}
             placeholder="Rossi"
-            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none"
           />
         </div>
         {(errors as any).cognome && (
@@ -111,7 +111,7 @@ export function B2CFields({
               }
             })}
             placeholder="RSSMRA80A01H501U"
-            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none uppercase"
+            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none uppercase"
             maxLength={16}
           />
         </div>
@@ -140,7 +140,7 @@ export function B2CFields({
             id="indirizzo_residenza"
             {...register('indirizzo_residenza')}
             placeholder="Via Roma 123, 00100 Roma"
-            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none"
           />
         </div>
         {(errors as any).indirizzo_residenza && (
@@ -173,7 +173,7 @@ export function B2CFields({
                   const input = document.getElementById('documento-identita-b2c') as HTMLInputElement
                   if (input) input.click()
                 }}
-                className="text-sm text-indigo-600 hover:text-indigo-700 hover:underline"
+                className="text-sm text-primary-600 hover:text-primary-700 hover:underline"
               >
                 Sostituisci
               </button>
@@ -197,8 +197,8 @@ export function B2CFields({
             file:mr-4 file:py-2 file:px-4
             file:rounded-lg file:border-0
             file:text-sm file:font-semibold
-            file:bg-indigo-50 file:text-indigo-700
-            hover:file:bg-indigo-100
+            file:bg-primary-50 file:text-primary-700
+            hover:file:bg-primary-100
             cursor-pointer
             ${profile?.documento_identita_path && !documentoIdentita ? 'hidden' : ''}
           `}

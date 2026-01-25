@@ -76,7 +76,7 @@ export function ProgressModal({ progress }: ProgressModalProps) {
                 initial={{ width: 0 }}
                 animate={{ width: `${progress.progress}%` }}
                 transition={{ duration: 0.5, ease: 'easeOut' }}
-                className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full rounded-full"
+                className="bg-gradient-to-r from-primary-500 to-secondary-600 h-full rounded-full"
               />
             </div>
             <p className="text-sm text-gray-500 mt-2 text-center">{progress.progress}%</p>
@@ -116,7 +116,7 @@ export function ProgressModal({ progress }: ProgressModalProps) {
                   {/* Label */}
                   <p className={`text-xs font-medium text-center relative z-20 ${
                     status === 'active'
-                      ? 'text-indigo-600'
+                      ? 'text-primary-600'
                       : status === 'completed'
                       ? 'text-green-600'
                       : 'text-gray-400'

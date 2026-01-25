@@ -31,20 +31,30 @@ const iconMap: Record<string, any> = {
 
 // Color mapping for categories
 const colorMap: Record<string, { bg: string; text: string; border: string }> = {
+  primary: {
+    bg: 'bg-primary-100',
+    text: 'text-primary-700',
+    border: 'border-primary-200'
+  },
+  secondary: {
+    bg: 'bg-secondary-100',
+    text: 'text-secondary-700',
+    border: 'border-secondary-200'
+  },
   indigo: {
-    bg: 'bg-indigo-100',
-    text: 'text-indigo-700',
-    border: 'border-indigo-200'
+    bg: 'bg-primary-100',
+    text: 'text-primary-700',
+    border: 'border-primary-200'
   },
   purple: {
-    bg: 'bg-purple-100',
-    text: 'text-purple-700',
-    border: 'border-purple-200'
+    bg: 'bg-cyan-100',
+    text: 'text-cyan-700',
+    border: 'border-cyan-200'
   },
   pink: {
-    bg: 'bg-pink-100',
-    text: 'text-pink-700',
-    border: 'border-pink-200'
+    bg: 'bg-secondary-100',
+    text: 'text-secondary-700',
+    border: 'border-secondary-200'
   },
   orange: {
     bg: 'bg-orange-100',
@@ -158,7 +168,7 @@ export default function FAQPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-primary-100 to-secondary-50">
       {/* Header - NON sticky */}
       <div className="bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -167,7 +177,14 @@ export default function FAQPage() {
            animate={{ opacity: 1, y: 0 }}
            className="text-center"
           >
-            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4 pb-2">
+            <h1 className="text-4xl sm:text-5xl font-bold mb-4"
+              style={{
+                backgroundImage: 'linear-gradient(135deg, #00C4B4 0%, #0D417D 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}
+            >
               Domande Frequenti
             </h1>
             <p className="text-sm sm:text-base text-gray-600 mb-6">
@@ -182,7 +199,7 @@ export default function FAQPage() {
                 placeholder="Cerca una domanda..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none text-gray-900 placeholder-gray-400"
+                className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none text-gray-900 placeholder-gray-400"
               />
             </div>
           </motion.div>
@@ -218,7 +235,7 @@ export default function FAQPage() {
                         colorMap[cat.color].border
                       } ${
                         activeCategory === cat.id
-                          ? 'ring-2 ring-offset-2 ring-indigo-500 shadow-lg scale-105'
+                          ? 'ring-2 ring-offset-2 ring-primary-500 shadow-lg scale-105'
                           : ''
                       }`}
                     >
@@ -259,7 +276,7 @@ export default function FAQPage() {
                     colorMap[cat.color].border
                   } ${
                     activeCategory === cat.id
-                      ? 'ring-2 ring-offset-2 ring-indigo-500 shadow-lg scale-105'
+                      ? 'ring-2 ring-offset-2 ring-primary-500 shadow-lg scale-105'
                       : ''
                   }`}
                 >
@@ -291,7 +308,7 @@ export default function FAQPage() {
             </p>
             <button
               onClick={() => setSearchQuery('')}
-              className="text-indigo-600 hover:text-indigo-700 font-medium"
+              className="text-primary-600 hover:text-primary-700 font-medium"
             >
               Cancella ricerca
             </button>
@@ -379,7 +396,7 @@ export default function FAQPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="mt-16 text-center bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-8 border border-indigo-100"
+          className="mt-16 text-center bg-gradient-to-r from-primary-50 to-primary-100 rounded-2xl p-8 border border-primary-100"
         >
           <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
             Non hai trovato quello che cercavi?

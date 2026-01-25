@@ -146,7 +146,7 @@ export function HelpButton() {
         onClick={() => setIsOpen(!isOpen)}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-indigo-600 to-pink-500 text-white shadow-xl hover:shadow-2xl transition-shadow flex items-center justify-center group"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-primary-500 to-secondary-600 text-white shadow-xl hover:shadow-2xl transition-shadow flex items-center justify-center group"
         aria-label="Aiuto"
       >
         <AnimatePresence mode="wait">
@@ -206,7 +206,7 @@ export function HelpButton() {
               className="fixed bottom-24 right-6 z-50 w-72 bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100"
             >
               {/* Header */}
-              <div className="bg-gradient-to-r from-indigo-600 to-pink-500 px-5 py-4">
+              <div className="bg-gradient-to-r from-primary-500 to-secondary-600 px-5 py-4">
                 <h3 className="text-white font-semibold flex items-center gap-2">
                   Come possiamo aiutarti?
                 </h3>
@@ -215,21 +215,21 @@ export function HelpButton() {
               {/* Menu Items */}
               <div className="p-2">
                 <MenuItem
-                  icon={<Sparkles className="h-5 w-5 text-indigo-600" />}
+                  icon={<Sparkles className="h-5 w-5 text-primary-600" />}
                   title="Rivedi Tour Guidato"
                   description="Ripercorri i passaggi principali"
                   onClick={handleStartTour}
                 />
 
                 <MenuItem
-                  icon={<Lightbulb className="h-5 w-5 text-indigo-600" />}
+                  icon={<Lightbulb className="h-5 w-5 text-primary-600" />}
                   title="Guida Contestuale"
                   description="Aiuto specifico per questa pagina"
                   onClick={handleShowContextualHelp}
                 />
 
                 <MenuItem
-                  icon={<Mail className="h-5 w-5 text-indigo-600" />}
+                  icon={<Mail className="h-5 w-5 text-primary-600" />}
                   title="Contatta Supporto"
                   description="Scrivici per assistenza diretta"
                   href="mailto:supporto@DisdEasy.it"
@@ -269,7 +269,7 @@ export function HelpButton() {
               className="fixed top-1/2 -translate-y-1/2 inset-x-4 z-50 max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100"
             >
               {/* Header */}
-              <div className="bg-gradient-to-r from-indigo-600 to-pink-500 px-6 py-4 flex items-center justify-between">
+              <div className="bg-gradient-to-r from-primary-500 to-secondary-600 px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Lightbulb className="h-5 w-5 text-white" />
                   <h3 className="text-white font-semibold">{currentHelp.title}</h3>
@@ -301,7 +301,7 @@ export function HelpButton() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleCloseContextualHelp}
-                  className="w-full mt-6 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-pink-500 text-white font-medium rounded-lg hover:shadow-lg transition-shadow"
+                  className="w-full mt-6 px-4 py-2.5 bg-gradient-to-r from-primary-500 to-secondary-600 text-white font-medium rounded-lg hover:shadow-lg transition-shadow"
                 >
                   Ho capito!
                 </motion.button>
@@ -333,7 +333,7 @@ function MenuItem({ icon, title, description, onClick, href, isLast }: MenuItemP
       }`}
       onClick={onClick}
     >
-      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center">
+      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center">
         {icon}
       </div>
       <div className="flex-1 min-w-0">

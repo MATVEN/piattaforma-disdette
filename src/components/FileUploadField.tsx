@@ -103,17 +103,17 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
           disabled={uploading}
           className={`flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl border-2 border-dashed transition-all ${
             uploading
-              ? 'border-indigo-300 bg-indigo-50/50 cursor-wait'
+              ? 'border-primary-300 bg-primary-50/50 cursor-wait'
               : error
               ? 'border-red-300 bg-red-50/50 hover:border-red-400 cursor-pointer'
               : uploadSuccess
               ? 'border-green-300 bg-green-50/50 hover:border-green-400 cursor-pointer'
-              : 'border-gray-300 hover:border-indigo-400 hover:bg-indigo-50/50 cursor-pointer'
+              : 'border-gray-300 hover:border-primary-400 hover:bg-primary-50/50 cursor-pointer'
           }`}
         >
           {uploading ? (
             <>
-              <Loader2 className="h-5 w-5 text-indigo-600 animate-spin" />
+              <Loader2 className="h-5 w-5 text-primary-600 animate-spin" />
               <span className="text-sm text-gray-700">Caricamento...</span>
             </>
           ) : uploadSuccess && currentFile ? (
@@ -123,7 +123,7 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
             </>
           ) : currentFile ? (
             <>
-              <FileText className="h-5 w-5 text-indigo-600" />
+              <FileText className="h-5 w-5 text-primary-600" />
               <span className="text-sm text-gray-700 truncate">{currentFile.name}</span>
             </>
           ) : (
@@ -144,7 +144,7 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
           </div>
           <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
             <div 
-              className="bg-indigo-600 h-1.5 rounded-full transition-all duration-300 ease-out"
+              className="bg-primary-600 h-1.5 rounded-full transition-all duration-300 ease-out"
               style={{ width: `${uploadProgress}%` }}
             />
           </div>

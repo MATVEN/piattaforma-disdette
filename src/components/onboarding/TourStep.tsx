@@ -188,7 +188,7 @@ export function TourStepComponent({ step, currentStep, totalSteps, onNext, onPre
       }}
     >
       {/* Gradient Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-pink-500 p-4 rounded-t-2xl flex items-start justify-between">
+      <div className="bg-gradient-to-r from-primary-500 to-secondary-600 p-4 rounded-t-2xl flex items-start justify-between">
         <h3 className="text-lg font-semibold text-white pr-2">{step.title}</h3>
         {showSkip && (
           <button
@@ -212,7 +212,7 @@ export function TourStepComponent({ step, currentStep, totalSteps, onNext, onPre
               initial={{ width: 0 }}
               animate={{ width: `${progressPercentage}%` }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="h-full bg-gradient-to-r from-indigo-600 to-pink-500 rounded-full"
+              className="h-full bg-gradient-to-r from-primary-500 to-secondary-600 rounded-full"
             />
           </div>
           <p className="text-xs text-gray-500 text-center">
@@ -250,7 +250,7 @@ export function TourStepComponent({ step, currentStep, totalSteps, onNext, onPre
           )}
           <button
             onClick={onNext}
-            className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-pink-500 hover:from-indigo-700 hover:to-pink-600 rounded-lg transition-all flex items-center gap-2 min-h-[44px]"
+            className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-primary-500 to-secondary-600 hover:from-primary-600 hover:to-secondary-700 rounded-lg transition-all flex items-center gap-2 min-h-[44px]"
             aria-label={currentStep === totalSteps - 1 ? 'Completa tour' : 'Passo successivo'}
           >
             {currentStep === totalSteps - 1 ? 'Completa' : 'Avanti'}

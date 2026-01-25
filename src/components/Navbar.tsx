@@ -61,7 +61,7 @@ export default function Navbar() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-        className="fixed top-0 left-0 right-0 z-50 bg-indigo-900 shadow-xl"
+        className="fixed top-0 left-0 right-0 z-50 bg-primary-900 shadow-xl"
       >
         {/* Accent bar gradient */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-primary" />
@@ -192,7 +192,7 @@ export default function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-16 right-0 bottom-0 z-40 w-64 bg-indigo-900 shadow-2xl md:hidden border-l border-white/10"
+              className="fixed top-16 right-0 bottom-0 z-40 w-64 bg-primary-900 shadow-2xl md:hidden border-l border-white/10"
             >
               <div className="flex flex-col p-4 space-y-2">
                 {user ? (

@@ -5,7 +5,7 @@ import { FileText, Calendar } from 'lucide-react'
 
 export default function TermsPage() {
  return (
-   <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+   <div className="min-h-screen bg-gradient-to-br from-primary-50 via-primary-100 to-secondary-50">
      {/* Hero */}
      <div className="bg-white/80 backdrop-blur-md border-b border-gray-200">
        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -14,7 +14,14 @@ export default function TermsPage() {
            animate={{ opacity: 1, y: 0 }}
            className="text-center"
          >
-           <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4">
+           <h1 className="text-4xl sm:text-5xl font-bold mb-4"
+              style={{
+                backgroundImage: 'linear-gradient(135deg, #00C4B4 0%, #0D417D 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}
+            >
              Termini e Condizioni di Servizio
            </h1>
            <div className="flex items-center justify-center gap-2 text-gray-600">
@@ -40,7 +47,7 @@ export default function TermsPage() {
              <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-4">
                Il presente servizio ("Piattaforma" o "Servizio") è gestito da:
              </p>
-             <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100 mb-4">
+             <div className="bg-primary-50 rounded-xl p-6 border border-primary-100 mb-4">
                <p className="text-gray-800 mb-2"><strong>[DA COMPILARE: NOME SOCIETÀ]</strong></p>
                <p className="text-gray-700 mb-1">Sede legale: <strong>[DA COMPILARE: SEDE LEGALE]</strong></p>
                <p className="text-gray-700 mb-1">P.IVA: <strong>[DA COMPILARE: P.IVA]</strong></p>

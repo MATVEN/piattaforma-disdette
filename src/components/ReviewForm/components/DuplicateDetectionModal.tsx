@@ -97,7 +97,7 @@ export function DuplicateDetectionModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+              className="px-6 py-2.5 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors"
             >
               Torna alla Dashboard
             </button>

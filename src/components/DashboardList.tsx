@@ -297,7 +297,7 @@ export default function DashboardList() {
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                className="h-3 w-3 rounded-full border-2 border-gray-300 border-t-indigo-600"
+                className="h-3 w-3 rounded-full border-2 border-gray-300 border-t-primary-600"
               />
               <span>Aggiornamento automatico</span>
             </motion.div>
@@ -442,7 +442,7 @@ function DisdettaCard({
         {/* Expand/Collapse Button */}
         <button
           onClick={onToggleExpand}
-          className="mt-3 text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1 transition-colors"
+          className="mt-3 text-sm text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1 transition-colors"
         >
           {expanded ? (
             <>
@@ -485,7 +485,7 @@ function DisdettaCard({
                       onClick={() => {
                         onToggleExpand() // This will trigger fetchHistory again via toggleExpand
                       }}
-                      className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                      className="text-sm text-primary-600 hover:text-primary-800 font-medium"
                     >
                       Riprova
                     </button>
@@ -620,7 +620,7 @@ function StatusBadgeAndAction({
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", duration: 0.5 }}
-          className={`${badgeClass} bg-indigo-50 text-indigo-700`}
+          className={`${badgeClass} bg-primary-50 text-primary-700`}
         >
           <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
           <span>In invio...</span>
@@ -631,7 +631,7 @@ function StatusBadgeAndAction({
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="h-full bg-indigo-500 rounded-full"
+            className="h-full bg-primary-500 rounded-full"
           />
         </div>
         
@@ -726,7 +726,7 @@ function StatusBadgeAndAction({
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", duration: 0.5 }}
-        className={`${badgeClass} bg-purple-50 text-purple-700`}
+        className={`${badgeClass} bg-secondary-50 text-secondary-700`}
       >
         <CreditCard className="h-4 w-4 flex-shrink-0" />
         <span>Pagamento richiesto</span>

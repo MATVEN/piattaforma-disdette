@@ -222,13 +222,13 @@ export default function ProfilePage() {
   // Loading State
   if (isAuthLoading || !user || loading) {
     return (
-      <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center">
+      <div className="bg-gradient-to-br from-primary-50 via-primary-100 to-secondary-50 flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="text-center"
         >
-          <Loader2 className="h-12 w-12 animate-spin text-indigo-600 mx-auto mb-4" />
+          <Loader2 className="h-12 w-12 animate-spin text-primary-600 mx-auto mb-4" />
           <p className="text-gray-600">Caricamento...</p>
         </motion.div>
       </div>
@@ -236,7 +236,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+    <div className="bg-gradient-to-br from-primary-50 via-primary-100 to-secondary-50">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-12">
         {/* Header with Avatar */}
         <motion.div
@@ -281,7 +281,7 @@ export default function ProfilePage() {
                   id="nome"
                   {...register("nome")}
                   placeholder="Mario"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none"
                 />
               </div>
               {errors.nome && (
@@ -301,7 +301,7 @@ export default function ProfilePage() {
                   id="cognome"
                   {...register("cognome")}
                   placeholder="Rossi"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none"
                 />
               </div>
               {errors.cognome && (
@@ -328,7 +328,7 @@ export default function ProfilePage() {
                   })}
                   placeholder="RSSMRA80A01H501Z"
                   maxLength={16}
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none uppercase"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none uppercase"
                   style={{ textTransform: 'uppercase' }}
                 />
               </div>
@@ -349,7 +349,7 @@ export default function ProfilePage() {
                   id="indirizzo_residenza"
                   {...register("indirizzo_residenza")}
                   placeholder="Via Roma 123, 00100 Roma"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none"
                 />
               </div>
               {errors.indirizzo_residenza && (
@@ -373,7 +373,7 @@ export default function ProfilePage() {
                 />
                 <label
                   htmlFor="documento"
-                  className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl border-2 border-dashed border-gray-300 hover:border-indigo-400 hover:bg-indigo-50/50 transition-all cursor-pointer"
+                  className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl border-2 border-dashed border-gray-300 hover:border-primary-400 hover:bg-primary-50/50 transition-all cursor-pointer"
                 >
                   <Upload className="h-5 w-5 text-gray-400" />
                   <span className="text-sm text-gray-600">
@@ -434,7 +434,7 @@ export default function ProfilePage() {
           className="mt-8 bg-white/80 backdrop-blur-xl rounded-2xl shadow-glass border border-white/20 p-6 sm:p-8"
         >
           <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Shield className="h-6 w-6 text-indigo-600" />
+            <Shield className="h-6 w-6 text-primary-600" />
             Privacy e Dati
           </h2>
           <p className="text-gray-600 mb-6">
@@ -443,10 +443,10 @@ export default function ProfilePage() {
 
           <div className="space-y-4">
             {/* Export Data */}
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between p-4 rounded-xl border-2 border-gray-200 hover:border-indigo-300 transition-colors gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between p-4 rounded-xl border-2 border-gray-200 hover:border-primary-300 transition-colors gap-4">
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900 mb-1 flex items-center gap-2">
-                  <Download className="h-5 w-5 text-indigo-600" />
+                  <Download className="h-5 w-5 text-primary-600" />
                   Scarica i miei dati
                 </h3>
                 <p className="text-sm text-gray-600">
@@ -456,7 +456,7 @@ export default function ProfilePage() {
               <button
                 onClick={handleExportData}
                 disabled={exportLoading}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap min-w-[120px]"
+                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap min-w-[120px]"
               >
                 {exportLoading ? (
                   <>

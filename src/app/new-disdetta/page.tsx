@@ -174,7 +174,7 @@ export default function NewDisdettaPage() {
                 {step > 1 && (
                     <button
                         onClick={handleBack}
-                        className="mb-4 text-sm text-indigo-600 hover:underline"
+                        className="mb-4 text-sm text-primary-600 hover:underline"
                     >
                         &larr; Torna indietro
                     </button>

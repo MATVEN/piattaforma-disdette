@@ -77,7 +77,7 @@ export const STATUS_CONFIG: Record<DisdettaStatus, StatusConfig> = {
     label: 'Confermata',
     description: 'Pagamento completato, in coda per invio',
     icon: 'CheckCircle2',
-    color: 'indigo',
+    color: 'primary',
     isTerminal: false,
   },
   SENT: {
@@ -140,14 +140,14 @@ export const DISDETTA_STATUS_COLORS: Record<DisdettaStatus, {
     badge: 'bg-yellow-500',
   },
   PENDING_PAYMENT: {
-    bg: 'bg-purple-100',
-    text: 'text-purple-800',
-    badge: 'bg-purple-500',
+    bg: 'bg-secondary-100',
+    text: 'text-secondary-800',
+    badge: 'bg-secondary-500',
   },
   CONFIRMED: {
-    bg: 'bg-indigo-100',
-    text: 'text-indigo-800',
-    badge: 'bg-indigo-500',
+    bg: 'bg-primary-100',
+    text: 'text-primary-800',
+    badge: 'bg-primary-500',
   },
   SENT: {
     bg: 'bg-green-100',

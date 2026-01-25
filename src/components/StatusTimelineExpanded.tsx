@@ -141,11 +141,11 @@ export function StatusTimelineExpanded({ timeline }: StatusTimelineExpandedProps
 
         {/* Estimated completion */}
           {estimatedCompletion && (
-            <div className="mt-4 p-3 bg-indigo-50 rounded-lg flex items-start gap-2">
-              <Icons.AlertCircle className="h-4 w-4 text-indigo-600 mt-0.5 flex-shrink-0" />
+            <div className="mt-4 p-3 bg-primary-50 rounded-lg flex items-start gap-2">
+              <Icons.AlertCircle className="h-4 w-4 text-primary-600 mt-0.5 flex-shrink-0" />
               <div className="text-sm">
-                <p className="font-medium text-indigo-900">Tempo stimato</p>
-                <p className="text-indigo-700">
+                <p className="font-medium text-primary-900">Tempo stimato</p>
+                <p className="text-primary-700">
                   Completamento previsto: {formatTimestamp(estimatedCompletion)}
                 </p>
               </div>

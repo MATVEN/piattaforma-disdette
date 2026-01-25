@@ -51,7 +51,7 @@ export function B2BCompanyFields({ register, errors, setValue, getValues }: B2BC
           id="ragione_sociale"
           {...register('ragione_sociale')}
           placeholder="Rossi S.R.L."
-          className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+          className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none"
         />
         {(errors as any).ragione_sociale && (
           <p className="mt-1 text-sm text-red-600">{(errors as any).ragione_sociale.message}</p>
@@ -77,7 +77,7 @@ export function B2BCompanyFields({ register, errors, setValue, getValues }: B2BC
           id="partita_iva"
           {...register('partita_iva')}
           placeholder="12345678901"
-          className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+          className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none"
           maxLength={11}
         />
         {(errors as any).partita_iva && (
@@ -112,7 +112,7 @@ export function B2BCompanyFields({ register, errors, setValue, getValues }: B2BC
               }
             }}
             placeholder="Via Milano 10, 20100 Milano"
-            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none"
           />
         </div>
         {(errors as any).sede_legale && (
@@ -141,7 +141,7 @@ export function B2BCompanyFields({ register, errors, setValue, getValues }: B2BC
             id="indirizzo_fornitura"
             {...register('indirizzo_fornitura')}
             placeholder="Via Torino 5, 20100 Milano"
-            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none"
           />
         </div>
         {(errors as any).indirizzo_fornitura && (
@@ -166,7 +166,7 @@ export function B2BCompanyFields({ register, errors, setValue, getValues }: B2BC
                   setValue('indirizzo_fatturazione', '')
                 }
               }}
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
             />
             <span className="text-sm text-gray-700">Indirizzo fatturazione uguale a sede legale</span>
           </label>
@@ -189,7 +189,7 @@ export function B2BCompanyFields({ register, errors, setValue, getValues }: B2BC
               id="indirizzo_fatturazione"
               {...register('indirizzo_fatturazione')}
               placeholder="Via Venezia 20, 20100 Milano"
-              className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+              className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none"
             />
           </div>
           {(errors as any).indirizzo_fatturazione && (

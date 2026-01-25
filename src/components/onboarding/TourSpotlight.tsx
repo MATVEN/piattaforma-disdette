@@ -155,7 +155,7 @@ export function TourSpotlight({ target, isActive, onClickOutside }: TourSpotligh
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="absolute border-2 border-indigo-400 rounded-xl pointer-events-none z-[56]"
+              className="absolute border-2 border-primary-400 rounded-xl pointer-events-none z-[56]"
               style={{
                 top: spotlight.top,
                 left: spotlight.left,

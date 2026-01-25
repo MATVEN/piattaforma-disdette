@@ -36,7 +36,7 @@ export function TipoIntestatarioSelector({
           onClick={() => handleChange('privato')}
           className={`flex items-center justify-center gap-3 px-6 py-4 rounded-xl border-2 transition-all ${
             value === 'privato'
-              ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+              ? 'border-primary-500 bg-primary-50 text-primary-700'
               : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
           }`}
         >
@@ -52,7 +52,7 @@ export function TipoIntestatarioSelector({
           onClick={() => handleChange('azienda')}
           className={`flex items-center justify-center gap-3 px-6 py-4 rounded-xl border-2 transition-all ${
             value === 'azienda'
-              ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+              ? 'border-primary-500 bg-primary-50 text-primary-700'
               : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
           }`}
         >

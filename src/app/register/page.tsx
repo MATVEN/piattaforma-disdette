@@ -56,7 +56,7 @@ export default function RegisterPage() {
   // Success state
   if (registered) {
     return (
-      <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center px-4 py-12">
+      <div className="bg-gradient-to-br from-primary-50 via-primary-100 to-secondary-50 flex items-center justify-center px-4 py-12">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -97,7 +97,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center px-4 py-12">
+    <div className="bg-gradient-to-br from-primary-50 via-primary-100 to-secondary-50 flex items-center justify-center px-4 py-12">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -152,7 +152,7 @@ export default function RegisterPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tua@email.com"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none"
                 />
               </div>
             </div>
@@ -177,7 +177,7 @@ export default function RegisterPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Minimo 6 caratteri"
                   minLength={6}
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none"
                 />
               </div>
               <p className="mt-2 text-xs text-gray-500">
@@ -192,15 +192,15 @@ export default function RegisterPage() {
                 name="terms"
                 type="checkbox"
                 required
-                className="mt-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                className="mt-1 h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
               />
               <label htmlFor="terms" className="ml-3 text-sm text-gray-600">
                 Accetto i{' '}
-                <Link href="/terms-of-service" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                <Link href="/terms-of-service" className="text-primary-600 hover:text-primary-700 font-medium">
                   Termini di Servizio
                 </Link>{' '}
                 e la{' '}
-                <Link href="/privacy-policy" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                <Link href="/privacy-policy" className="text-primary-600 hover:text-primary-700 font-medium">
                   Privacy Policy
                 </Link>
               </label>
@@ -234,7 +234,7 @@ export default function RegisterPage() {
               Hai già un account?{' '}
               <Link
                 href="/login"
-                className="text-indigo-600 font-semibold hover:text-indigo-700 transition-colors"
+                className="text-primary-600 font-semibold hover:text-primary-700 transition-colors"
               >
                 Accedi
               </Link>

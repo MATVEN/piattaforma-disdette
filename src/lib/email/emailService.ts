@@ -134,7 +134,7 @@ export function getDisdettaReadyEmail(params: {
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       }
       .header {
-        background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+        background: linear-gradient(135deg, #00C4B4 0%, #0D417D 100%);
         padding: 32px 24px;
         text-align: center;
       }
@@ -168,7 +168,7 @@ export function getDisdettaReadyEmail(params: {
       .button {
         display: inline-block;
         padding: 14px 32px;
-        background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+        background: linear-gradient(135deg, #00C4B4 0%, #0D417D 100%);
         color: white !important;
         text-decoration: none;
         border-radius: 12px;
@@ -571,7 +571,7 @@ export function getPecSentEmail(params: {
     .button {
       display: inline-block;
       padding: 14px 32px;
-      background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+      background: linear-gradient(135deg, #00C4B4 0%, #0D417D 100%);
       color: white !important;
       text-decoration: none;
       border-radius: 12px;
@@ -791,7 +791,7 @@ export function getProcessingErrorEmail(params: {
     .button {
       display: inline-block;
       padding: 14px 32px;
-      background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+      background: linear-gradient(135deg, #00C4B4 0%, #0D417D 100%);
       color: white !important;
       text-decoration: none;
       border-radius: 12px;

@@ -204,7 +204,7 @@ export function Tooltip({
             whileHover={{ scale: 1.1 }}
             className="flex-shrink-0 cursor-help"
           >
-            <HelpCircle className="h-4 w-4 text-indigo-500 hover:text-indigo-600 transition-colors" />
+            <HelpCircle className="h-4 w-4 text-primary-500 hover:text-primary-600 transition-colors" />
           </motion.div>
         )}
       </div>
@@ -226,7 +226,7 @@ export function Tooltip({
             }}
             className="max-w-xs"
           >
-            <div className="relative bg-gradient-to-br from-indigo-600 to-indigo-700 text-white text-sm rounded-lg shadow-2xl p-3 border border-indigo-500">
+            <div className="relative bg-gradient-to-br from-primary-600 to-primary-700 text-white text-sm rounded-lg shadow-2xl p-3 border border-primary-500">
               {/* Content */}
               <div className={dismissable && trigger === 'click' ? 'pr-6' : ''}>
                 {content}
@@ -245,7 +245,7 @@ export function Tooltip({
 
               {/* Arrow */}
               <div
-                className={`absolute w-2 h-2 bg-indigo-600 rotate-45 ${
+                className={`absolute w-2 h-2 bg-primary-600 rotate-45 ${
                   actualPlacement === 'top'
                     ? 'bottom-[-4px] left-1/2 -translate-x-1/2'
                     : actualPlacement === 'bottom'

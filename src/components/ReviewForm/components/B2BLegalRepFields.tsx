@@ -37,7 +37,7 @@ export function B2BLegalRepFields({ register, errors }: B2BLegalRepFieldsProps) 
             id="lr_nome"
             {...register('lr_nome')}
             placeholder="Mario"
-            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none"
           />
           {(errors as any).lr_nome && (
             <p className="mt-1 text-sm text-red-600">{(errors as any).lr_nome.message}</p>
@@ -54,7 +54,7 @@ export function B2BLegalRepFields({ register, errors }: B2BLegalRepFieldsProps) 
             id="lr_cognome"
             {...register('lr_cognome')}
             placeholder="Rossi"
-            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none"
           />
           {(errors as any).lr_cognome && (
             <p className="mt-1 text-sm text-red-600">{(errors as any).lr_cognome.message}</p>
@@ -88,7 +88,7 @@ export function B2BLegalRepFields({ register, errors }: B2BLegalRepFieldsProps) 
                 }
               })}
               placeholder="RSSMRA80A01H501U"
-              className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none uppercase"
+              className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none uppercase"
               maxLength={16}
             />
           </div>
@@ -112,13 +112,13 @@ export function B2BLegalRepFields({ register, errors }: B2BLegalRepFieldsProps) 
             </label>
           </Tooltip>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <label className="flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-gray-200 hover:border-indigo-300 cursor-pointer">
+            <label className="flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-gray-200 hover:border-primary-300 cursor-pointer">
               <input
                 type="radio"
                 {...register('richiedente_ruolo')}
                 value="legale_rappresentante"
                 defaultChecked
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500"
               />
               <div>
                 <div className="font-medium text-gray-900">Legale Rappresentante</div>
@@ -126,12 +126,12 @@ export function B2BLegalRepFields({ register, errors }: B2BLegalRepFieldsProps) 
               </div>
             </label>
 
-            <label className="flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-gray-200 hover:border-indigo-300 cursor-pointer">
+            <label className="flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-gray-200 hover:border-primary-300 cursor-pointer">
               <input
                 type="radio"
                 {...register('richiedente_ruolo')}
                 value="delegato"
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500"
               />
               <div>
                 <div className="font-medium text-gray-900">Delegato</div>

@@ -43,7 +43,7 @@ export function SupplierFields({ register, errors }: SupplierFieldsProps) {
             autoComplete="off"
             placeholder="es. 15844561009"
             {...register('supplier_tax_id')}
-            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none"
           />
         </div>
         <p className="mt-1 text-xs text-gray-500">11 cifre numeriche</p>
@@ -77,7 +77,7 @@ export function SupplierFields({ register, errors }: SupplierFieldsProps) {
             autoComplete="off"
             placeholder="es. IT001E12345678 o 10205464"
             {...register('supplier_contract_number')}
-            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none"
           />
         </div>
         <p className="mt-1 text-xs text-gray-500">
@@ -114,7 +114,7 @@ export function SupplierFields({ register, errors }: SupplierFieldsProps) {
             spellCheck={false}
             placeholder="es. IT60X0542811101000000123456"
             {...register('supplier_iban')}
-            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+            className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all outline-none"
           />
         </div>
         <p className="mt-1 text-xs text-gray-500">27 caratteri (IT + 25 caratteri)</p>

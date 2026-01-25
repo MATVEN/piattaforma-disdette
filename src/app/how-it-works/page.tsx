@@ -10,14 +10,14 @@ const steps = [
     title: 'Carica Bolletta',
     description: 'Carica il documento del tuo contratto (PDF, PNG, JPG). Il sistema supporta tutti i principali fornitori italiani.',
     icon: Upload,
-    color: 'indigo'
+    color: 'primary'
   },
   {
     number: 2,
     title: 'OCR Automatico',
     description: 'L\'intelligenza artificiale estrae automaticamente tutti i dati necessari tramite Google Document AI.',
     icon: Sparkles,
-    color: 'purple'
+    color: 'cyan'
   },
   {
     number: 3,
@@ -31,7 +31,7 @@ const steps = [
     title: 'Invio PEC',
     description: 'La disdetta viene inviata automaticamente al fornitore tramite PEC certificata con valore legale.',
     icon: Send,
-    color: 'indigo'
+    color: 'primary'
   }
 ]
 
@@ -55,7 +55,7 @@ const features = [
 
 export default function HowItWorksPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-primary-100 to-secondary-50">
       {/* Hero Section */}
       <div className="bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
@@ -64,7 +64,14 @@ export default function HowItWorksPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4">
+            <h1 className="text-4xl sm:text-5xl font-bold mb-4"
+              style={{
+                backgroundImage: 'linear-gradient(135deg, #00C4B4 0%, #0D417D 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}
+            >
               Come funziona DisdEasy
             </h1>
             <p className="text-sm sm:text-base text-gray-600">
@@ -80,9 +87,9 @@ export default function HowItWorksPage() {
           {steps.map((step, index) => {
             const Icon = step.icon
             const colorClasses = {
-              indigo: 'bg-indigo-100 text-indigo-600 border-indigo-200',
-              purple: 'bg-purple-100 text-purple-600 border-purple-200',
-              pink: 'bg-pink-100 text-pink-600 border-pink-200',
+              primary: 'bg-primary-100 text-primary-600 border-primary-200',
+              secondary: 'bg-secondary-100 text-secondary-600 border-secondary-200',
+              cyan: 'bg-cyan-100 text-cyan-600 border-cyan-200',
               green: 'bg-green-100 text-green-600 border-green-200'
             }
 
@@ -168,7 +175,7 @@ export default function HowItWorksPage() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.8 }}
-          className="bg-gradient-to-r from-indigo-600 to-pink-500 rounded-2xl p-8 md:p-12 text-center text-white shadow-2xl"
+          className="bg-gradient-to-r from-primary-500 to-secondary-600 rounded-2xl p-8 md:p-12 text-center text-white shadow-2xl"
         >
           <h2 className="text-xl sm:text-2xl md:text-4xl font-bold mb-4">
             Pronto per Iniziare?
@@ -178,7 +185,7 @@ export default function HowItWorksPage() {
           </p>
           <Link
             href="/new-disdetta"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-indigo-600 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-primary-600 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105"
           >
             <span>Inizia Ora</span>
             <ArrowRight className="h-5 w-5" />
