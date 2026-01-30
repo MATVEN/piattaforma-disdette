@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react'
 import type { TourStep } from '@/types/tour'
 
 interface OnboardingState {
@@ -191,7 +191,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     }))
   }
 
-  const value: OnboardingContextType = {
+  const value = useMemo<OnboardingContextType>(() => ({
     ...state,
     startTour,
     stopTour,
@@ -203,8 +203,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     resetOnboarding,
     markAsReturningUser,
     setTourSteps,
-  }
-
+  }), [state]) // Solo state nelle dipendenze (le funzioni sono stabili)
   return (
     <OnboardingContext.Provider value={value}>
       {children}

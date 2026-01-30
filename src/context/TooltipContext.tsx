@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, ReactNode } from 'react'
+import { createContext, useContext, useState, useMemo, useCallback, ReactNode } from 'react'
 
 interface TooltipPosition {
   top: number
@@ -42,19 +42,21 @@ export function TooltipProvider({ children }: { children: ReactNode }) {
     }
   })
 
-  const showTooltip = (tooltip: TooltipState) => {
+  const showTooltip = useCallback((tooltip: TooltipState) => {
+    
     // Don't show if already dismissed
     if (dismissedTooltips.includes(tooltip.id)) {
       return
     }
     setActiveTooltip(tooltip)
-  }
+  }, [dismissedTooltips])
 
-  const hideTooltip = () => {
+  const hideTooltip = useCallback(() => {
     setActiveTooltip(null)
-  }
+  }, [])
 
-  const dismissTooltip = (id: string) => {
+  const dismissTooltip = useCallback((id: string) => {
+    
     // Add to dismissed list
     const updated = [...dismissedTooltips, id]
     setDismissedTooltips(updated)
@@ -68,22 +70,22 @@ export function TooltipProvider({ children }: { children: ReactNode }) {
     
     // Hide if currently showing
     if (activeTooltip?.id === id) {
-      hideTooltip()
+      setActiveTooltip(null)
     }
-  }
+  }, [dismissedTooltips, activeTooltip])
 
-  const isTooltipDismissed = (id: string) => {
+  const isTooltipDismissed = useCallback((id: string) => {
     return dismissedTooltips.includes(id)
-  }
+  }, [dismissedTooltips])
 
-  const value: TooltipContextType = {
+  const value = useMemo<TooltipContextType>(() => ({
     activeTooltip,
     showTooltip,
     hideTooltip,
     dismissedTooltips,
     dismissTooltip,
     isTooltipDismissed,
-  }
+  }), [activeTooltip, showTooltip, hideTooltip, dismissedTooltips, dismissTooltip, isTooltipDismissed])
 
   return (
     <TooltipContext.Provider value={value}>

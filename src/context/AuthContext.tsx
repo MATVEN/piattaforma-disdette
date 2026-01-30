@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, useMemo, ReactNode } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import type { User } from '@supabase/supabase-js'
 
@@ -100,18 +100,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]) // Dipende sempre da 'user'
 
-  // --- 4. ESPONIAMO I VALORI ---
-  const value = {
+  // --- 4. ESPONIAMO I VALORI (MEMOIZED) ---
+  const value = useMemo(() => ({
     user,
     profile,
     isAuthLoading,
     isProfileLoading,
     isProfileComplete,
-  }
-
+  }), [user, profile, isAuthLoading, isProfileLoading, isProfileComplete])
   return (
     <AuthContext.Provider value={value}>
-      {!isAuthLoading && !isProfileLoading ? children : null}
+      {children}
     </AuthContext.Provider>
   )
 }
