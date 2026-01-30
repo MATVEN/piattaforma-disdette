@@ -39,7 +39,7 @@ interface B2BDocumentsSectionProps {
 export function B2BDocumentsSection({
   files,
   onFileChange,
-  uploadStates, // ← ADD THIS
+  uploadStates, 
   richiedenteRuolo,
   errors,
 }: B2BDocumentsSectionProps) {

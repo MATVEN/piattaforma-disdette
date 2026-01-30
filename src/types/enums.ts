@@ -27,6 +27,8 @@ export const DISDETTA_STATUS = {
   CONFIRMED: 'CONFIRMED',
   SENT: 'SENT',
   FAILED: 'FAILED',
+  FOLLOWUP_1: 'FOLLOWUP_1',
+  FOLLOWUP_2: 'FOLLOWUP_2',
 } as const
 
 export const PAYMENT_STATUS = {
@@ -39,9 +41,9 @@ export const PAYMENT_STATUS = {
 
 /* Status Configuration */
 export interface StatusConfig {
-  key: DisdettaStatus
+  key?: DisdettaStatus
   label: string
-  description: string
+  description?: string
   icon: string
   color: string
   isTerminal: boolean
@@ -88,6 +90,22 @@ export const STATUS_CONFIG: Record<DisdettaStatus, StatusConfig> = {
     color: 'green',
     isTerminal: true,
   },
+  FOLLOWUP_1: {
+    key: 'FOLLOWUP_1',
+    label: 'Sollecito 1/2',
+    description: 'Primo sollecito inviato',
+    icon: 'AlertCircle',
+    color: 'orange',
+    isTerminal: false,
+  },
+  FOLLOWUP_2: {
+    key: 'FOLLOWUP_2',
+    label: 'Sollecito 2/2',
+    description: 'Secondo sollecito inviato',
+    icon: 'AlertTriangle',
+    color: 'red',
+    isTerminal: true,
+  },
   FAILED: {
     key: 'FAILED',
     label: 'Errore',
@@ -112,6 +130,8 @@ export const DISDETTA_STATUS_LABELS: Record<DisdettaStatus, string> = {
   PENDING_PAYMENT: 'Pagamento richiesto',
   CONFIRMED: 'Confermata',
   SENT: 'Inviata',
+  FOLLOWUP_1: 'Sollecito 1/2',
+  FOLLOWUP_2: 'Sollecito 2/2',
   FAILED: 'Fallita',
 }
 
@@ -154,6 +174,16 @@ export const DISDETTA_STATUS_COLORS: Record<DisdettaStatus, {
     text: 'text-green-800',
     badge: 'bg-green-500',
   },
+  FOLLOWUP_1: {
+    bg: 'bg-amber-100',
+    text: 'text-orange-800',
+    badge: 'bg-orange-500',
+  },
+  FOLLOWUP_2: {
+    bg: 'bg-red-100',
+    text: 'text-red-800',
+    badge: 'bg-red-500',
+  },
   FAILED: {
     bg: 'bg-red-100',
     text: 'text-red-800',
@@ -195,7 +225,16 @@ export const PAYMENT_STATUS_COLORS: Record<PaymentStatus, {
 
 /* Helper Functions */
 export function getStatusConfig(status: DisdettaStatus): StatusConfig {
-  return STATUS_CONFIG[status]
+  const config = STATUS_CONFIG[status]
+
+  // ✅ Fallback + debug log
+  if (!config) {
+    console.error(`Missing config for status: ${status}`, {
+      availableStatuses: Object.keys(STATUS_CONFIG)
+    })
+    return STATUS_CONFIG.PROCESSING
+  }
+  return config
 }
 
 export function getStatusIndex(status: DisdettaStatus): number {
@@ -203,17 +242,58 @@ export function getStatusIndex(status: DisdettaStatus): number {
   return index === -1 ? -1 : index
 }
 
+/**
+* Get dynamic note for status based on followup state
+*/
+export function getStatusNote(
+  status: DisdettaStatus,
+  sentTimestamp?: string | null,
+  followup1Timestamp?: string | null
+): string | null {
+  if (!sentTimestamp) return null
+  const now = new Date()
+  switch (status) {
+    case DISDETTA_STATUS.SENT: {
+      const sentDate = new Date(sentTimestamp)
+      const daysSinceSent = Math.floor((now.getTime() - sentDate.getTime()) / (1000 * 60 * 60 * 24))
+      const daysRemaining = Math.max(0, 14 - daysSinceSent)
+      if (daysRemaining > 0) {
+        return `Tra ${daysRemaining} giorni potrai inviare un sollecito in caso di mancato riscontro dal fornitore.`
+      } else {
+        return 'Puoi inviare un sollecito in caso di mancato riscontro dal fornitore.'
+      }
+    }
+    case DISDETTA_STATUS.FOLLOWUP_1: {
+      if (!followup1Timestamp) return null
+      const followup1Date = new Date(followup1Timestamp)
+      const daysSinceFollowup = Math.floor((now.getTime() - followup1Date.getTime()) / (1000 * 60 * 60 * 24))
+      const daysRemaining = Math.max(0, 15 - daysSinceFollowup)
+      if (daysRemaining > 0) {
+        return `Primo sollecito inviato. Hai un secondo sollecito disponibile tra ${daysRemaining} giorni.`
+      } else {
+        return 'Primo sollecito inviato. Hai un secondo sollecito disponibile ora.'
+      }
+    }
+    case DISDETTA_STATUS.FOLLOWUP_2: {
+      return 'Secondo sollecito inviato. Limite raggiunto. Per ulteriore assistenza contatta il supporto.'
+    }
+    default: return null
+  }
+}
+
 export function isStatusCompleted(
   currentStatus: DisdettaStatus,
   targetStatus: DisdettaStatus
 ): boolean {
   if (currentStatus === 'FAILED' || targetStatus === 'FAILED') return false
+
+  if (currentStatus === 'FOLLOWUP_1' || currentStatus === 'FOLLOWUP_2') {
+    return true  // Tutti gli step sono completati
+  }
   
   const currentIndex = getStatusIndex(currentStatus)
   const targetIndex = getStatusIndex(targetStatus)
-  
   if (currentIndex === -1 || targetIndex === -1) return false
-  
   return currentIndex >= targetIndex
 }
 
@@ -224,9 +304,11 @@ export function getStatusProgress(status: DisdettaStatus): number {
     PENDING_PAYMENT: 60,
     CONFIRMED: 70,
     SENT: 100,
+    FOLLOWUP_1: 100,
+    FOLLOWUP_2: 100,
     FAILED: 0,
   }
-  
+
   return progressMap[status] || 0
 }
 
@@ -249,6 +331,10 @@ export function getValidNextStatuses(currentStatus: DisdettaStatus): DisdettaSta
     case DISDETTA_STATUS.CONFIRMED:
       return [DISDETTA_STATUS.SENT, DISDETTA_STATUS.FAILED]
     case DISDETTA_STATUS.SENT:
+      return [DISDETTA_STATUS.FOLLOWUP_1]
+    case DISDETTA_STATUS.FOLLOWUP_1:
+      return [DISDETTA_STATUS.FOLLOWUP_2]
+    case DISDETTA_STATUS.FOLLOWUP_2:
     case DISDETTA_STATUS.FAILED:
       return []
     default:

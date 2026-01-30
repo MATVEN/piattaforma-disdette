@@ -13,7 +13,7 @@ const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') ?? 'http://localhost:30
   .split(',')
   .map(s => s.trim())
 
-// --- NUOVI LIMITI (da C11 Audit) ---
+// --- NUOVI LIMITI ---
 const MAX_FILE_BYTES = Number(Deno.env.get("MAX_FILE_BYTES") ?? 10_000_000) // 10MB
 const ALLOWED_MIME = ["application/pdf", "image/png", "image/jpeg", "image/jpg", "image/tiff"]
 
@@ -25,7 +25,7 @@ const DISDETTA_STATUS = {
   FAILED: 'FAILED',
 } as const
 
-// --- Helper CORS (Definiti UNA SOLA VOLTA) ---
+// --- Helper CORS ---
 function resolveCorsOrigin(req: Request): string {
   const reqOrigin = req.headers.get('Origin') ?? ''
   return ALLOWED_ORIGINS.includes(reqOrigin) ? reqOrigin : ALLOWED_ORIGINS[0] ?? '*'
@@ -50,7 +50,11 @@ function getSupabaseAdmin() {
 }
 
 // --- Type Guard ---
-type RequestBody = { id: number }
+type RequestBody = {
+  id: number
+  type?: 'initial' | 'followup'
+}
+
 function isRequestBody(x: unknown): x is RequestBody {
   if (typeof x !== 'object' || x === null) return false
   const rec = x as Record<string, unknown>
@@ -672,6 +676,340 @@ async function creaPdfDelega(profile: ProfileData): Promise<Uint8Array> {
 }
 
 // ==========================
+// HELPER: CREA PDF SOLLECITO B2C
+// ==========================
+async function creaPdfSollecitoB2C(disdetta: DisdettaData): Promise<Uint8Array> {
+  const pdfDoc = await PDFDocument.create()
+  const page = pdfDoc.addPage()
+  const { width, height } = page.getSize()
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
+  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+  const fontSize = 11
+
+  const marginX = 72
+  const usableWidth = width - marginX * 2
+  const lineHeight = fontSize * 1.5
+  let cursorY = height - 72
+
+  // Header
+  page.drawText(`Spett.le ${disdetta.supplier_name || 'Fornitore'}`, {
+    x: marginX,
+    y: cursorY,
+    size: fontSize,
+    font,
+    color: rgb(0, 0, 0),
+  })
+  cursorY -= lineHeight * 2
+
+  // Sottoscritto
+  const nomeCapitalized = capitalizeWords(disdetta.nome || '')
+  const cognomeCapitalized = capitalizeWords(disdetta.cognome || '')
+  const cfFormatted = formatCodiceFiscale(disdetta.codice_fiscale || '')
+
+  page.drawText(`Il sottoscritto ${nomeCapitalized} ${cognomeCapitalized},`, {
+    x: marginX,
+    y: cursorY,
+    size: fontSize,
+    font,
+    color: rgb(0, 0, 0),
+  })
+  cursorY -= lineHeight
+
+  page.drawText(`residente in ${disdetta.indirizzo_residenza || ''},`, {
+    x: marginX,
+    y: cursorY,
+    size: fontSize,
+    font,
+    color: rgb(0, 0, 0),
+  })
+  cursorY -= lineHeight
+
+  page.drawText(`codice fiscale ${cfFormatted},`, {
+    x: marginX,
+    y: cursorY,
+    size: fontSize,
+    font,
+    color: rgb(0, 0, 0),
+  })
+ cursorY -= lineHeight * 2
+
+  // OGGETTO
+  const serviceType = determineServiceType(disdetta.supplier_name)
+  const serviceDesc = getServiceDescription(serviceType)
+  const contractText = disdetta.supplier_contract_number
+    ? `n. ${disdetta.supplier_contract_number}`
+    : ''
+
+  page.drawText('OGGETTO: ', {
+    x: marginX,
+    y: cursorY,
+    size: fontSize,
+    font: fontBold,
+    color: rgb(0, 0, 0),
+  })
+
+  const oggettoWidth = fontBold.widthOfTextAtSize('OGGETTO: ', fontSize)
+  page.drawText(`SOLLECITO - Disdetta contratto ${serviceDesc} ${contractText}`, {
+    x: marginX + oggettoWidth,
+    y: cursorY,
+    size: fontSize,
+    font,
+    color: rgb(0, 0, 0),
+  })
+  cursorY -= lineHeight * 2
+
+  // Corpo sollecito
+  const bodyText = `Con la presente, si sollecita cortesemente un riscontro in merito alla richiesta di disdetta del contratto ${contractText} relativo a ${serviceDesc}, inviata in data precedente tramite PEC.
+
+  Non avendo ancora ricevuto conferma dell'avvenuta cessazione del servizio, si richiede:
+
+  1. Conferma scritta dell'accettazione della disdetta
+  2. Indicazione della data effettiva di cessazione del servizio
+  3. Dettaglio di eventuali importi ancora da saldare o crediti da restituire
+
+  Si resta in attesa di un sollecito riscontro entro 7 giorni lavorativi dalla ricezione della presente.`
+
+  const bodyLines = wrapText(bodyText, font, fontSize, usableWidth)
+ 
+  for (const line of bodyLines) {
+    if (cursorY < 100) break // Evita overflow
+    page.drawText(line, {
+      x: marginX,
+      y: cursorY,
+      size: fontSize,
+      font,
+      color: rgb(0, 0, 0),
+    })
+    cursorY -= lineHeight
+  }
+  cursorY -= lineHeight
+
+  // Closing
+  page.drawText('Distinti saluti.', {
+    x: marginX,
+    y: cursorY,
+    size: fontSize,
+    font,
+    color: rgb(0, 0, 0),
+  })
+  cursorY -= lineHeight * 2
+
+  // Date and signature
+  page.drawText(`Bologna, ${formatDateFull(new Date())}`, {
+    x: marginX,
+    y: cursorY,
+    size: fontSize,
+    font,
+    color: rgb(0, 0, 0),
+  })
+  cursorY -= lineHeight
+
+  page.drawText(`${nomeCapitalized} ${cognomeCapitalized}`, {
+    x: marginX,
+    y: cursorY,
+    size: fontSize,
+    font,
+    color: rgb(0, 0, 0),
+  })
+  cursorY -= lineHeight * 0.5
+
+  page.drawText('(Firma digitale)', {
+    x: marginX,
+    y: cursorY,
+    size: 9,
+    font,
+    color: rgb(0.4, 0.4, 0.4),
+  })
+
+  return await pdfDoc.save()
+}
+
+// ==========================
+// HELPER: CREA PDF SOLLECITO B2B
+// ==========================
+async function creaPdfSollecitoB2B(disdetta: DisdettaData): Promise<Uint8Array> {
+  const pdfDoc = await PDFDocument.create()
+  const page = pdfDoc.addPage()
+  const { width, height } = page.getSize()
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
+  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+  const fontSize = 11
+
+  const marginX = 72
+  const usableWidth = width - marginX * 2
+  const lineHeight = fontSize * 1.5
+  let cursorY = height - 72
+
+  // Header
+  page.drawText(`Spett.le ${disdetta.supplier_name || 'Fornitore'}`, {
+    x: marginX,
+    y: cursorY,
+    size: fontSize,
+    font,
+    color: rgb(0, 0, 0),
+  })
+  cursorY -= lineHeight * 2
+
+  // Company info
+  const pivaFormatted = (disdetta.partita_iva || '').replace(/\s/g, '')
+  const lrCfFormatted = formatCodiceFiscale(disdetta.lr_codice_fiscale || '')
+  const lrNomeCapitalized = capitalizeWords(disdetta.lr_nome || '')
+  const lrCognomeCapitalized = capitalizeWords(disdetta.lr_cognome || '')
+
+  page.drawText(`${disdetta.ragione_sociale || ''},`, {
+    x: marginX,
+    y: cursorY,
+    size: fontSize,
+    font,
+    color: rgb(0, 0, 0),
+  })
+  cursorY -= lineHeight
+
+  page.drawText(`con sede legale in ${disdetta.sede_legale || ''},`, {
+    x: marginX,
+    y: cursorY,
+    size: fontSize,
+    font,
+    color: rgb(0, 0, 0),
+  })
+  cursorY -= lineHeight
+
+  page.drawText(`Partita IVA ${pivaFormatted},`, {
+    x: marginX,
+    y: cursorY,
+    size: fontSize,
+    font,
+    color: rgb(0, 0, 0),
+  })
+  cursorY -= lineHeight
+
+  page.drawText(`rappresentata dal Legale Rappresentante ${lrNomeCapitalized} ${lrCognomeCapitalized},`, {
+    x: marginX,
+    y: cursorY,
+    size: fontSize,
+    font,
+    color: rgb(0, 0, 0),
+  })
+  cursorY -= lineHeight
+
+  page.drawText(`codice fiscale ${lrCfFormatted},`, {
+    x: marginX,
+    y: cursorY,
+    size: fontSize,
+    font,
+    color: rgb(0, 0, 0),
+  })
+  cursorY -= lineHeight * 2
+
+  // OGGETTO
+  const serviceType = determineServiceType(disdetta.supplier_name)
+  const serviceDesc = getServiceDescription(serviceType)
+  const contractText = disdetta.supplier_contract_number
+    ? `n. ${disdetta.supplier_contract_number}`
+    : ''
+
+  page.drawText('OGGETTO: ', {
+    x: marginX,
+    y: cursorY,
+    size: fontSize,
+    font: fontBold,
+    color: rgb(0, 0, 0),
+  })
+  const oggettoWidth = fontBold.widthOfTextAtSize('OGGETTO: ', fontSize)
+
+  page.drawText(`SOLLECITO - Disdetta contratto ${serviceDesc} ${contractText}`, {
+    x: marginX + oggettoWidth,
+    y: cursorY,
+    size: fontSize,
+    font,
+    color: rgb(0, 0, 0),
+  })
+  cursorY -= lineHeight * 2
+
+  // Body
+  const bodyText = `Con la presente, si sollecita cortesemente un riscontro in merito alla richiesta di disdetta del contratto ${contractText} relativo a ${serviceDesc}, inviata in data precedente tramite PEC.
+
+  Non avendo ancora ricevuto conferma dell'avvenuta cessazione del servizio, si richiede:
+
+  1. Conferma scritta dell'accettazione della disdetta
+  2. Indicazione della data effettiva di cessazione del servizio
+  3. Dettaglio di eventuali importi ancora da saldare o crediti da restituire
+
+  Si resta in attesa di un sollecito riscontro entro 7 giorni lavorativi dalla ricezione della presente.`
+
+  const bodyLines = wrapText(bodyText, font, fontSize, usableWidth)
+  
+  for (const line of bodyLines) {
+    if (cursorY < 150) break
+    page.drawText(line, {
+      x: marginX,
+      y: cursorY,
+      size: fontSize,
+      font,
+      color: rgb(0, 0, 0),
+    })
+    cursorY -= lineHeight
+  }
+  cursorY -= lineHeight
+
+  // Closing
+  page.drawText('Distinti saluti.', {
+    x: marginX,
+    y: cursorY,
+    size: fontSize,
+    font,
+    color: rgb(0, 0, 0),
+  })
+  cursorY -= lineHeight * 2
+
+  page.drawText(`Bologna, ${formatDateFull(new Date())}`, {
+    x: marginX,
+    y: cursorY,
+    size: fontSize,
+    font,
+    color: rgb(0, 0, 0),
+  })
+  cursorY -= lineHeight
+
+  page.drawText(`Per ${disdetta.ragione_sociale || ''}`, {
+    x: marginX,
+    y: cursorY,
+    size: fontSize,
+    font,
+    color: rgb(0, 0, 0),
+  })
+  cursorY -= lineHeight * 0.5
+
+  page.drawText(`${lrNomeCapitalized} ${lrCognomeCapitalized}`, {
+    x: marginX,
+    y: cursorY,
+    size: fontSize,
+    font,
+    color: rgb(0, 0, 0),
+  })
+  cursorY -= lineHeight * 0.5
+
+  page.drawText('(Legale Rappresentante)', {
+    x: marginX,
+    y: cursorY,
+    size: 9,
+    font,
+    color: rgb(0.4, 0.4, 0.4),
+  })
+  cursorY -= lineHeight * 0.5
+
+  page.drawText('(Firma digitale)', {
+    x: marginX,
+    y: cursorY,
+    size: 9,
+    font,
+    color: rgb(0.4, 0.4, 0.4),
+  })
+
+  return await pdfDoc.save()
+}
+
+// ==========================
 // 9) HANDLER (B2C/B2B PDF)
 // ==========================
 serve(async (req: Request) => {
@@ -698,6 +1036,8 @@ serve(async (req: Request) => {
     try { body = await req.json() } catch { throw new Error('Body JSON non valido') }
     if (!isRequestBody(body)) { throw new Error("Parametro 'id' mancante o non numerico") }
     disdettaId = body.id
+    const requestType = body.type || 'initial'
+    console.log(`[send-pec-disdetta] Request type: ${requestType}`)
 
     // --- 1. Dual Client Auth (C12) ---
     const supabaseUser = createClient(
@@ -723,9 +1063,17 @@ serve(async (req: Request) => {
     if (disdettaError) throw new Error(`Disdetta non trovata o accesso negato: ${disdettaError.message}`)
     if (!disdettaData) throw new Error('Disdetta non trovata')
 
-    // --- 2. State Transition Check (C12) ---
-    if (disdettaData.status !== DISDETTA_STATUS.CONFIRMED) {
-      throw new Error(`Impossibile inviare: lo stato è ${disdettaData.status} (atteso CONFIRMED)`)
+    // --- 2. State Transition Check ---
+    let expectedStatuses: string[]
+
+    if (requestType === 'followup') {
+      expectedStatuses = ['SENT', 'FOLLOWUP_1']
+    } else {
+      expectedStatuses = ['CONFIRMED']
+    }
+
+    if (!expectedStatuses.includes(disdettaData.status)) {
+      throw new Error(`Impossibile inviare: lo stato è ${disdettaData.status} (attesi: ${expectedStatuses.join(', ')})`)
     }
 
     userId = disdettaData.user_id
@@ -754,25 +1102,36 @@ serve(async (req: Request) => {
       throw new Error(`File ID non valido (tipo: ${idFile?.type}, size: ${idFile?.size})`)
     }
 
-    // --- 6. Genera PDF (B2C vs B2B) ---
+    // --- 6. Genera PDF (Initial vs Followup, B2C vs B2B) ---
     let pdfDisdettaBytes: Uint8Array
-    if (typedDisdettaData.tipo_intestatario === 'azienda') {
-      pdfDisdettaBytes = await creaPdfDisdettaB2B(typedDisdettaData)
-    } else {
-      pdfDisdettaBytes = await creaPdfDisdettaB2C(typedDisdettaData)
+    if (requestType === 'followup') {
+      // Generate followup letter
+      if (typedDisdettaData.tipo_intestatario === 'azienda') {
+        pdfDisdettaBytes = await creaPdfSollecitoB2B(typedDisdettaData)
+      } else {
+        pdfDisdettaBytes = await creaPdfSollecitoB2C(typedDisdettaData)
+      }
+      } else {
+      // Generate initial letter
+      if (typedDisdettaData.tipo_intestatario === 'azienda') {
+        pdfDisdettaBytes = await creaPdfDisdettaB2B(typedDisdettaData)
+      } else {
+        pdfDisdettaBytes = await creaPdfDisdettaB2C(typedDisdettaData)
+      }
     }
 
+    // --- 7. Merge delega + documento identità  ---
     const pdfDelegaBytes = await creaPdfDelega(typedProfileData)
     const idBytes = await idFile.arrayBuffer()
 
-    // --- 7. Merge delega + documento identità  ---
     const delegaConDocumento = await mergePDFs([
       pdfDelegaBytes,
       new Uint8Array(idBytes)
     ])
 
     // --- 8. Upload PDF ---
-    const pdfDisdettaPath = `${typedDisdettaData.user_id}/${disdettaId}_lettera.pdf`
+    const pdfSuffix = requestType === 'followup' ? 'sollecito' : 'lettera'
+    const pdfDisdettaPath = `${typedDisdettaData.user_id}/${disdettaId}_${pdfSuffix}.pdf`
     const { error: upErrDisdetta } = await supabaseAdmin
       .storage.from(PDF_BUCKET).upload(pdfDisdettaPath, pdfDisdettaBytes, { contentType: 'application/pdf', upsert: true })
     if (upErrDisdetta) throw new Error(`Errore upload PDF Disdetta: ${upErrDisdetta.message}`)
@@ -854,20 +1213,41 @@ serve(async (req: Request) => {
     if (fetchError) throw new Error(`Errore recupero record: ${fetchError.message}`)
     if (!existingRecord) throw new Error(`Record ${disdettaId} non trovato`)
 
-    // Update con MERGE esplicito - preserva supplier_contract_number!
+    // Prepare update object based on request type
+    const updateData: Record<string, any> = {
+      supplier_contract_number: existingRecord.supplier_contract_number,
+      supplier_tax_id: existingRecord.supplier_tax_id,
+      receiver_tax_id: existingRecord.receiver_tax_id,
+      supplier_iban: existingRecord.supplier_iban,
+    }
+
+    if (requestType === 'followup') {
+
+      // Determine new status and update appropriate timestamp
+      const currentFollowupCount = existingRecord.followup_count || 0
+      const newFollowupCount = currentFollowupCount + 1
+      
+      if (newFollowupCount === 1) {
+        updateData.status = 'FOLLOWUP_1'
+        updateData.followup_1_sent_at = new Date().toISOString()
+      } else if (newFollowupCount === 2) {
+        updateData.status = 'FOLLOWUP_2'
+        updateData.followup_2_sent_at = new Date().toISOString()
+      }
+      updateData.followup_count = newFollowupCount
+
+    } else {
+      // Initial: update status and paths
+      updateData.status = newStatus
+      updateData.pdf_path = pdfDisdettaPath
+      updateData.delega_con_documento_path = pdfDelegaPath
+    }
+    
     const { error: updateError, count } = await supabaseAdmin
       .from('disdette')
-      .update({
-        status: newStatus,
-        pdf_path: pdfDisdettaPath,
-        // Preserva esplicitamente i campi critici
-        supplier_contract_number: existingRecord.supplier_contract_number,
-        supplier_tax_id: existingRecord.supplier_tax_id,
-        receiver_tax_id: existingRecord.receiver_tax_id,
-        supplier_iban: existingRecord.supplier_iban,
-      })
+      .update(updateData)
       .eq('id', disdettaId)
-      .eq('status', DISDETTA_STATUS.CONFIRMED)
+      .eq('id', disdettaId) // Note: removed .eq('status') check since status changes during followup
 
     if (updateError) throw new Error(`Errore aggiornamento stato: ${updateError.message}`)
     if (count === 0) { console.warn(`[send-pec-disdetta] Doppio invio bloccato per ID: ${disdettaId}`) }
@@ -876,14 +1256,20 @@ serve(async (req: Request) => {
     await triggerEmailNotification(disdettaId, 'sent');
 
     // 11. Risposta
+    const responseMessage = requestType === 'followup'
+      ? (isTest ? 'Sollecito SIMULATO con successo (test)' : 'Sollecito inviato')
+      : (isTest ? 'Invio SIMULATO con successo (test)' : 'Invio completato')
+
     return new Response(JSON.stringify({
       success: true,
-      message: isTest ? 'Invio SIMULATO con successo (test)' : 'Invio completato',
+      message: responseMessage,
+      request_type: requestType,
       pdf_path: `${PDF_BUCKET}/${pdfDisdettaPath}`,
-      status: newStatus,
+      status: requestType === 'followup' ? typedDisdettaData.status : newStatus,
       attachments_count: attachments.length,
       tipo_intestatario: typedDisdettaData.tipo_intestatario,
-      is_test: isTest
+      is_test: isTest,
+      followup_count: requestType === 'followup' ? ((existingRecord.followup_count || 0) + 1) : undefined
     }), { headers: { ...headers, "Content-Type": "application/json" } })
 
   } catch (error: unknown) {

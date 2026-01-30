@@ -5,10 +5,10 @@
 
 import * as Icons from 'lucide-react'
 import {
- getStatusConfig,
- formatDuration,
- formatTimestamp,
- getRelativeTime
+  getStatusConfig,
+  formatDuration,
+  formatTimestamp,
+  getRelativeTime
 } from '@/types/enums'
 import {
   type StatusTimelineData
@@ -58,6 +58,7 @@ export function StatusTimelineExpanded({ timeline }: StatusTimelineExpandedProps
                     backgroundColor: config.color === 'blue' ? '#3b82f6'
                       : config.color === 'yellow' ? '#eab308'
                       : config.color === 'green' ? '#22c55e'
+                      : config.color === 'orange' ? '#f97316'
                       : config.color === 'purple' ? '#a855f7'
                       : config.color === 'red' ? '#ef4444'
                       : '#6b7280'
@@ -74,6 +75,7 @@ export function StatusTimelineExpanded({ timeline }: StatusTimelineExpandedProps
                           color: config.color === 'blue' ? '#3b82f6'
                             : config.color === 'yellow' ? '#eab308'
                             : config.color === 'green' ? '#22c55e'
+                            : config.color === 'orange' ? '#f97316'
                             : config.color === 'red' ? '#ef4444'
                             : '#6b7280'
                           }} 

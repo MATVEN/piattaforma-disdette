@@ -1,7 +1,7 @@
 // src/components/DashboardList.tsx
 
 'use client'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 import { useStatusPolling } from '@/hooks/useStatusPolling'
@@ -23,7 +23,8 @@ import {
   Sparkles,
   ChevronDown,
   ChevronUp,
-  CreditCard
+  CreditCard,
+  Download
 } from 'lucide-react'
 import { 
   DISDETTA_STATUS, 
@@ -36,10 +37,32 @@ interface DisdettaData {
   id: number
   created_at: string
   file_path: string
-  status: DisdettaStatus 
+  status: DisdettaStatus
   supplier_tax_id: string | null
   receiver_tax_id: string | null
   supplier_iban: string | null
+  pdf_path: string | null
+  delega_con_documento_path: string | null
+  delega_firma_path: string | null
+  visura_camerale_path: string | null
+  documento_lr_path: string | null
+  followup_count: number | null
+  followup_1_sent_at: string | null
+  followup_2_sent_at: string | null
+}
+
+interface DisdettaCardProps {
+  item: DisdettaData
+  isSending: boolean
+  onSend: () => void
+  expanded: boolean
+  onToggleExpand: () => void
+  historyData: StatusTimelineData | undefined
+  loadingHistory: boolean
+  historyErrors: boolean
+  onRefresh: () => Promise<void>
+  fetchHistory: (id: number, forceRefresh?: boolean) => Promise<void>
+  onCloseExpand: () => void
 }
 
 export default function DashboardList() {
@@ -123,12 +146,12 @@ export default function DashboardList() {
   }
 
   // --- FUNZIONE FETCH HISTORY ---
-  const fetchHistory = async (disdettaId: number) => {
+  const fetchHistory = async (disdettaId: number, forceRefresh = false) => {
     // Skip if already loaded
-    if (historyData[disdettaId]) return
+    if (historyData[disdettaId] && !forceRefresh) return
     
     setLoadingHistory(prev => ({ ...prev, [disdettaId]: true }))
-    setHistoryErrors(prev => ({ ...prev, [disdettaId]: false })) // ← ADD: Reset error
+    setHistoryErrors(prev => ({ ...prev, [disdettaId]: false }))
     
     try {
       const response = await fetch(`/api/get-status-history?id=${disdettaId}`, {
@@ -143,12 +166,26 @@ export default function DashboardList() {
       setHistoryData(prev => ({ ...prev, [disdettaId]: data }))
     } catch (error) {
       console.error('Error fetching history:', error)
-      setHistoryErrors(prev => ({ ...prev, [disdettaId]: true })) // ← ADD: Mark error
+      setHistoryErrors(prev => ({ ...prev, [disdettaId]: true }))
       showError('Impossibile caricare la cronologia')
     } finally {
       setLoadingHistory(prev => ({ ...prev, [disdettaId]: false }))
     }
   }
+
+  // Auto-load history for SENT/FOLLOWUP disdette (needed for countdown)
+  useEffect(() => {
+    const followupDisdette = disdette.filter(d =>
+      d.status === DISDETTA_STATUS.SENT ||
+      d.status === DISDETTA_STATUS.FOLLOWUP_1 ||
+      d.status === DISDETTA_STATUS.FOLLOWUP_2
+    )
+    followupDisdette.forEach(d => {
+      if (!historyData[d.id] && !loadingHistory[d.id]) {
+        fetchHistory(d.id)
+      }
+    })
+  }, [disdette])
 
   // --- FUNZIONE TOGGLE EXPAND ---
   const toggleExpand = (disdettaId: number) => {
@@ -286,7 +323,7 @@ export default function DashboardList() {
         </div>
 
         {/* Right side container */}
-        <div className="flex items-center gap-4"> {/* ← ADD: Container per polling + hasMore */}
+        <div className="flex items-center gap-4">
           {/* Polling indicator (C25 Phase 2.2) */}
           {polling.isPolling && (
             <motion.div
@@ -321,9 +358,18 @@ export default function DashboardList() {
             <DisdettaCard
               key={item.id}
               item={item}
+              onRefresh={refresh}
+              fetchHistory={fetchHistory}
               isSending={isSending}
               onSend={() => handleSendPec(item.id)}
               expanded={expandedCards.has(item.id)}
+              onCloseExpand={() => {
+                setExpandedCards(prev => {
+                  const newSet = new Set(prev)
+                  newSet.delete(item.id)
+                  return newSet
+                })
+              }}
               onToggleExpand={() => toggleExpand(item.id)}
               historyData={historyData[item.id]}
               loadingHistory={loadingHistory[item.id] || false}
@@ -371,25 +417,171 @@ function DisdettaCard({
   onSend,
   expanded,
   onToggleExpand,
+  onCloseExpand,
   historyData,
   loadingHistory,
   historyErrors,
-}: {
-  item: DisdettaData
-  isSending: boolean
-  onSend: () => void
-  expanded: boolean
-  onToggleExpand: () => void
-  historyData: StatusTimelineData | undefined
-  loadingHistory: boolean
-  historyErrors: boolean
-}) {
+  onRefresh,
+  fetchHistory,
+}: DisdettaCardProps) {
   const fileName = item.file_path.split('/').pop() || 'Documento'
   const date = new Date(item.created_at).toLocaleDateString('it-IT', {
     day: 'numeric',
     month: 'long',
     year: 'numeric'
   })
+
+  // Check if documentation is available
+  const hasDocumentation = !!(
+    item.file_path ||
+    item.pdf_path ||
+    item.delega_firma_path ||
+    item.visura_camerale_path ||
+    item.documento_lr_path
+  )
+
+  const [isDownloading, setIsDownloading] = useState(false)
+
+  const handleDownloadDocumentation = async () => {
+    setIsDownloading(true)
+    
+    try {
+      const response = await fetch(`/api/download-documentation?id=${item.id}`, {
+        credentials: 'include'
+      })
+      
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Download fallito')
+      }
+      
+      // Get filename from Content-Disposition header
+      const contentDisposition = response.headers.get('Content-Disposition')
+      const filenameMatch = contentDisposition?.match(/filename="(.+)"/)
+      const filename = filenameMatch ? filenameMatch[1] : `disdetta_${item.id}.zip`
+      
+      // Download file
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      
+      showSuccess('Download completato! 📦')
+    } catch (error) {
+      console.error('Download error:', error)
+      showError(error instanceof Error ? error.message : 'Errore durante il download')
+    } finally {
+      setIsDownloading(false)
+    }
+  }
+
+  const [isSendingFollowup, setIsSendingFollowup] = useState(false)
+
+  // Show followup button for SENT, FOLLOWUP_1 (max 2 followups)
+  const showFollowupButton = useMemo(() => {
+    const validStatuses: DisdettaStatus[] = [
+      DISDETTA_STATUS.SENT,
+      DISDETTA_STATUS.FOLLOWUP_1
+    ]
+    
+    if (!validStatuses.includes(item.status)) return false
+
+    const followupCount = item.followup_count || 0
+    return followupCount < 2
+  }, [item.status, item.followup_count])
+
+  // Check if followup can be sent (14 days after SENT)
+  const canSendFollowup = useMemo(() => {
+    const followupCount = item.followup_count || 0
+
+    if (followupCount >= 2) return false
+
+    // Determine which timestamp to check
+    let referenceTimestamp: string | null = null
+    let requiredDays = 14
+
+    if (item.status === DISDETTA_STATUS.SENT) {
+      // First followup: check 14 days from SENT
+      const sentEvent = historyData?.history?.find(h => h.status === DISDETTA_STATUS.SENT)
+      referenceTimestamp = sentEvent?.timestamp || null
+      requiredDays = 14
+    } else if (item.status === DISDETTA_STATUS.FOLLOWUP_1) {
+      // Second followup: check 15 days from FOLLOWUP_1
+      const followup1Event = historyData?.history?.find(h => h.status === DISDETTA_STATUS.FOLLOWUP_1)
+      referenceTimestamp = followup1Event?.timestamp || null
+      requiredDays = 15
+    }
+
+    if (!referenceTimestamp) return false
+
+    const referenceDate = new Date(referenceTimestamp)
+    const now = new Date()
+    const daysSinceReference = Math.floor((now.getTime() - referenceDate.getTime()) / (1000 * 60 * 60 * 24))
+
+    return daysSinceReference >= requiredDays
+  }, [item.status, item.followup_count, historyData])
+
+  // Calculate days remaining until followup is available
+  const daysUntilFollowup = useMemo(() => {
+    let referenceTimestamp: string | null = null
+    let requiredDays = 14
+
+    if (item.status === DISDETTA_STATUS.SENT) {
+      const sentEvent = historyData?.history?.find(h => h.status === DISDETTA_STATUS.SENT)
+      referenceTimestamp = sentEvent?.timestamp || null
+      requiredDays = 14
+    } else if (item.status === DISDETTA_STATUS.FOLLOWUP_1) {
+      const followup1Event = historyData?.history?.find(h => h.status === DISDETTA_STATUS.FOLLOWUP_1)
+      referenceTimestamp = followup1Event?.timestamp || null
+      requiredDays = 15
+    } else {
+      return null
+    }
+
+    if (!referenceTimestamp) return null
+
+    const referenceDate = new Date(referenceTimestamp)
+    const now = new Date()
+    const daysSinceReference = Math.floor((now.getTime() - referenceDate.getTime()) / (1000 * 60 * 60 * 24))
+
+    return Math.max(0, requiredDays - daysSinceReference)
+  }, [item.status, historyData])
+
+  const handleSendFollowup = async () => {
+    setIsSendingFollowup(true)
+    try {
+      const response = await fetch('/api/send-followup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ id: item.id })
+      })
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Invio fallito')
+      }
+      showSuccess('Sollecito inviato con successo! 📧')
+
+        // ✅ Refetch disdette list
+        await onRefresh?.()
+
+        // ✅ Refetch history for countdown update
+        await fetchHistory(item.id, true)
+
+        onCloseExpand()
+
+    } catch (error) {
+      console.error('Followup error:', error)
+      showError(error instanceof Error ? error.message : 'Errore durante l\'invio del sollecito')
+    } finally {
+      setIsSendingFollowup(false)
+    }
+  }
 
   return (
     <div className="group relative w-full max-w-full rounded-xl border border-gray-200 bg-white shadow-card transition-all hover:shadow-card-hover hover:border-primary-200 overflow-hidden">
@@ -418,27 +610,105 @@ function DisdettaCard({
             </div>
           </Link>
 
-          {/* Right side - Status & Action */}
+          {/* Right side - Status & Actions Column */}
           <div className="flex-shrink-0 w-full sm:w-auto max-w-full">
-            <StatusBadgeAndAction
-              status={item.status}
-              isSending={isSending}
-              onSend={onSend}
-              estimatedCompletion={historyData?.estimatedCompletion}
-            />
+            <div className="flex flex-col items-end gap-2">
+              {/* Status Badge */}
+              <StatusBadgeAndAction
+                status={
+                  item.status === DISDETTA_STATUS.FOLLOWUP_1 || item.status === DISDETTA_STATUS.FOLLOWUP_2
+                    ? DISDETTA_STATUS.SENT
+                    : item.status
+                }
+                isSending={isSending}
+                onSend={onSend}
+                estimatedCompletion={historyData?.estimatedCompletion}
+              />
+            
+              {/* Followup button - same style as badge */}
+              {showFollowupButton && (
+                <button
+                  onClick={handleSendFollowup}
+                  disabled={!canSendFollowup || isSendingFollowup}
+                  title={
+                    !canSendFollowup && daysUntilFollowup !== null
+                      ? `Disponibile tra ${daysUntilFollowup} giorni`
+                      : 'Invia sollecito PEC'
+                  }
+                  className={`
+                    inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-medium whitespace-nowrap shadow-sm transition-all
+                    ${!canSendFollowup && !isSendingFollowup
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      : 'bg-amber-500 hover:bg-amber-600 text-white hover:shadow-md'
+                    }
+                    ${isSendingFollowup ? 'opacity-50 cursor-not-allowed' : ''}
+                  `}
+                  style={{ 
+                    minWidth: '108.5px',
+                    minHeight: '28px',
+                    justifyContent: 'center'
+                  }}
+                >
+                  {isSendingFollowup ? (
+                    <>
+                      <Loader2 className="h-3 w-3 animate-spin flex-shrink-0" />
+                      <span>Invio...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-3 w-3 flex-shrink-0" />
+                      <span>
+                        {daysUntilFollowup && daysUntilFollowup > 0
+                          ? `Sollecito(${daysUntilFollowup}g)`
+                          : `Sollecito ${(item.followup_count || 0) + 1}/2`
+                        }
+                      </span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Timeline Section */}
-      <div className="px-3 sm:px-5 pb-3 sm:pb-5">
-        {/* Compact Timeline (always visible) */}
-        <StatusTimeline
-          currentStatus={item.status as any}
-          history={historyData?.history || []}
-          compact
-        />
+      {/* Timeline + Download Button Row */}
+      <div className="px-3 sm:px-5 pb-3 sm:pb-5 border-t border-gray-100 pt-6">
+        <div className="flex items-start justify-between gap-4 mb-3">
 
+          {/* Left - Compact Timeline */}
+          <div className="flex-1 min-w-0">
+            <StatusTimeline
+              currentStatus={item.status as any}
+              history={historyData?.history || []}
+              compact
+            />
+          </div>
+
+          {/* Right - Download Button */}
+          {hasDocumentation && (
+            <div className="flex-shrink-0">
+              <button
+                onClick={handleDownloadDocumentation}
+                disabled={isDownloading}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-600 text-white rounded-lg text-sm font-medium shadow-md hover:shadow-lg transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              >
+                {isDownloading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="hidden sm:inline">Download...</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-4 w-4" />
+                    <span className="hidden sm:inline">Scarica</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+        </div>
+    
         {/* Expand/Collapse Button */}
         <button
           onClick={onToggleExpand}
@@ -483,7 +753,7 @@ function DisdettaCard({
                     </p>
                     <button
                       onClick={() => {
-                        onToggleExpand() // This will trigger fetchHistory again via toggleExpand
+                        onToggleExpand()
                       }}
                       className="text-sm text-primary-600 hover:text-primary-800 font-medium"
                     >

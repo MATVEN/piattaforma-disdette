@@ -59,12 +59,19 @@ export function StatusTimeline({
       if (!completed && !current) {
         return '#e5e7eb' // gray-200 for future steps
       }
-      // Completed or current: use currentStatus color
-      const currentConfig = getStatusConfig(currentStatus)
+      
+      const statusForColor =
+        currentStatus === DISDETTA_STATUS.FOLLOWUP_1 || currentStatus === DISDETTA_STATUS.FOLLOWUP_2
+          ? DISDETTA_STATUS.SENT
+          : currentStatus
+
+      // Completed or current: use status color
+      const currentConfig = getStatusConfig(statusForColor)
       switch (currentConfig.color) {
         case 'blue': return '#3b82f6'
         case 'yellow': return '#eab308'
         case 'green': return '#22c55e'
+        case 'orange': return '#f97316'
         case 'purple': return '#a855f7'
         case 'red': return '#ef4444'
         default: return '#6b7280'

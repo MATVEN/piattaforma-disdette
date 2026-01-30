@@ -58,20 +58,20 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
           isFirstVisit: parsed.isFirstVisit ?? true,
           completedSteps: parsed.completedSteps ?? [],
           dismissedTooltips: parsed.dismissedTooltips ?? [],
-          isLoading: false, // ← ADD THIS: Done loading
+          isLoading: false, 
         }))
       } else {
         // No stored data, keep defaults but stop loading
         setState(prev => ({
           ...prev,
-          isLoading: false, // ← ADD THIS
+          isLoading: false, 
         }))
       }
     } catch (error) {
       console.error('Failed to load onboarding state:', error)
       setState(prev => ({
         ...prev,
-        isLoading: false, // ← ADD THIS: Stop loading even on error
+        isLoading: false, 
       }))
     }
   }, [])

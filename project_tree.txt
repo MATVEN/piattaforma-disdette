@@ -28,6 +28,8 @@ postcss.config.mjs
 public
 public\file.svg
 public\globe.svg
+public\images
+public\images\disdeasy-logo.png
 public\next.svg
 public\vercel.svg
 public\window.svg
@@ -52,6 +54,8 @@ src\app\api\delete-account
 src\app\api\delete-account\route.ts
 src\app\api\delete-disdetta
 src\app\api\delete-disdetta\route.ts
+src\app\api\download-documentation
+src\app\api\download-documentation\route.ts
 src\app\api\export-data
 src\app\api\export-data\route.ts
 src\app\api\get-extracted-data
@@ -60,6 +64,8 @@ src\app\api\get-my-disdette
 src\app\api\get-my-disdette\route.ts
 src\app\api\get-status-history
 src\app\api\get-status-history\route.ts
+src\app\api\send-followup
+src\app\api\send-followup\route.ts
 src\app\api\send-notification-email
 src\app\api\send-notification-email\route.ts
 src\app\api\send-pec
@@ -71,6 +77,7 @@ src\app\api\stripe\verify-session
 src\app\api\stripe\verify-session\route.ts
 src\app\api\stripe\webhook
 src\app\api\stripe\webhook\route.ts
+src\app\api\update-sent-note
 src\app\contact
 src\app\contact\page.tsx
 src\app\dashboard
