@@ -166,6 +166,14 @@ export function useReviewForm(): UseReviewFormReturn {
         }
 
         // ===== CHECK 4: User non autorizzato =====
+        // ✅ Wait for user to load (with max retries)
+        if (!user) {
+          setCurrentStatus('LOADING')
+          setLoading(true)
+          return
+        }
+
+        // Reset retry counter
         if (disdettaData.user_id !== user?.id) {
           logger.warn('Unauthorized access attempt', {
             id,
@@ -245,7 +253,30 @@ export function useReviewForm(): UseReviewFormReturn {
             formData.richiedente_ruolo = disdettaData.richiedente_ruolo || 'legale_rappresentante'
           }
 
-          reset(formData)
+          // Check if there's a backup in sessionStorage
+          let finalFormData = formData
+          try {
+            const backupStr = sessionStorage.getItem('review-form-backup')
+
+            if (backupStr) {
+              const backup = JSON.parse(backupStr)
+              const ageMinutes = (Date.now() - backup.timestamp) / 1000 / 60
+              // Use backup if less than 30 minutes old
+              if (ageMinutes < 30) {
+                // Merge: DB data takes priority, backup fills gaps
+                finalFormData = {
+                  ...backup.formData,
+                  ...formData // DB overrides backup
+                }
+              }
+              // Clear backup after use
+              sessionStorage.removeItem('review-form-backup')
+            }
+          } catch (err) {
+            console.warn('Failed to restore backup:', err)
+          }
+
+          reset(finalFormData)
           setLoading(false)
           return
         }

@@ -142,8 +142,16 @@ export default function ReviewForm() {
   }, [data, setValue])
 
   /* ---------- Form Submission ---------- */
-
   const handleFormSubmit = async (data: ReviewFormData) => {
+    // ✅ Save form data to sessionStorage before payment
+    try {
+      sessionStorage.setItem('review-form-backup', JSON.stringify({
+        formData: data,
+        timestamp: Date.now()
+      }))
+    } catch (err) {
+      console.warn('Failed to save form backup:', err)
+    }
     const result = await onSubmit(data, false)
 
     if (result?.isDuplicate && result.duplicateData) {
@@ -198,7 +206,6 @@ export default function ReviewForm() {
   }
 
  /* ---------- PEC Sending ---------- */
-
   const handleSendPEC = async () => {
     if (!confirmedDisdettaId) {
       toast.error('ID disdetta non trovato')
@@ -211,7 +218,6 @@ export default function ReviewForm() {
   }
 
  /* ---------- Payment Success Detection ---------- */
-
   useEffect(() => {
     // 🔒 Cleanup flag to prevent setState after unmount
     let isMounted = true
@@ -256,9 +262,6 @@ export default function ReviewForm() {
                 duration: 4000,
                 id: 'payment-confirmed',
               })
-
-              // ✅ 3. Refetch server data to ensure DB is up-to-date
-              router.refresh()
             } else {
               toast(
                 '⏳ Pagamento in verifica. Controlla la tua email per la conferma.',
@@ -307,9 +310,6 @@ export default function ReviewForm() {
           id: 'payment-confirmed',
         })
 
-        // Refetch data
-        router.refresh()
-
         const url = new URL(window.location.href)
         url.searchParams.delete('payment_success')
         window.history.replaceState({}, '', url.pathname + url.search)
@@ -333,8 +333,22 @@ export default function ReviewForm() {
   }, [searchParams, data, confirmedDisdettaId, router])
 
   /* ---------- Loading States ---------- */
-
   if (currentStatus === 'LOADING') {
+
+    // Try to restore backup immediately for better UX
+    const backupStr = typeof window !== 'undefined' ? sessionStorage.getItem('review-form-backup') : null
+
+    if (backupStr) {
+      try {
+        const backup = JSON.parse(backupStr)
+        Object.entries(backup.formData).forEach(([key, value]) => {
+          setValue(key as any, value, { shouldValidate: false })
+        })
+      } catch (err) {
+        console.warn('Failed to restore backup during loading:', err)
+      }
+    }
+    
     return <StatusDisplay message="Caricamento dati..." isError={false} />
   }
 
