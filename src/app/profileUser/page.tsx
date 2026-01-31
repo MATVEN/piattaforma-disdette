@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter } from 'next/navigation'
@@ -31,6 +31,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [idDocumentFile, setIdDocumentFile] = useState<File | null>(null)
   const [currentDocPath, setCurrentDocPath] = useState<string | null>(null)
+  const hasLoadedProfileRef = useRef(false)
 
   // Privacy & Data state
   const [exportLoading, setExportLoading] = useState(false)
@@ -58,9 +59,9 @@ export default function ProfilePage() {
     }
   }, [user, isAuthLoading, router])
 
-  // Load Profile Data
+  // Load Profile Data (ONCE)
   useEffect(() => {
-    if (user) {
+    if (user && !hasLoadedProfileRef.current) {
       async function fetchProfile() {
         setLoading(true)
         try {
@@ -68,7 +69,6 @@ export default function ProfilePage() {
             .from('profiles')
             .select('nome, cognome, codice_fiscale, indirizzo_residenza, documento_identita_path')
             .maybeSingle()
-
           if (error) throw error
           if (data) {
             reset({
@@ -79,6 +79,7 @@ export default function ProfilePage() {
             })
             setCurrentDocPath(data.documento_identita_path)
           }
+          hasLoadedProfileRef.current = true // ✅ Mark as loaded
         } catch (error: unknown) {
           if (error instanceof Error) {
             toast.error(error.message)
@@ -91,7 +92,8 @@ export default function ProfilePage() {
       }
       fetchProfile()
     }
-  }, [user, reset])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]) // ✅ Solo user, reset viene chiamato una volta sola
 
   // File Handler with Validation
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -204,7 +206,7 @@ export default function ProfilePage() {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `DisdEasy-dati-${new Date().toISOString().split('T')[0]}.json`
+      a.download = `DisdEasy-dati-${new Date().toISOString().split('T')[0]}.zip`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
@@ -247,7 +249,14 @@ export default function ProfilePage() {
           <div className="w-24 h-24 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
             <span className="text-3xl font-bold text-white">{getInitials()}</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl sm:text-5xl font-bold mb-4"
+            style={{
+              backgroundImage: 'linear-gradient(135deg, #00C4B4 0%, #0D417D 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}
+          >
             Il mio Profilo
           </h1>
           <p className="text-gray-600">
@@ -450,7 +459,7 @@ export default function ProfilePage() {
                   Scarica i miei dati
                 </h3>
                 <p className="text-sm text-gray-600">
-                  Scarica un file JSON con tutti i tuoi dati personali, disdette e attività
+                  Scarica un archivio ZIP contenente i tuoi dati in PDF e le tue disdette in formato Excel
                 </p>
               </div>
               <button
