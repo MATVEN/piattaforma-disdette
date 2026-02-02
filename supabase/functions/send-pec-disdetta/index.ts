@@ -654,13 +654,15 @@ async function creaPdfDelega(profile: ProfileData): Promise<Uint8Array> {
   const testo = `
     DELEGA PER INVIO DISDETTA
 
-    Io sottoscritto ${profile.nome || ''} ${profile.cognome || ''},
-    residente in ${profile.indirizzo_residenza || ''},
+    Io sottoscritto ${profile.nome || ''} ${profile.cognome || ''}, residente in ${profile.indirizzo_residenza || ''}.
 
-    DELEGO formalmente la piattaforma DisdEasy
-    a inviare la richiesta di disdetta per mio conto.
+    Dichiaro sotto la mia esclusiva responsabilità di essere il titolare del contratto/utenza oggetto della presente richiesta, 
+    e autorizzo DisdEasy ad inviare, in mio nome e per mio conto, la comunicazione di disdetta/diffida/ricorso al gestore indicato. 
+    Dichiaro che i dati forniti sono veritieri e mi assumo ogni responsabilità civile e penale in caso di false dichiarazioni.
 
     Data: ${new Date().toLocaleDateString('it-IT')}
+
+    
   `.trim()
 
   page.drawText(testo, {
