@@ -702,7 +702,7 @@
     - B2C template: standard cancellation letter for private users.
     - B2B template: company cancellation letter with support for multiple attachments.
     - Automatic data population from database records.
-    - Generated PDFs stored in `lettere-disdetta` bucket and automatically attached to PEC workflow.
+    - Generated PDFs stored in `documenti-disdetta` bucket and automatically attached to PEC workflow.
 
   - **Duplicate Detection & Error Handling:**
     - Restores duplicate detection logic lost during refactoring.
@@ -1230,7 +1230,7 @@
   - **PDF Generation & Merge Pipeline:**
     - Introduced `mergePDFs` helper in `send-pec-disdetta` Edge Function.
     - Automatic merge of **Delega + Documento Identità** into single PDF.
-    - Generated `delega_con_documento.pdf` stored in `lettere-disdetta` bucket.
+    - Generated `delega_con_documento.pdf` stored in `documenti-disdetta` bucket.
     - Merged PDF included in PEC attachments array.
     - Fixed initialization-order bug (`Cannot access before initialization`).
 

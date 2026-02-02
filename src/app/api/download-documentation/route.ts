@@ -74,12 +74,12 @@ export async function GET(request: NextRequest) {
         // Collect all file paths with their correct buckets
         const filePaths: FileToDownload[] = []
 
-        // Lettera disdetta - bucket: lettere-disdetta
+        // Lettera disdetta - bucket: documenti-disdetta
         if (disdetta.pdf_path) {
             filePaths.push({ 
             path: disdetta.pdf_path, 
             name: 'lettera_disdetta.pdf',
-            bucket: 'lettere-disdetta'
+            bucket: 'documenti-disdetta'
             })
         } else if (disdetta.file_path) {
             filePaths.push({ 
@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
             filePaths.push({
                 path: disdetta.delega_con_documento_path,
                 name: 'delega_con_documento_identita.pdf',
-                bucket: 'lettere-disdetta'
+                bucket: 'documenti-disdetta'
             })
         }
 

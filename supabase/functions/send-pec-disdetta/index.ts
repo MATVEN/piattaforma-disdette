@@ -8,7 +8,7 @@ import type { PDFFont } from 'https://esm.sh/pdf-lib@1.17.1'
 // ==========================
 // 1) COSTANTI & CONFIG
 // ==========================
-const PDF_BUCKET = Deno.env.get('PDF_BUCKET') ?? 'lettere-disdetta'
+const PDF_BUCKET = Deno.env.get('PDF_BUCKET') ?? 'documenti-disdetta'
 const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') ?? 'http://localhost:3000')
   .split(',')
   .map(s => s.trim())
