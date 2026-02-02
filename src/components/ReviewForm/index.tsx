@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Loader2, XCircle, CheckCircle, CreditCard } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { PaymentButton } from '@/components/PaymentButton'
+import { EmbeddedPaymentForm } from '@/components/EmbeddedPaymentForm'
 import { TipoIntestatarioSelector } from './components/TipoIntestatarioSelector'
 import { SupplierFields } from './components/SupplierFields'
 import { B2CFields } from './components/B2CFields'
@@ -112,7 +112,7 @@ export default function ReviewForm() {
   type FlowState = 'editing' | 'pending_payment' | 'paid' | 'sending' | 'sent'
   const [flowState, setFlowState] = useState<FlowState>('editing')
   const [confirmedDisdettaId, setConfirmedDisdettaId] = useState<number | null>(null)
-  // Payment verification in progress (for UX feedback)
+  // Payment verification in progress (for UX feedback when returning from 3DS redirect)
   const [verifyingPayment, setVerifyingPayment] = useState(false)
   const {
     register,
@@ -315,7 +315,7 @@ export default function ReviewForm() {
         window.history.replaceState({}, '', url.pathname + url.search)
       }
     } else if (paymentCancelled === 'true') {
-      toast('ℹ️ Pagamento annullato. Puoi riprovare quando vuoi.', {
+      toast('Pagamento annullato. Puoi riprovare quando vuoi.', {
         duration: 4000,
         id: 'payment-cancelled',
       })
@@ -324,6 +324,72 @@ export default function ReviewForm() {
       url.searchParams.delete('payment_cancelled')
       url.searchParams.delete('session_id')
       window.history.replaceState({}, '', url.pathname + url.search)
+    }
+
+    // Handle return from embedded payment 3DS redirect
+    const paymentIntentSuccess = searchParams.get('payment_intent_success')
+    const redirectStatus = searchParams.get('redirect_status')
+
+    if (paymentIntentSuccess === 'true' && redirectStatus === 'succeeded') {
+      const piId = searchParams.get('payment_intent')
+
+      if (piId && targetId) {
+        setVerifyingPayment(true)
+
+        ;(async () => {
+          try {
+            const res = await fetch('/api/stripe/create-payment-intent', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                disdettaId: targetId,
+                paymentIntentId: piId,
+              }),
+            })
+
+            const payload = await res.json().catch(() => ({}))
+
+            if (!isMounted) return
+
+            if (res.ok && payload.paid) {
+              setConfirmedDisdettaId(targetId)
+              setFlowState('paid')
+              toast.success('Pagamento completato! Ora puoi inviare la PEC.', {
+                duration: 4000,
+                id: 'payment-confirmed',
+              })
+            } else {
+              // Payment might still be processing
+              setConfirmedDisdettaId(targetId)
+              setFlowState('pending_payment')
+              toast('Pagamento in verifica. Riprova tra qualche secondo.', {
+                duration: 6000,
+                id: 'payment-pending',
+              })
+            }
+          } catch (err) {
+            console.error('Errore verifica payment intent:', err)
+            if (isMounted) {
+              toast('Errore nella verifica. Riprova.', {
+                duration: 4000,
+                id: 'payment-verification-error',
+              })
+            }
+          } finally {
+            if (isMounted) {
+              setVerifyingPayment(false)
+
+              // Clean payment intent params, preserve 'id'
+              const url = new URL(window.location.href)
+              url.searchParams.delete('payment_intent_success')
+              url.searchParams.delete('payment_intent')
+              url.searchParams.delete('payment_intent_client_secret')
+              url.searchParams.delete('redirect_status')
+              window.history.replaceState({}, '', url.pathname + url.search)
+            }
+          }
+        })()
+      }
     }
 
     // ✅ 2. Cleanup function to prevent memory leaks
@@ -454,29 +520,33 @@ export default function ReviewForm() {
         />
       )}
 
-      {/* State: PENDING_PAYMENT - Payment UI */}
+      {/* State: PENDING_PAYMENT - Embedded Payment Form */}
       {flowState === 'pending_payment' && confirmedDisdettaId && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl border-2 border-amber-300 bg-amber-50 p-6 space-y-4"
+          className="space-y-4"
         >
-          <div className="flex items-start gap-3">
-            <CheckCircle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h3 className="font-semibold text-amber-900 text-lg">
-                Dati confermati!
-              </h3>
-              <p className="text-sm text-amber-700 mt-1">
-                Procedi al pagamento per completare l'invio della tua disdetta.
-              </p>
+          <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-6">
+            <div className="flex items-start gap-3">
+              <CheckCircle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-amber-900 text-lg">
+                  Dati confermati!
+                </h3>
+                <p className="text-sm text-amber-700 mt-1">
+                  Procedi al pagamento per completare l&apos;invio della tua disdetta.
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* ✅ 4. Pass disabled prop explicitly for idempotency */}
-          <PaymentButton
+          <EmbeddedPaymentForm
             disdettaId={confirmedDisdettaId}
-            disabled={verifyingPayment}
+            supplierName={data?.supplier_name ?? undefined}
+            onSuccess={() => {
+              setFlowState('paid')
+            }}
           />
         </motion.div>
       )}

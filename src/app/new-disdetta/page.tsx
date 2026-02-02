@@ -1,7 +1,7 @@
 // src/app/new-disdetta/page.tsx
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -27,7 +27,7 @@ type ServiceType = {
   operator_id: number
 }
 
-export default function NewDisdettaPage() {
+function NewDisdettaContent() {
     const { user, isAuthLoading } = useAuth()
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -248,5 +248,14 @@ export default function NewDisdettaPage() {
             </div>
         </div>
         </>
+    )
+}
+
+
+export default function NewDisdettaPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <NewDisdettaContent />
+        </Suspense>
     )
 }

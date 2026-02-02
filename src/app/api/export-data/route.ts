@@ -4,6 +4,8 @@ import JSZip from 'jszip'
 import ExcelJS from 'exceljs'
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const supabase = await createServerClient()

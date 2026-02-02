@@ -21,6 +21,8 @@ import { StatusHistoryRepository } from '@/repositories/statusHistory.repository
 import { DisdettaRepository } from '@/repositories/disdetta.repository'
 import { handleApiError } from '@/lib/errors/AppError'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     // 1. Setup client e autenticazione

@@ -2,7 +2,7 @@
 // Manages form setup, data fetching, and status polling for ReviewForm
 // Handles OCR status states: LOADING → PROCESSING → PENDING_REVIEW → SUCCESS
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useForm, UseFormReturn } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -18,6 +18,7 @@ interface ExtractedData {
   id: number
   file_path: string
   status: DisdettaStatus
+  supplier_name: string | null
   supplier_tax_id: string | null
   receiver_tax_id: string | null
   supplier_contract_number: string | null
@@ -87,39 +88,87 @@ export function useReviewForm(): UseReviewFormReturn {
   })
 
   const { reset } = form
+  const hasFetchedRef = useRef(false)
+
+  // ✅ Autosave form before navigation
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      try {
+        const currentData = form.getValues()
+        sessionStorage.setItem('review-form-backup', JSON.stringify({
+          formData: currentData,
+          timestamp: Date.now()
+        }))
+      } catch (err) {
+        console.warn('Failed to autosave:', err)
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [])
 
   // Fetch user profile for auto-fill
   useEffect(() => {
-  async function fetchProfile() {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      if (!user) {
-        return
+    async function fetchProfile() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        
+        if (!user) {
+          return
+        }
+        
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('nome, cognome, codice_fiscale, indirizzo_residenza, documento_identita_path')
+          .eq('user_id', user.id)
+          .single()
+        
+        if (error) {
+          return
+        }
+        
+        setProfile(data)
+      } catch (error) {
+        console.error(error)
       }
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('nome, cognome, codice_fiscale, indirizzo_residenza, documento_identita_path')
-        .eq('user_id', user.id)
-        .single()
-      
-      if (error) {
-        return
-      }
-      
-      setProfile(data)
-    } catch (error) {
-      console.error(error)
     }
-  }
-  
-  fetchProfile()
-}, [])
+    
+    fetchProfile()
+  }, [])
 
-  // Data fetching + polling
+  // Auto-fill empty personal fields when profile loads
   useEffect(() => {
+    if (!profile || !data) return
+    
+    const currentValues = form.getValues()
+    
+    // Only update if fields are empty
+    if (currentValues.tipo_intestatario === 'privato') {
+      if (!currentValues.nome && profile.nome) {
+        form.setValue('nome', profile.nome)
+      }
+      if (!currentValues.cognome && profile.cognome) {
+        form.setValue('cognome', profile.cognome)
+      }
+      if (!currentValues.codice_fiscale && profile.codice_fiscale) {
+        form.setValue('codice_fiscale', profile.codice_fiscale)
+      }
+      if (!currentValues.indirizzo_residenza && profile.indirizzo_residenza) {
+        form.setValue('indirizzo_residenza', profile.indirizzo_residenza)
+      }
+    }
+  }, [profile, data, form])
+
+ // Data fetching + polling
+  useEffect(() => {
+
+    // Skip refetch if already loaded
+    if (hasFetchedRef.current && currentStatus === 'SUCCESS') {
+      return
+    }
+
     const fetchAndPollData = async () => {
+
       // ===== CHECK 1: No ID in URL =====
       if (!id || id === 0) {
         toast.error('📋 Nessun documento da revisionare. Carica prima una bolletta.', {
@@ -270,7 +319,7 @@ export function useReviewForm(): UseReviewFormReturn {
                 }
               }
               // Clear backup after use
-              sessionStorage.removeItem('review-form-backup')
+              // sessionStorage.removeItem('review-form-backup')
             }
           } catch (err) {
             console.warn('Failed to restore backup:', err)
@@ -284,6 +333,8 @@ export function useReviewForm(): UseReviewFormReturn {
         // Unknown status - treat as success
         setCurrentStatus('SUCCESS')
         setLoading(false)
+        hasFetchedRef.current = true
+        return
 
       } catch (error) {
         toast.error('⚠️ Errore di connessione. Riprova o contatta il supporto.', {
@@ -297,7 +348,7 @@ export function useReviewForm(): UseReviewFormReturn {
     }
 
     fetchAndPollData()
-  }, [id, user, router, reset, profile])
+  }, [id, user])
 
   return {
     form,

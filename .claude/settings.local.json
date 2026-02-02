@@ -14,7 +14,9 @@
       "Bash(npm run dev:*)",
       "Bash(taskkill:*)",
       "Bash(mkdir:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(findstr:*)",
+      "Bash(npm ls:*)"
     ],
     "deny": [],
     "ask": []

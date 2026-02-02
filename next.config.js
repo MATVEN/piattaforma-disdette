@@ -25,6 +25,12 @@ const securityHeaders = [
 // 2. Configurazione di Next.js
 const nextConfig = {
   // Aggiungi qui altre tue configurazioni se ne hai (es. 'reactStrictMode: true')
+  reactStrictMode: false,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2mb'
+    }
+  },
   
   // 3. Applicazione degli headers
   async headers() {
