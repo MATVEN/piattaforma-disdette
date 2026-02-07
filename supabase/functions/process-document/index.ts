@@ -3,10 +3,8 @@
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts"
 import { encodeBase64 } from "https://deno.land/std@0.224.0/encoding/base64.ts"
-import { create, getNumericDate } from "https://deno.land/x/djwt@v3.0.1/mod.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import { z } from "https://esm.sh/zod@3.23.8"
-import { extractContractNumber } from "./extractContractNumber.ts"
 
 // -----------------------------
 // 0) COSTANTI & CONFIG
@@ -16,7 +14,6 @@ const ALLOWED_ORIGINS = (Deno.env.get("ALLOWED_ORIGINS") ?? "http://localhost:30
   .split(",")
   .map((s) => s.trim())
 
-const GOOGLE_SCOPE = "https://www.googleapis.com/auth/cloud-platform"
 const BUCKET_NAME = 'documenti_utente'
 const DISDETTA_STATUS = {
   PROCESSING: 'PROCESSING',
@@ -32,16 +29,6 @@ const DISDETTA_STATUS = {
 const PayloadSchema = z.object({
   id: z.number().int().positive()
 })
-
-interface GoogleServiceAccount {
-  type: string; project_id: string; private_key_id: string; private_key: string;
-  client_email: string; client_id: string; auth_uri: string; token_uri: string;
-  auth_provider_x509_cert_url: string; client_x509_cert_url: string; universe_domain: string;
-}
-interface AiEntity {
-  type: string | null | undefined; mentionText: string | null | undefined;
-  confidence: number | null | undefined;
-}
 
 
 // -----------
@@ -116,39 +103,7 @@ async function triggerEmailNotification(disdettaId: number, type: 'ready' | 'sen
 }
 
 // -----------------------------
-// 3) GOOGLE AUTH HELPERS
-// -----------------------------
-function pemToBinary(pem: string): ArrayBuffer {
-  const base64 = pem.replace("-----BEGIN PRIVATE KEY-----", "")
-    .replace("-----END PRIVATE KEY-----", "")
-    .replace(/\s/g, "")
-  const binaryDer = atob(base64)
-  const buffer = new ArrayBuffer(binaryDer.length)
-  const bufView = new Uint8Array(buffer)
-  for (let i = 0; i < binaryDer.length; i++) bufView[i] = binaryDer.charCodeAt(i)
-  return buffer
-}
-async function getGoogleAccessToken(sa: GoogleServiceAccount): Promise<string> {
-  const key = await crypto.subtle.importKey(
-    "pkcs8", pemToBinary(sa.private_key), { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, true, ["sign"],
-  );
-  const jwt = await create(
-    { alg: "RS256", typ: "JWT", kid: sa.private_key_id },
-    { iss: sa.client_email, sub: sa.client_email, aud: sa.token_uri, scope: GOOGLE_SCOPE, iat: getNumericDate(0), exp: getNumericDate(3600), },
-    key,
-  );
-  const resp = await fetchWithTimeout(sa.token_uri, {
-    method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer", assertion: jwt, }),
-  }, 12_000);
-  if (!resp.ok) { const txt = await resp.text(); throw new Error(`Auth Google fallita: ${resp.status} ${txt}`); }
-  const data = await resp.json();
-  if (!data?.access_token) throw new Error("Access token assente nella risposta Google");
-  return data.access_token as string;
-}
-
-// -----------------------------
-// 4) MAIN SERVER (C14)
+// 3) MAIN SERVER
 // -----------------------------
 serve(async (req: Request) => {
   const origin = resolveCorsOrigin(req)
@@ -179,9 +134,6 @@ serve(async (req: Request) => {
     // 2) Env strict
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!
     const supabaseServiceKey = Deno.env.get("SERVICE_ROLE_KEY")!
-    const serviceAccountJson = Deno.env.get("GOOGLE_SERVICE_ACCOUNT")!
-    const processorName = Deno.env.get("GCP_PROCESSOR_NAME")!
-    const serviceAccount = JSON.parse(serviceAccountJson) as GoogleServiceAccount;
 
     // 3) Supabase admin client
     const sb = createClient(supabaseUrl, supabaseServiceKey);
@@ -220,54 +172,109 @@ serve(async (req: Request) => {
       const fileBytes = new Uint8Array(await fileBlob.arrayBuffer());
       const fileBase64 = encodeBase64(fileBytes);
 
-      // 8) Google Access Token
-      const accessToken = await getGoogleAccessToken(serviceAccount);
+      // 8) Claude Vision API call
+      const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY")
+      if (!anthropicKey) throw new Error("ANTHROPIC_API_KEY non configurata")
 
-      // 9) Document AI call
-      const location = processorName.split("/")[3];
-      if (!location) throw new Error("Location processor non rilevata da GCP_PROCESSOR_NAME");
-      const restUrl = `https://${location}-documentai.googleapis.com/v1/${processorName}:process`;
-      
-      const aiResp = await fetchWithTimeout(restUrl, {
+      console.log(`[Claude] Processing document with Claude Vision API...`)
+
+      const claudeResp = await fetchWithTimeout("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
+          "x-api-key": anthropicKey,
+          "anthropic-version": "2023-06-01",
+          "content-type": "application/json"
         },
         body: JSON.stringify({
-          rawDocument: { content: fileBase64, mimeType: mimeType, },
-        }),
-      }, 25_000);
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1024,
+          messages: [{
+            role: "user",
+            content: [
+              {
+                type: mimeType === "application/pdf" ? "document" : "image",
+                source: {
+                  type: "base64",
+                  media_type: mimeType,
+                  data: fileBase64
+                }
+              },
+              {
+                type: "text",
+                text: 
+                `Analizza questa bolletta italiana ed estrai SOLO i seguenti dati in formato JSON:
+                {
+                  "supplier_tax_id": "partita IVA del fornitore (11 cifre, es: 12345678901)",
+                  "receiver_tax_id": "codice fiscale intestatario contratto (16 caratteri alfanumerici)",
+                  "supplier_contract_number": "numero cliente o numero contratto",
+                  "supplier_iban": "IBAN se presente (formato IT60...)"
+                }
 
-      if (!aiResp.ok) {
-         const txt = await aiResp.text()
-         throw new Error(`Errore Document AI: ${aiResp.status} ${txt}`)
+                REGOLE IMPORTANTI:
+                - supplier_tax_id: SOLO la P.IVA del fornitore in alto (NON clienti o altri)
+                - receiver_tax_id: il codice fiscale dell'intestatario (16 caratteri)
+                - supplier_contract_number: numero cliente o contratto (NON POD/PDR che sono codici punto fornitura)
+                - Se un campo non è trovato, usa null
+                - Ignora completamente: numeri POD, PDR, codici punto fornitura, testi marketing
+                - Restituisci SOLO il JSON valido, nessun testo aggiuntivo
+
+                Esempio output:
+                {
+                  "supplier_tax_id": "12345678901",
+                  "receiver_tax_id": "RSSMRA85M01H501U",
+                  "supplier_contract_number": "1234567890",
+                  "supplier_iban": "IT60X0542811101000000123456"
+                }`
+              }
+            ]
+          }]
+        })
+      }, 30_000)
+
+      if (!claudeResp.ok) {
+        const errText = await claudeResp.text()
+        throw new Error(`Claude API error: ${claudeResp.status} ${errText}`)
       }
-      const aiJson = await aiResp.json();
-      const { document } = aiJson;
-      if (!document || !document.text) throw new Error("AI: documento o testo non presenti");
 
-      // 10.1) Estrazione entità
-      const extracted = new Map<string, string>();
-      if (Array.isArray(document.entities)) {
-        (document.entities as AiEntity[]).forEach((e) => {
-          if (e?.type && e?.mentionText) extracted.set(e.type, e.mentionText);
-        });
+      const claudeJson = await claudeResp.json()
+      console.log(`[Claude] Usage: ${claudeJson.usage?.input_tokens} in, ${claudeJson.usage?.output_tokens} out`)
+
+      // 9) Parse Claude response
+      const textContent = claudeJson.content?.find((c: { type: string }) => c.type === "text")?.text
+      if (!textContent) throw new Error("Claude non ha restituito testo")
+
+      // Remove markdown code fences if present
+      const cleanText = textContent
+        .replace(/```json\n?/g, '')
+        .replace(/```\n?/g, '')
+        .trim()
+
+      let parsedData: { supplier_tax_id?: string | null; receiver_tax_id?: string | null; supplier_contract_number?: string | null; supplier_iban?: string | null }
+      try {
+        parsedData = JSON.parse(cleanText)
+      } catch (_parseErr) {
+        console.error("[Claude] JSON parse failed, raw text:", cleanText)
+        throw new Error("Claude response non è JSON valido")
       }
 
-      // 10.2) Estrazione contract number
-      const supplierTaxId = extracted.get("supplier_tax_id") ?? undefined
-      const contractResult = extractContractNumber(aiJson, supplierTaxId)
+      const extracted = {
+        supplier_tax_id: parsedData.supplier_tax_id || null,
+        receiver_tax_id: parsedData.receiver_tax_id || null,
+        supplier_contract_number: parsedData.supplier_contract_number || null,
+        supplier_iban: parsedData.supplier_iban || null
+      }
 
-      // 11) UPDATE
+      console.log(`[Claude] Extracted data:`, extracted)
+
+      // 10) UPDATE
       const successRow = {
         status: DISDETTA_STATUS.PENDING_REVIEW,
-        supplier_tax_id: extracted.get("supplier_tax_id") ?? null,
-        receiver_tax_id: extracted.get("receiver_tax_id") ?? null,
-        supplier_iban: extracted.get("supplier_iban") ?? null,
-        supplier_contract_number: contractResult.contractNumber ?? null,
-        raw_json_response: aiJson,
-        error_message: null 
+        supplier_tax_id: extracted.supplier_tax_id,
+        receiver_tax_id: extracted.receiver_tax_id,
+        supplier_iban: extracted.supplier_iban,
+        supplier_contract_number: extracted.supplier_contract_number,
+        raw_json_response: claudeJson,
+        error_message: null
       };
 
       const { data: updatedData, error: updateSuccessError } = await sb
@@ -302,7 +309,7 @@ serve(async (req: Request) => {
       }
     }
 
-    // 12) Risposta (Successo)
+    // 11) Risposta (Successo)
     return new Response(JSON.stringify({
       success: true,
       message: `Processo C14 per ID ${recordId} completato.`

@@ -16,7 +16,9 @@
       "Bash(mkdir:*)",
       "Bash(cat:*)",
       "Bash(findstr:*)",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(dir \"%USERPROFILE%\\\\.deno\\\\bin\\\\deno.exe\")",
+      "Bash(cmd /c \"where deno 2>nul || dir %USERPROFILE%\\\\.deno\\\\bin\\\\deno.exe 2>nul\")"
     ],
     "deny": [],
     "ask": []

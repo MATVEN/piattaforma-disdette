@@ -9,6 +9,18 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
+
+    // Feature flag: disable emails in development
+    const isDev = process.env.NODE_ENV === 'development' || !process.env.VERCEL_URL
+    if (isDev) {
+      console.log('[EMAIL] ⏭️  Skipped (development mode)')
+      return NextResponse.json({
+        success: true,
+        message: 'Email notifications disabled in development',
+        dev_mode: true
+      })
+    }
+
     const supabase = await createServerClient()
     const supabaseAdmin = createServiceRoleClient()
 

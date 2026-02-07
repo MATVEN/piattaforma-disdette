@@ -1252,3 +1252,332 @@
     - `src/app/upload/[serviceId]/page.tsx`
     - `src/middleware.ts`
     - `supabase/functions/send-pec-disdetta/index.ts`
+
+- **UI Rebrand – Logo Color System Alignment(Post-Review):**
+
+  - **Brand Color System Refactor:**
+    - Complete alignment of the UI with the official logo colors.
+    - Replacement of the legacy **indigo → pink** gradients with **turchese (#00C4B4) → blu navy (#0D417D)**.
+    - New primary palette (turchese/green) and secondary palette (blu navy).
+    - Success, warning, danger and dark palettes intentionally left unchanged.
+
+  - **Tailwind Design System Update:**
+    - Redefined `primary-*` and `secondary-*` color scales (50–950).
+    - Updated `bg-gradient-primary` to the new brand gradient.
+    - Glass-style `boxShadow` refined with turchese accents.
+    - Legacy color mapping:
+      - `indigo-*` → `primary-*`
+      - `pink-*` → `secondary-*`
+      - `purple-*` → `primary-*`
+      - `cyan-*` preserved as accent
+
+  - **Component-Wide UI Alignment (60+ files):**
+    - Navbar updated to `secondary-900` (blu navy background).
+    - Homepage hero gradients aligned to brand colors.
+    - Buttons and inputs standardized (`primary-500` / `primary-200` focus states).
+    - Status badges and timelines updated to the new color system.
+    - Onboarding, auth, dashboard and review form fully re-aligned.
+    - Spinners, badges and progress indicators made visually consistent.
+
+  - **Status Color Normalization:**
+    - `PROCESSING`, `PENDING_REVIEW`: yellow (unchanged).
+    - `PENDING_PAYMENT`: secondary (blu navy).
+    - `CONFIRMED`: primary (turchese).
+    - `SENT`: green (unchanged).
+    - `FAILED`: red (unchanged).
+
+  - **Text & Gradient Rendering Fixes:**
+    - Replaced `bg-gradient-*` utility classes with inline styles for text.
+    - Fixed gradient rendering for headline text ("easy", "Contattaci").
+    - Proper `background-clip: text` usage for cross-browser consistency.
+
+  - **UI Polish & Layout Fixes:**
+    - Homepage stepper alignment adjusted (`pt-2`, corrected vertical offset).
+    - Increased padding on Privacy/Cookie pages to avoid `scale-105` cutoff.
+    - Improved reliability of text and background gradients.
+
+  - **Key Files Involved:**
+    - `tailwind.config.js`, `src/app/globals.css`
+    - Core layout: Navbar, Footer, Homepage, Auth, Dashboard
+    - Onboarding, ReviewForm, Timeline, FileUpload, InfiniteScroll
+    - Cross-cutting updates across 60+ UI components
+
+- **Homepage Direct Navigation & Category Availability (Post-Review UX):**
+
+  - **Overview:**
+    - Streamlined homepage → wizard flow by skipping redundant category selection when initiated from the homepage.
+    - Introduced clear visual handling for unavailable categories to set correct user expectations.
+
+  - **Homepage Direct Navigation:**
+    - Added category query parameter support to the `/new-disdetta` wizard.
+    - Clicking a homepage category card now navigates directly to Step 2 (operator selection).
+    - Category is auto-selected from URL param (`?category=...`) on wizard mount.
+    - Step 1 is skipped only when category param is present; default flow remains unchanged.
+
+  - **Category Availability System:**
+    - Extended category definitions with `available` and `dbName` properties.
+    - Available categories: Telefonia Mobile, Internet, Energia.
+    - Unavailable categories: Pay TV, Assicurazioni, Palestre.
+
+  - **Unavailable Category UX:**
+    - "Presto" badge displayed on unavailable categories (absolute positioned).
+    - Disabled interaction with `cursor-not-allowed`.
+    - Reduced opacity (60%) and gray styling for icon and text.
+    - Neutral background (`bg-gray-100`) to visually differentiate inactive services.
+
+  - **Wizard Flow Logic:**
+    - Uses `useSearchParams` to detect category param.
+    - Case-insensitive mapping between URL param and DB category names.
+    - Auto-selection executed on initial mount only.
+    - Back button behavior preserved across all entry points.
+
+  - **Category Mapping:**
+    - `mobile` → `telefonia` (available)
+    - `internet` → `telefonia` (available)
+    - `tv` → `pay-tv` (unavailable)
+    - `energy` → `energia` (available)
+    - `insurance` → `assicurazioni` (unavailable)
+    - `gym` → `palestre` (unavailable)
+
+  - **User Experience Impact:**
+    - One less click from homepage to operator selection.
+    - Clear feedback on upcoming services without broken flows.
+    - No regression for users entering the wizard directly.
+
+  - **Files Involved:**
+    - `src/app/page.tsx` (homepage category cards)
+    - `src/app/new-disdetta/page.tsx` (wizard auto-selection logic)
+
+- **Two‑Stage Follow‑up System & Documentation Download (Post‑Review):**
+
+  - **Follow‑up Flow (14 + 15 giorni):**
+    - Introduzione di due stati dedicati: `FOLLOWUP_1` e `FOLLOWUP_2`.
+    - Bottone di sollecito con countdown automatico (14 giorni → primo, 15 giorni → secondo).
+    - Limite massimo di 2 follow‑up per disdetta, con auto‑disable del bottone.
+    - Testo dinamico del CTA: “Sollecito (Xg)” → “Sollecito 1/2” → “Sollecito 2/2”.
+    - Stile coerente con lo status badge (min‑width 110px, responsive).
+
+  - **Database & Stati:**
+    - Aggiunte colonne `followup_1_sent_at`, `followup_2_sent_at`, `followup_count`.
+    - Estensione enum `disdetta_status` con `FOLLOWUP_1`, `FOLLOWUP_2`.
+    - Trigger dedicato per note automatiche e prevenzione duplicati in history.
+
+  - **PEC & Edge Function:**
+    - Supporto al tipo richiesta `followup` nella `send-pec-disdetta`.
+    - PDF dedicati per sollecito B2C/B2B.
+    - Upload separato (`_lettera` vs `_sollecito`) e avanzamento stato controllato.
+    - Retry controllato per inserimento note (robustezza).
+
+  - **Timeline & Storico:**
+    - FOLLOWUP esclusi dai 4 step principali della timeline.
+    - Stati FOLLOWUP visualizzati come completati (ereditano colore SENT).
+    - Badge invariato (“PEC inviata”) con colorazione progressiva.
+    - Countdown calcolato dinamicamente dai metadata di history.
+
+  - **Download Documentazione:**
+    - Download ZIP multi‑bucket (lettere, deleghe, documenti identità, documenti utente).
+    - Supporto a `delega_con_documento_path` per B2C.
+    - Accesso via signed URL (bypass RLS), CTA allineata alla timeline.
+
+  - **UX & Affidabilità:**
+    - Refresh automatico dashboard e history post‑follow‑up.
+    - Chiusura automatica timeline espansa dopo invio.
+    - Responsive: icona su mobile, testo completo su desktop.
+    - Toast di conferma/errore e logging difensivo.
+
+  - **File Principali Coinvolti:**
+    - Dashboard, Timeline, Review Form (documenti).
+    - Edge function `send-pec-disdetta`.
+    - Nuove API: invio follow‑up e download documentazione.
+    - Enum di stato e tipi database.
+
+- **Context Stability & Re-render Fix:**
+
+  - **Problem Identified:**
+    - Context providers recreated value objects on every render.
+    - Caused excessive re-renders (20+ per second) in `AuthContext`.
+    - Form data was reset when switching browser tabs.
+    - Issue affected all pages, both in development and production.
+
+  - **Solution Implemented:**
+    - Added `useMemo` to all context value objects.
+    - Wrapped context functions with `useCallback` for referential stability.
+    - Fixed dependency arrays to prevent stale closures and re-creation loops.
+
+  - **Contexts Updated:**
+    - `AuthContext`: memoized value object, removed blocking loading gate.
+    - `OnboardingContext`: memoized value with explicit state dependencies.
+    - `TooltipContext`: memoized value and callback functions.
+
+  - **Impact:**
+    - Eliminated unnecessary re-renders.
+    - Form state persists correctly across tab switches.
+    - Significantly reduced CPU usage.
+    - Improved UX and application stability.
+
+  - **Files Involved:**
+    - `src/context/AuthContext.tsx`
+    - `src/context/OnboardingContext.tsx`
+    - `src/context/TooltipContext.tsx`
+
+- **Profile Stability & GDPR Data Export (Post-Review):**
+
+  - **Profile Page Stability Fixes:**
+    - Prevent profile data refetch on browser tab switch using `useRef` guard.
+    - Ensure profile data loads only once via `hasLoadedProfileRef`.
+    - Remove `reset()` from `useEffect` dependencies to avoid unintended reloads.
+    - Fix gradient text visibility by replacing `text-transparent` with `text-gray-900`.
+
+  - **GDPR Data Export Upgrade:**
+    - Replace JSON export with a structured ZIP archive.
+    - Generate a PDF containing personal data (profile, account, usage statistics).
+    - Generate an Excel file with the full disdette list (formatted table).
+    - ZIP content:
+      - `dati-personali.pdf`
+      - `disdette.xlsx`
+    - Update UI copy to clarify: “archivio ZIP con PDF e Excel”.
+
+  - **Dependencies Added:**
+    - `jszip` for ZIP generation.
+    - `exceljs` for Excel export.
+    - `pdf-lib` for PDF generation.
+
+  - **Files Involved:**
+    - `src/app/profile/page.tsx`
+    - `src/app/api/export-data/route.ts`
+    - `package.json`
+
+- **Payment Authorization Loop & Form Persistence Fix:**
+
+  - **Payment Flow Stability:**
+    - Removed recursive user-auth checks that caused infinite **LOADING*- states.
+    - Added a maximum retry limit (5 attempts) for authentication recovery.
+    - Eliminated duplicate `router.refresh()` calls that triggered double reloads.
+    - Fixed post-payment **"Session expired"*- errors after successful checkout.
+
+  - **Form Data Persistence (Pre/Post Payment):**
+    - Persist review form data in `sessionStorage` before Stripe redirect.
+    - Restore form backup on return and merge with fresh DB data.
+    - Auto-clear backups after 30 minutes or once successfully restored.
+    - Maintain visible form values during LOADING states for continuity and clarity.
+
+  - **Stripe Webhook Integration:**
+    - Fixed webhook endpoint path to `/api/stripe/webhook`.
+    - Webhook now updates disdetta status to **CONFIRMED*- upon payment success.
+    - Uses Supabase **Admin client*- to safely bypass RLS restrictions.
+
+  - **Testing & Validation:**
+    - Local webhook testing via `stripe listen --forward-to localhost:3000/api/stripe/webhook`.
+
+  - **Files Involved:**
+    - `src/components/ReviewForm/index.tsx`
+    - `src/components/ReviewForm/hooks/useReviewForm.tsx`
+    - `src/components/PaymentButton.tsx`
+    * `src/app/api/stripe/webhook/route.ts`
+
+- **Embedded Stripe Payment Element:  (Post-Review)**
+
+  - **What it does:**
+  Replaces the external Stripe Checkout redirect with an embedded payment form, keeping users on-platform throughout the entire payment process.
+
+  - **Why it matters:**
+  Eliminates context switches and redirects during checkout, reduces drop-off, and ensures form data persistence across the full payment flow.
+
+  - **Payment Flow Changes:**
+    - Replaced legacy `PaymentButton` with an inline `EmbeddedPaymentForm`.
+    - Migrated from **Checkout Sessions** to **Payment Intents**.
+    - Payment handled entirely within the app (no external redirect).
+    - Disdetta form data remains available during payment and confirmation.
+
+  - **Embedded Payment Features:**
+    - Inline card payment via Stripe **PaymentElement**.
+    - Order summary with supplier name and total price.
+    - Real-time status feedback: `idle → processing → succeeded / failed`.
+    - 3DS authentication handled inline (`redirect: 'if_required'`).
+    - Server-side verification before updating disdetta status.
+    - Idempotent Payment Intent creation (reuse if still valid).
+
+  - **Bug Fixes & Reliability:**
+    - Fixed nested `<form>` issue (form-inside-form).
+    - Preserved form state during the entire payment lifecycle.
+    - Disdetta ID consistently preserved in URL.
+    - Inline error handling with user-friendly messages.
+
+  - **Technical Notes:**
+    - New Stripe dependencies: `@stripe/stripe-js`, `@stripe/react-stripe-js`.
+    - Webhook flow unchanged (still processes `checkout.session.completed`).
+    - Secure metadata validation (`userId`, `disdettaId`) on server.
+    - Database updates triggered only after successful `confirmPayment` verification.
+
+  - **Files Involved:**
+    - `src/components/EmbeddedPaymentForm.tsx` *(new)*
+    - `src/components/ReviewForm/index.tsx` *(embedded payment integration)*
+    - `src/app/api/stripe/create-payment-intent/route.ts` *(new)*
+    - `src/components/PaymentButton.tsx` *(removed)*
+
+  - **Testing:**
+    - Standard test card: `4242 4242 4242 4242`
+    - 3DS flow: `4000 0027 6000 3184`
+
+- **Password Reset Flow & Visibility Toggle (Auth):**
+
+  - **Password Reset Flow:**
+    - Added `/reset-password` page to request password reset via email.
+    - Added `/update-password` page to securely set a new password.
+    - Integrated Supabase `resetPasswordForEmail` for email-based recovery.
+    - Session validation on update page with auto-redirect on invalid or expired links.
+
+  - **Password Visibility Toggle:**
+    - Added Eye / EyeOff toggle on login password field.
+    - Added Eye / EyeOff toggles on update-password page (both password fields).
+    - Consistent iconography using Lucide React.
+
+  - **UI & UX Polish:**
+    - Fully aligned with existing design system (gradients, glassmorphism).
+    - Clear success states with CheckCircle feedback.
+    - Clear error states with AlertCircle messaging.
+    - Loading states during email send and password update actions.
+
+  - **Files Involved:**
+    - `src/app/reset-password/page.tsx`
+    - `src/app/update-password/page.tsx`
+    - `src/app/login/page.tsx`
+
+- **Delegation Letter Copy Update (Post‑Review):**
+
+  - **Text & Legal Clarity:**
+    - Revised delegation letter wording to improve clarity and readability.
+    - Strengthened legal language to ensure correctness and formal tone.
+    - No functional or flow changes; content-only update.
+
+  - **Files Involved:**
+    - `supabase/functions/send-pec-disdetta/index.ts`
+
+- **OCR Migration to Claude Vision (Post-Review):**
+
+  - **OCR Provider Replacement:**
+    - Migrated from Google Document AI to **Claude Sonnet 4 (Vision API)*- for document analysis.
+    - Removed Google Cloud authentication and Document AI dependencies.
+    - Introduced Anthropic Vision API with a custom Italian extraction prompt.
+
+  - **Data Extraction & Compatibility:**
+    - Parses structured JSON responses returned by Claude.
+    - Preserves the existing output schema to avoid downstream changes.
+    - Improved handling of Italian-specific fields (Codice Fiscale, Partita IVA, contract numbers).
+
+  - **Accuracy & Context Improvements:**
+    - Better contextual understanding of utility bills layout.
+    - Ignores irrelevant sections (POD/PDR codes, marketing blocks, footers).
+    - Visual context preserved through image-based reasoning.
+
+  - **Architecture Simplification:**
+    - Reduced OCR stack from multiple services to a single API.
+    - Easier configuration and fewer external dependencies.
+
+  - **Configuration & Deployment:**
+    - Requires `ANTHROPIC_API_KEY` in Supabase secrets (production).
+    - Requires `ANTHROPIC_API_KEY` in `.env.local` (development).
+    - Function compiled, deployed, and validated with sample Italian bills.
+
+  - **Files Involved:**
+    - `supabase/functions/process-document/index.ts`

@@ -95,11 +95,6 @@ const faqs = [
   },
   {
     id: 6,
-    question: 'Posso disdire per conto di un familiare?',
-    answer: 'Sì, certamente. Durante la procedura guidata potrai indicare di essere un delegato. Ti verranno richiesti i tuoi dati e quelli dell\'intestatario del contratto per generare la delega corretta.'
-  },
-  {
-    id: 7,
     question: 'Fate anche reclami?',
     answer: 'Al momento il nostro focus principale è sulle disdette contrattuali, ma stiamo lavorando per integrare presto una sezione dedicata alla gestione dei reclami e delle richieste di rimborso per disservizi.'
   }
@@ -474,7 +469,7 @@ export default function HomePage() {
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <div className="px-6 pb-6 text-gray-600 border-t border-white/50">
+                      <div className="px-6 py-6 text-gray-600 border-t border-white/50">
                         {faq.answer}
                       </div>
                     </motion.div>
