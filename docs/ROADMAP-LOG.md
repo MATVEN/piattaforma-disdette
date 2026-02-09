@@ -1,21 +1,21 @@
-- **Authentication (C1):**
+- **Authentication(C1):**
   - Implements /login and /register pages using Supabase Auth.
   - Creates AuthContext (`AuthProvider`) to manage global user state.
   - Adds a dynamic Navbar that shows user state (login/logout).
   - Implements route protection for authenticated pages.
 
-- **User Profile (C1.5 - Prerequisito):**
+- **User Profile(C1.5 - Prerequisito):**
   - Adds `profiles` table (SQL) with RLS for user data (Nome, Cognome, Indirizzo), come da diagramma.
   - Adds a trigger (`handle_new_user`) to auto-create profiles for new users upon registration.
   - Adds `documenti-identita` Storage bucket with RLS.
   - Creates new `/profileUser` page that uses `upsert` to safely create/update user data and upload the ID document.
 
-- **Service Selection (C2):**
-  - Creates the /new-disdetta 3-step wizard page (Category -> Operator -> Service).
+- **Service Selection(C2):**
+  - Creates the /new-disdetta 3-step wizard page(Category -> Operator -> Service).
   - Fetches data from new Supabase tables (`categories`, `operators`, `service_types`).
   - Implements RLS policies (read access for authenticated users).
 
-- **File Upload & Delega (C3):**
+- **File Upload & Delega(C3):**
   - Refactors `/upload/[serviceId]` page into a 2-step wizard (Bolletta -> Delega), come da diagramma.
   - Configures `documenti_utente` bucket (Bolletta) with RLS policies.
   - Adds `documenti-delega` Storage bucket (Delega) with RLS policies.
@@ -24,7 +24,7 @@
   - **Dev Ops:**
     - Installs and links the Supabase CLI in preparation for Edge Function development.
 
-- **AI/OCR Integration (C4):**
+- **AI/OCR Integration(C4):**
   - Implements the core AI processing logic within a new Supabase Edge Function (`process-document`).
   - Calls the Google Document AI (REST API) processor directly.
   - Adds a 7-second strategic delay to resolve the 404 race condition.
@@ -37,22 +37,22 @@
   - **Dev Ops:**
     - Deploys the `process-document` Edge Function to the Supabase project.
 
-- **Data Persistence & Review (C5):**
+- **Data Persistence & Review(C5):**
   - **Backend:**
     - Creates `disdette` table with RLS policies.
     - Adds a new secure API route `/api/get-extracted-data` to fetch results via RLS.
   - **Frontend:**
-    - Modifies the (C3) 2-step wizard to invoke the (C4) function and redirect to the review page on success.
-    - Creates the new `/review` page (C5) with Suspense.
+    - Modifies the(C3) 2-step wizard to invoke the(C4) function and redirect to the review page on success.
+    - Creates the new `/review` page(C5) with Suspense.
     - Creates the `ReviewForm` component to fetch and display the extracted data.
 
   - **Dev Ops:**
     - Redeploys the `process-document` Edge Function with C5 logic (DB write).
     - Configures CORS on the Edge Function to allow `http://localhost:3000`.
 
-- **Data Confirmation (C6):**
+- **Data Confirmation(C6):**
   - **Frontend:**
-    - Converts `ReviewForm` (C5) into a controlled component using `useState`.
+    - Converts `ReviewForm`(C5) into a controlled component using `useState`.
     - Implements `handleFormChange` and `handleSubmit` to manage submission state.
     - Redirects user to `/dashboard` upon successful submission.
   - **Backend:**
@@ -60,18 +60,18 @@
     - The API securely authenticates the user (ANON_KEY) and implements a safe `cookieAdapter`.
     - On success, the API updates the `disdette` record with user-supplied data and sets the `status` to `CONFIRMED`.
 
-- **User Dashboard (C7):**
+- **User Dashboard(C7):**
   - **Backend:**
     - Creates the new API route `GET /api/get-my-disdette`.
     - The API securely fetches all records from `disdette` matching the `user_id`.
   - **Frontend:**
     - Creates the new `/dashboard` page (Server Component) to act as the user's main hub, including a `Suspense` boundary.
-    - Creates the `DashboardList` (Client Component) which calls the new API, handles loading/error states, and renders the list of submissions.
+    - Creates the `DashboardList`(Client Component) which calls the new API, handles loading/error states, and renders the list of submissions.
     - Adds a `StatusBadge` component to show the state (`PENDING_REVIEW` or `CONFIRMED`).
 
-- **PEC Send-Flow (C8):**
+- **PEC Send-Flow(C8):**
   - **Frontend (Review Page):**
-    - Updates `ReviewForm` (C6) `handleSubmit` to a 2-phase process:
+    - Updates `ReviewForm`(C6) `handleSubmit` to a 2-phase process:
       1. Calls `PATCH /api/confirm-data` to confirm data.
       2. Calls `POST /api/send-pec` to trigger the send.
     - Button text changed to "Conferma e Invia PEC".
@@ -86,8 +86,8 @@
     - (Fase 3 - Invio): **(Test Mode)** SMTP/PEC logic is implemented but commented out.
     - Updates the disdetta status to `SENT` upon successful PDF generation.
 
-- **Profile Enforcement (C9):**
-  - **AuthContext (C1.5):**
+- **Profile Enforcement(C9):**
+  - **AuthContext(C1.5):**
     - Updates `AuthContext` to fetch the user's `profiles` data on login.
     - Exposes a new boolean `isProfileComplete` (true only if `nome`, `cognome`, `indirizzo_residenza` are not null).
     - Fixes TypeScript warning (`user is possibly null`).
@@ -108,7 +108,7 @@
     - Fixes issue where inputs were cleared after saving (adds `.select().single()` to the `upsert`).
     - Adds redirect from `/profileUser` back to `/dashboard` after successful save.
 
-- **Implements Google Social Login (C10):**
+- **Implements Google Social Login(C10):**
   - **Backend (Supabase Config):**
     - Configured Google as an OAuth provider in the Supabase dashboard (requires Client ID and Secret from Google Cloud Console).
 
@@ -121,7 +121,7 @@
     - The new trigger checks 'raw_user_meta_data' for the 'full_name' provided by Google.
     - Automatically parses 'full_name' into 'nome' and 'cognome' and pre-populates these fields in the 'profiles' table upon a new social login.
 
-- **Security & Validation Refactor (C11):**
+- **Security & Validation Refactor(C11):**
   - **Middleware:** Replaces the client-side C9 (<ProfileRequired>) with a server-side 'src/middleware.ts' for robust route protection (auth + profile completion).
   - * **Validation (Zod):** Introduces 'zod' and a central 'src/domain/schemas.ts' for type-safe validation (using the user's advanced refactored version).
   - * **Edge Functions:** Hardens 'process-document' (v5) and 'send-pec-disdette' with Zod/type-guard validation, timeout/backoff logic, and PII-safe logging.
@@ -129,7 +129,7 @@
   - * **Bug Fix (SSR):** Fixes 500 crash across all API Routes by removing the 'NextResponse.next()' pattern and standardizing on the correct 'cookieStore' adapter for SSR auth token refreshes.
   - * **Database:** Applies "least-privilege" select (no 'select(*)') to '/api/get-my-disdette'.
 
-- **Security Hardening (C11.5):**
+- **Security Hardening(C11.5):**
   - **Edge Function (`send-pec-disdetta`):**
     - Implements "Dual Client Auth" pattern to verify user ownership (RLS) *before* using the `SERVICE_ROLE_KEY`.
     - Implements "State Transition Check" (`.eq('status', 'CONFIRMED')`) to prevent duplicate disdetta sends.
@@ -139,14 +139,14 @@
     - Updates the UI to support the "Invia Disdetta" button.
     - Updates the `StatusBadge` component to render the new `TEST_SENT` and `FAILED` states.
 
-- **Form Styling (C12):**
+- **Form Styling(C12):**
   - **Install:** Adds `tailwindcss@^3` (removing v4) and the `@tailwindcss/forms` plugin.
   - **Config:** Creates and configures `tailwind.config.js` (ESM version) and `postcss.config.js`.
   - **CSS:** Fixes "white-on-white" input bug by adding `@tailwind` directives and a text-color override in `globals.css`.
 
-- **Form Refactor & Delega PDF (C13):**
-  - **Database (Cleanup):** DROPPED `documento_delega_path` column and `documenti-delega` bucket/RLS.
-  - **C3/C4 (Cleanup):** Removed "Step 2" (Delega Upload) from C3 and removed `delegaPath` logic from C4.
+- **Form Refactor & Delega PDF(C13):**
+  - **Database(Cleanup):** DROPPED `documento_delega_path` column and `documenti-delega` bucket/RLS.
+  - **C3/C4(Cleanup):** Removed "Step 2" (Delega Upload) from C3 and removed `delegaPath` logic from C4.
   - **C6/C13 (ReviewForm):**
     - Refactored the form to use `react-hook-form` and `zod`.
     - Added a mandatory `delegaCheckbox` to the form and Zod schema.
@@ -154,7 +154,7 @@
     - Added `creaPdfDelega` helper to auto-generate the delega PDF using profile data.
     - Updated the function to upload *both* the Lettera PDF and Delega PDF to storage for tracking.
 
-- **OCR Error Handling (C14):**
+- **OCR Error Handling(C14):**
   - **Database (Schema):** Adds `error_message` column to `disdette`.
   - **C3 (Upload Page):** Refactored to create a record with `status: 'PROCESSING'` *before* invoking the function, passing only the record `id`.
   - **C4 (process-document):** Refactored to receive an `id`. Implements a `try...catch` block to update the record to `status: 'FAILED'` and save the `error_message` on failure, preventing a crash.
@@ -163,7 +163,7 @@
     - Adds a new `StatusDisplay` component to show loading/processing messages.
     - If `status: 'FAILED'` is detected, it displays the `error_message` from the database.
 
-- **Architecture Refactoring (C15):**
+- **Architecture Refactoring(C15):**
   - **Foundation Layer:**
     - Introduces `src/lib/errors/AppError.ts` with error types `(UnauthorizedError, NotFoundError, ValidationError, …)` and code mapping.
     - Adds AuthService `(src/services/auth.service.ts)` to centralize authentication (removes duplication across APIs).
@@ -201,10 +201,10 @@
 
   - **Results:**
     - ~170 duplicate lines removed overall.
-    - Improved maintainability (centralized business logic), services/repositories easily testable.
-    - Stronger end-to-end types and ready foundation for infinite scroll (C16).
+    - Improved maintainability(Centralized business logic), services/repositories easily testable.
+    - Stronger end-to-end types and ready foundation for infinite scroll(C16).
 
-- **Infinite Scroll Pagination (C16):**
+- **Infinite Scroll Pagination(C16):**
   - **Custom Hook (useInfiniteScroll)**
     - Creates `src/hooks/useInfiniteScroll.ts` to centralize all pagination logic.
     - Manages full pagination state: `items, page, isLoading, isLoadingMore, hasMore, error, totalCount.`
@@ -252,7 +252,7 @@
       - `Network errors, slow responses, or unexpected payloads.`
     - Guarantees stable UX even with rapidly changing data.
 
-  - **API Integration (C15)**
+  - **API Integration(C15)**
     - Fully integrates backend pagination using query parameters: `?page=X&pageSize=Y`.
     - Correctly parses paginated responses: `{ data: [], count: number, hasMore: boolean }`.
     - Uses `DisdettaService.getMyDisdette()` in strict paginated mode.
@@ -267,7 +267,7 @@
       - `dynamic sorting`.
     - Smooth transitions thanks to skeletons, spinners, and preloading.
 
-- **Modern Design System & UI Overhaul (C17):**
+- **Modern Design System & UI Overhaul(C17):**
   - **Design System Foundation:**
     - Implements comprehensive `tailwind.config.js` with modern color palette:
       - Primary indigo gradient (`#6366F1` → `#4F46E5`)
@@ -376,7 +376,7 @@
     - Enhanced user feedback with toast notifications
     - Scalable design system ready for new features
 
-- **Custom Error Pages (C18):**
+- **Custom Error Pages(C18):**
   - **Error Page Design:**
     - Creates custom 404 (not-found.tsx) with AlertCircle icon and primary-600 color
     - Creates custom 500 (error.tsx) with XCircle icon, dual action buttons (retry + dashboard), and error logging
@@ -403,7 +403,7 @@
   - **Files Created:**
     - src/app/not-found.tsx (404 handler)
     - src/app/error.tsx (runtime error boundary)
-    - src/app/global-error.tsx (critical error fallback)
+    - src/app/global-error.tsx(Critical error fallback)
 
   - **Results:**
     - Production-ready error handling with consistent brand experience
@@ -411,7 +411,7 @@
     - Enhanced debugging capabilities with error logging
     - Professional polish aligned with modern design system
 
-- **Footer & Legal Pages (C19):**
+- **Footer & Legal Pages(C19):**
   - **Footer Component:**
     - Creates responsive footer with 4-column layout (Brand, Product, Support, Legal)
     - Dark theme design (bg-gray-900) with consistent hover states (text-primary-400)
@@ -448,7 +448,7 @@
     - src/components/Footer.tsx (global footer component, 152 lines)
     - src/app/privacy-policy/page.tsx (GDPR placeholder, 102 lines)
     - src/app/terms-of-service/page.tsx (terms placeholder, 86 lines)
-    - src/app/cookie-policy/page.tsx (cookie info placeholder, 103 lines)
+    - src/app/cookie-policy/page.tsx(Cookie info placeholder, 103 lines)
 
   - **Files Modified:**
     - src/app/layout.tsx (added Footer import and component)
@@ -465,9 +465,9 @@
     - Consistent brand experience across all pages
     - Improved SEO structure with semantic HTML
     - Reduced bounce rate with clear navigation paths
-    - Foundation for future features (contact form, FAQ, help center)
+    - Foundation for future features(Contact form, FAQ, help center)
 
-- **Footer & Legal Pages Optimization (C19.5):**
+- **Footer & Legal Pages Optimization(C19.5):**
 
   - **Overview:**
     - Reorganized the footer structure to eliminate redundancies and improve information hierarchy.
@@ -547,7 +547,7 @@
     - `src/components/HelpButton.tsx`
     - `src/app/faq/page.tsx`
 
-- **Duplicate Detection System (C20):**
+- **Duplicate Detection System(C20):**
   - **Data Access Layer:**
     - Adds `checkDuplicate()` in `src/repositories/disdetta.repository.ts` to detect existing cancellations matching the tuple  
       `(user_id, supplier_tax_id, receiver_tax_id, supplier_contract_number)`.
@@ -607,11 +607,11 @@
     - Improves DB reliability and frontend UX under high-frequency uploads.
     - Ensures consistent metadata, logging, and type-safety across the entire stack.
 
-- **Testing & QA Suite (C21):**
+- **Testing & QA Suite(C21):**
   - **Testing Framework Setup:**
     - Adds Jest 30.2.0 with full Next.js and TypeScript integration.
     - Configures React Testing Library, MSW mocks, and global Jest setup.
-    - Adds Playwright configuration for future E2E coverage (C35).
+    - Adds Playwright configuration for future E2E coverage(C35).
     - Provides reusable mock factories and shared test utilities (`testHelpers.ts`).
 
   - **Unit Test Coverage (62 tests, ~3s):**
@@ -640,7 +640,7 @@
     - Establishes a scalable QA foundation suitable for CI/CD pipelines.
     - Prepares the project for C35 E2E testing and future regression coverage.
 
-- **UI Polish (C22):**
+- **UI Polish(C22):**
 
   - **Updated Pages:**
     - Applies the C17 design system (glassmorphism, gradients, animations) to remaining pages: login, registration, and profile.
@@ -682,7 +682,7 @@
     - `src/components/AuthHeader.tsx` (new)
     - `src/components/OAuthButton.tsx` (new)
 
-- **PDF Generator & B2B Support (C23):**
+- **PDF Generator & B2B Support(C23):**
 
   - **Form Architecture & Implementation:**
     - Complete implementation of the conditional B2C/B2B review form using a `tipo_intestatario` discriminator.
@@ -735,7 +735,7 @@
     - `src/components/ReviewForm/components/DuplicateDetectionModal.tsx`
     - `docs/TESTING_CHECKLIST.md` (150+ test cases documented)
 
-- **User Onboarding (C24):**
+- **User Onboarding(C24):**
 
   - **Core Infrastructure:**
     - Global onboarding state managed via `OnboardingContext` with `localStorage` persistence.
@@ -781,7 +781,7 @@
     - Clear separation between conceptual tooltips and technical help text.
 
   - **Code Quality & Architecture:**
-    - Modular onboarding components (context, tooltip, tour, helpers).
+    - Modular onboarding components(Context, tooltip, tour, helpers).
     - Strong TypeScript typing across contexts, hooks, and configs.
     - Framer Motion used consistently for animations.
     - Clean z-index layering and event propagation handling.
@@ -792,7 +792,7 @@
     - Scalable foundation for future onboarding iterations and testing.
     - Fully tested, mobile responsive, and persisted across sessions.
 
-- **Advanced Status Tracking (C25):**
+- **Advanced Status Tracking(C25):**
 
   - **Core Infrastructure:**
     - Introduced full status audit trail via `disdetta_status_history` table with triggers, RLS policies, and optimized indexes.
@@ -800,7 +800,7 @@
     - Secure repository + service layer with ownership verification and dedicated API endpoint.
 
   - **Status Timeline UI:**
-    - New `StatusTimeline` component (compact + expanded modes) with horizontal/vertical layouts.
+    - New `StatusTimeline` component(Compact + expanded modes) with horizontal/vertical layouts.
     - Clear progress visualization: Upload → Review → Sent, with color-coded states and animations.
     - CONFIRMED abstracted as “In invio…” to simplify user mental model.
     - Helper utilities for timestamps, durations, and relative time.
@@ -831,7 +831,7 @@
     - `useStatusPolling` hook.
     - Dashboard integration and repository updates.
 
-- **FAQ & Help Center (C26):**
+- **FAQ & Help Center(C26):**
 
   - **Overview:**
     - Implemented a comprehensive FAQ & Help Center to reduce support requests and improve self-service onboarding.
@@ -887,7 +887,7 @@
     - `src/data/faqData.ts` (FAQ content and structure)
     - `src/app/faq/page.tsx` (FAQ page implementation)
 
-- **GDPR Privacy Controls (C28):**
+- **GDPR Privacy Controls(C28):**
 
   - **Overview:**
     - Implemented GDPR-compliant user data controls enabling full data portability and right to erasure.
@@ -957,7 +957,7 @@
     - **Modified:**
       - `src/app/profile/page.tsx`
 
-- **Email Notification System (C31):**
+- **Email Notification System(C31):**
   - **Problem Addressed:**
     - Users had no visibility on asynchronous processing steps (OCR completion, PEC sending, errors).
     - Required manual dashboard polling with poor UX and high uncertainty.
@@ -1052,7 +1052,7 @@
     - Applied fixes consistently across B2C and B2B form fields.
     - Updated domain schemas to align frontend and backend validation rules.
 
-  - **Onboarding Tour System (C24):**
+  - **Onboarding Tour System(C24):**
     - Fixed mobile overflow issues where tour content was clipped.
     - Improved positioning when the hamburger menu is open (guest and authenticated users).
     - Added proper max-height constraints and internal scrolling for small viewports.
@@ -1118,7 +1118,7 @@
     - `src/app/terms-of-service/page.tsx`
     - `src/app/profileUser/page.tsx`
 
-- **Homepage Redesign (C36):**
+- **Homepage Redesign(C36):**
 
   - **Overview:**
     - Implemented a completely redesigned homepage focused on clarity, conversion, and guided onboarding.
@@ -1161,9 +1161,9 @@
     - Stronger conversion via progressive CTAs and guided flow.
 
   - **Files Involved:**
-    - `src/app/page.tsx` (complete homepage implementation)
+    - `src/app/page.tsx`(Complete homepage implementation)
 
-- **Stripe Payment Enforcement & Flow Stabilization (C38):**
+- **Stripe Payment Enforcement & Flow Stabilization(C38):**
 
   - **Stripe Payment Integration:**
     - Mandatory Stripe Checkout before PEC sending; no free service usage.
@@ -1201,7 +1201,7 @@
     - Deprecated Stripe APIs removed to prevent retry failures.
 
   - **Files Involved:**
-    - `src/app/api/stripe/*` (checkout, verification, webhook handlers)
+    - `src/app/api/stripe/*`(Checkout, verification, webhook handlers)
     - `src/components/PaymentButton.tsx`
     - `src/components/StatusTimeline.tsx`
     - `src/components/ReviewForm/*` (flow state & persistence)
@@ -1211,7 +1211,7 @@
     - `supabase/migrations/*_add_payment_tracking.sql`
     - `STRIPE_SETUP_GUIDE.md`
 
-- **Mandatory Identity Document & PDF Merge (C39):**
+- **Mandatory Identity Document & PDF Merge(C39):**
 
   - **Documento Identità – B2C Enforcement:**
     - Added mandatory **documento di identità** upload for B2C users in Review flow.
@@ -1225,7 +1225,7 @@
     - Extended `B2CFields` with identity document input and preview.
     - Unified file upload handling via `useFileUploads`.
     - Improved form orchestration and validation flow in ReviewForm.
-    - Delega checkbox auto-checked after successful payment (CONFIRMED / SENT).
+    - Delega checkbox auto-checked after successful payment(CONFIRMED / SENT).
 
   - **PDF Generation & Merge Pipeline:**
     - Introduced `mergePDFs` helper in `send-pec-disdetta` Edge Function.
@@ -1563,7 +1563,7 @@
   - **Data Extraction & Compatibility:**
     - Parses structured JSON responses returned by Claude.
     - Preserves the existing output schema to avoid downstream changes.
-    - Improved handling of Italian-specific fields (Codice Fiscale, Partita IVA, contract numbers).
+    - Improved handling of Italian-specific fields(Codice Fiscale, Partita IVA, contract numbers).
 
   - **Accuracy & Context Improvements:**
     - Better contextual understanding of utility bills layout.
@@ -1581,3 +1581,35 @@
 
   - **Files Involved:**
     - `supabase/functions/process-document/index.ts`
+
+- **Delegation Preview & Legal Clarity(C28):**
+
+  - **Delegation Preview (Review Page):**
+    - Added on-demand PDF preview of the delegation letter via `/api/preview-delega`.
+    - Delegation PDF generated dynamically using current user profile data.
+    - Preview opens in a new tab directly from the ReviewForm, without persisting files.
+    - Introduced `pdf-lib` for runtime PDF generation.
+
+  - **Expandable Legal Authorization Text:**
+    - Added collapsible accordion inside `DelegationCheckbox` component.
+    - Displays full legal authorization text with numbered clauses.
+    - Chevron rotation animation on expand/collapse for visual feedback.
+    - Improves transparency and user understanding of granted authorization.
+
+  - **Document Validation Fix (Post-Test):**
+    - Added file existence check before downloading identity documents in `send-pec-disdetta`.
+    - Prevents runtime crashes when DB path exists but file is missing from storage.
+    - Returns clear, user-facing error message when document is not found.
+    - Handles DB/Storage desynchronization gracefully.
+
+  - **UX & Accessibility Enhancements:**
+    - Clean, minimal layout with preview action aligned top-right.
+    - Responsive behavior: icon-only preview button on mobile.
+    - Accessible accordion with proper ARIA attributes.
+    - Indented expandable section to reinforce visual hierarchy.
+
+  - **Files Involved:**
+    - `src/app/api/preview-delega/route.ts` (PDF preview endpoint)
+    - `src/components/ReviewForm/components/DelegationCheckbox.tsx`
+    - `supabase/functions/send-pec-disdetta/index.ts`
+    - `package.json` (pdf-lib dependency)

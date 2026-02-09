@@ -641,40 +641,90 @@ async function creaPdfDisdettaB2B(disdetta: DisdettaData): Promise<Uint8Array> {
   return await pdfDoc.save()
 }
 
-// ==========================
-// 8) HELPER: CREA PDF DELEGA (C13)
-// ==========================
+// ===========================
+// 8) HELPER: CREA PDF DELEGA
+// ===========================
 async function creaPdfDelega(profile: ProfileData): Promise<Uint8Array> {
-  const pdfDoc = await PDFDocument.create()
-  const page = pdfDoc.addPage([300, 200])
-  const { width, height } = page.getSize()
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
-  const fontSize = 10
+  const pdfDoc = await PDFDocument.create();
+
+  // A4 portrait
+  const PAGE_WIDTH = 595;
+  const PAGE_HEIGHT = 842;
+
+  const margin = {
+    left: 40,
+    right: 40,
+    top: 40,
+    bottom: 40,
+  };
+
+  let page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+  let { width, height } = page.getSize();
+
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const fontSize = 11;
+  const lineHeight = fontSize * 1.4;
 
   const testo = `
     DELEGA PER INVIO DISDETTA
 
     Io sottoscritto ${profile.nome || ''} ${profile.cognome || ''}, residente in ${profile.indirizzo_residenza || ''}.
 
-    Dichiaro sotto la mia esclusiva responsabilità di essere il titolare del contratto/utenza oggetto della presente richiesta, 
-    e autorizzo DisdEasy ad inviare, in mio nome e per mio conto, la comunicazione di disdetta/diffida/ricorso al gestore indicato. 
+    Dichiaro sotto la mia esclusiva responsabilità di essere il titolare del contratto/utenza oggetto della presente richiesta, e autorizzo DisdEasy ad inviare, in mio nome e per mio conto, la comunicazione di disdetta/diffida/ricorso al gestore indicato. 
     Dichiaro che i dati forniti sono veritieri e mi assumo ogni responsabilità civile e penale in caso di false dichiarazioni.
 
     Data: ${new Date().toLocaleDateString('it-IT')}
+  `.trim();
 
-    
-  `.trim()
+  const maxLineWidth = width - margin.left - margin.right;
 
-  page.drawText(testo, {
-    x: 20,
-    y: height - 3 * fontSize,
-    size: fontSize,
-    font: font,
-    lineHeight: fontSize * 1.5,
-    color: rgb(0, 0, 0),
-  })
+  // split in paragrafi
+  const paragraphs = testo.split(/\n{2,}/);
+  const lines: string[] = [];
 
-  return await pdfDoc.save()
+  for (const paragraph of paragraphs) {
+    const words = paragraph.trim().split(/\s+/);
+    let currentLine = '';
+
+    for (const word of words) {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      const testWidth = font.widthOfTextAtSize(testLine, fontSize);
+
+      if (testWidth <= maxLineWidth) {
+        currentLine = testLine;
+      } else {
+        if (currentLine) lines.push(currentLine);
+        currentLine = word;
+      }
+    }
+
+    if (currentLine) lines.push(currentLine);
+    lines.push(''); // riga vuota tra paragrafi
+  }
+
+  let cursorY = height - margin.top;
+
+  for (const line of lines) {
+    if (cursorY - lineHeight < margin.bottom) {
+      page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+      ({ width, height } = page.getSize());
+      cursorY = height - margin.top;
+    }
+
+    if (line) {
+      page.drawText(line, {
+        x: margin.left,
+        y: cursorY - fontSize,
+        size: fontSize,
+        font,
+        color: rgb(0, 0, 0),
+      });
+    }
+
+    cursorY -= lineHeight;
+  }
+
+  return await pdfDoc.save();
 }
 
 // ==========================
@@ -1094,10 +1144,27 @@ serve(async (req: Request) => {
     const typedProfileData: ProfileData = profileData
 
     // 4. Recupera Documento Identità
-    if (!typedProfileData.documento_identita_path) throw new Error("Errore: manca 'documento_identita_path' nel profilo")
+    if (!typedProfileData.documento_identita_path) {
+      throw new Error("Documento d'identità non trovato. Vai su Profilo → Carica documento.")
+    }
+
+    // Check esistenza file prima di scaricare
+    const { data: fileExists } = await supabaseAdmin
+      .storage.from('documenti-identita')
+      .list(typedProfileData.documento_identita_path.split('/')[0], {
+        search: typedProfileData.documento_identita_path.split('/')[1]
+    })
+
+    if (!fileExists || fileExists.length === 0) {
+      throw new Error("File documento identità non trovato. Ricaricalo dal Profilo.")
+    }
+
     const { data: idFile, error: idError } = await supabaseAdmin
-      .storage.from('documenti-identita').download(typedProfileData.documento_identita_path)
-    if (idError) throw new Error(`Errore download documento identità: ${idError.message}`)
+    .storage.from('documenti-identita').download(typedProfileData.documento_identita_path)
+    
+    if (idError) {
+      throw new Error(`Errore download documento identità: ${idError.message}`)
+    }
 
     // 5. MIME & Size Whitelist
     if (!idFile || !ALLOWED_MIME.includes(idFile.type) || idFile.size > MAX_FILE_BYTES) {
