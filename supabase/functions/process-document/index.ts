@@ -201,26 +201,26 @@ serve(async (req: Request) => {
               },
               {
                 type: "text",
-                text: 
-                `Analizza questa bolletta italiana ed estrai SOLO i seguenti dati in formato JSON:
+                text: `Analizza questa bolletta italiana ed estrai SOLO i seguenti dati in formato JSON:
                 {
                   "supplier_tax_id": "partita IVA del fornitore (11 cifre, es: 12345678901)",
+                  "supplier_name": "nome completo del fornitore/operatore (es: Enel Energia S.p.A., Fastweb S.p.A., TIM S.p.A.)",
                   "receiver_tax_id": "codice fiscale intestatario contratto (16 caratteri alfanumerici)",
                   "supplier_contract_number": "numero cliente o numero contratto",
                   "supplier_iban": "IBAN se presente (formato IT60...)"
                 }
-
-                REGOLE IMPORTANTI:
-                - supplier_tax_id: SOLO la P.IVA del fornitore in alto (NON clienti o altri)
-                - receiver_tax_id: il codice fiscale dell'intestatario (16 caratteri)
-                - supplier_contract_number: numero cliente o contratto (NON POD/PDR che sono codici punto fornitura)
-                - Se un campo non è trovato, usa null
-                - Ignora completamente: numeri POD, PDR, codici punto fornitura, testi marketing
-                - Restituisci SOLO il JSON valido, nessun testo aggiuntivo
-
+                  REGOLE IMPORTANTI:
+                  - supplier_tax_id: SOLO la P.IVA del fornitore in alto (NON clienti o altri)
+                  - supplier_name: il nome della compagnia fornitrice come appare sulla bolletta, con ragione sociale completa
+                  - receiver_tax_id: il codice fiscale dell'intestatario (16 caratteri)
+                  - supplier_contract_number: numero cliente o contratto (NON POD/PDR che sono codici punto fornitura)
+                  - Se un campo non è trovato, usa null
+                  - Ignora completamente: numeri POD, PDR, codici punto fornitura, testi marketing
+                  - Restituisci SOLO il JSON valido, nessun testo aggiuntivo
                 Esempio output:
                 {
                   "supplier_tax_id": "12345678901",
+                  "supplier_name": "Enel Energia S.p.A.",
                   "receiver_tax_id": "RSSMRA85M01H501U",
                   "supplier_contract_number": "1234567890",
                   "supplier_iban": "IT60X0542811101000000123456"
@@ -259,6 +259,7 @@ serve(async (req: Request) => {
 
       const extracted = {
         supplier_tax_id: parsedData.supplier_tax_id || null,
+        supplier_name: parsedData.supplier_name || null,
         receiver_tax_id: parsedData.receiver_tax_id || null,
         supplier_contract_number: parsedData.supplier_contract_number || null,
         supplier_iban: parsedData.supplier_iban || null
@@ -270,6 +271,7 @@ serve(async (req: Request) => {
       const successRow = {
         status: DISDETTA_STATUS.PENDING_REVIEW,
         supplier_tax_id: extracted.supplier_tax_id,
+        supplier_name: extracted.supplier_name,
         receiver_tax_id: extracted.receiver_tax_id,
         supplier_iban: extracted.supplier_iban,
         supplier_contract_number: extracted.supplier_contract_number,

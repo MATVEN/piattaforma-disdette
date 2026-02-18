@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Loader2, XCircle, CheckCircle, CreditCard } from 'lucide-react'
+import { Loader2, XCircle, CheckCircle, CreditCard, AlertCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { EmbeddedPaymentForm } from '@/components/EmbeddedPaymentForm'
 import { TipoIntestatarioSelector } from './components/TipoIntestatarioSelector'
@@ -108,6 +108,14 @@ export default function ReviewForm() {
   const [duplicateData, setDuplicateData] = useState<any>(null)
   const [isBypassSubmitting, setIsBypassSubmitting] = useState(false)
 
+  // Operator mismatch
+  const [showOperatorMismatch, setShowOperatorMismatch] = useState(false)
+  const [mismatchData, setMismatchData] = useState<{
+    extracted_supplier: string
+    selected_operator: string
+    similarity: number
+  } | null>(null)
+
   /* ---------- State Management ---------- */
   type FlowState = 'editing' | 'pending_payment' | 'paid' | 'sending' | 'sent'
   const [flowState, setFlowState] = useState<FlowState>('editing')
@@ -153,6 +161,13 @@ export default function ReviewForm() {
       console.warn('Failed to save form backup:', err)
     }
     const result = await onSubmit(data, false)
+
+    // Check for operator mismatch warning
+    if (result?.warning === 'operator_mismatch' && result.operatorMismatchData) {
+      setMismatchData(result.operatorMismatchData)
+      setShowOperatorMismatch(true)
+      return
+    }
 
     if (result?.isDuplicate && result.duplicateData) {
       setDuplicateData(result.duplicateData)
@@ -603,6 +618,60 @@ export default function ReviewForm() {
           duplicateData={duplicateData}
           onClose={handleCloseDuplicateModal}
         />
+
+      {/* Operator Mismatch Modal */}
+      {showOperatorMismatch && mismatchData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="h-6 w-6 text-amber-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Operatore Non Corrispondente
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Hai selezionato <strong>{mismatchData.selected_operator}</strong> ma
+                  la bolletta sembra di <strong>{mismatchData.extracted_supplier}</strong>.
+                </p>
+                <p className="text-xs text-gray-500 mt-2">
+                  Similarità: {mismatchData.similarity}%
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowOperatorMismatch(false)
+                  setMismatchData(null)
+                  router.push('/new-disdetta')
+                }}
+                className="flex-1 px-4 py-2 rounded-lg border-2 border-gray-200 hover:bg-gray-50 font-medium transition-colors"
+              >
+                Cambia Operatore
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  setShowOperatorMismatch(false)
+                  // Force submit with bypass flag
+                  const result = await onSubmit(getValues(), false, { bypassOperatorCheck: true })
+                  if (result?.requiresPayment && result.disdettaId) {
+                    setConfirmedDisdettaId(result.disdettaId)
+                    setFlowState('pending_payment')
+                  }
+                }}
+                className="flex-1 px-4 py-2 rounded-lg bg-gradient-primary text-white font-medium transition-all hover:shadow-lg"
+              >
+                Procedi Comunque
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </motion.form>
   )
 }

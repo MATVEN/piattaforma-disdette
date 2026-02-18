@@ -1473,7 +1473,7 @@
     - `src/components/ReviewForm/index.tsx`
     - `src/components/ReviewForm/hooks/useReviewForm.tsx`
     - `src/components/PaymentButton.tsx`
-    * `src/app/api/stripe/webhook/route.ts`
+    - `src/app/api/stripe/webhook/route.ts`
 
 - **Embedded Stripe Payment Element:  (Post-Review)**
 
@@ -1613,3 +1613,41 @@
     - `src/components/ReviewForm/components/DelegationCheckbox.tsx`
     - `supabase/functions/send-pec-disdetta/index.ts`
     - `package.json` (pdf-lib dependency)
+
+- **Hybrid Document & Identity Validation (Post-Review Improvements):**
+
+  - **Document Quality & Type Validation:**
+    - Client-side checks for file size (max 10MB), supported formats (PDF, PNG, JPG, TIFF), minimum resolution, and corrupted files.
+    - Server-side validation via Claude Vision API to confirm documents are valid utility bills or invoices with readable text.
+    - Automatic deletion of invalid uploads and clear error feedback to users.
+
+  - **Identity Document Validation:**
+    - Dedicated endpoint to validate ID card, driver’s license, and passport uploads using Claude Vision.
+    - Rejects screenshots, random photos, utility bills, or non-Italian identity documents.
+    - Integrated in Profile page and ReviewForm (B2C and B2B LR document uploads).
+    - Prevents incorrect documents that would invalidate PEC requests.
+
+  - **Operator Matching System:**
+    - Fuzzy matching between extracted supplier name and selected operator using token similarity scoring.
+    - Warning modal when similarity is low, allowing operator change or manual override.
+    - Reduces errors from wrong operator selection before payment or PEC sending.
+
+  - **UX & Reliability Improvements:**
+    - Toast notifications for validation errors and actionable guidance.
+    - Modal feedback with mismatch details and suggested corrections.
+    - Automatic cleanup of invalid files in storage to avoid orphan data.
+    - Maintains existing submission flow without extra friction.
+
+  - **Benefits:**
+    - Prevents invalid documents and wrong operator selections.
+    - Reduces PEC rejection risk and support workload.
+    - Improves data quality before payment and submission.
+    - Low operational cost (~€0.003 per validation).
+
+  - **Files Involved:**
+    - `src/app/api/validate-document/route.ts`
+    - `src/app/api/validate-identity-document/route.ts`
+    - `src/app/upload/[serviceId]/page.tsx`
+    - `src/app/profileUser/page.tsx`
+    - `src/components/ReviewForm/hooks/useFormSubmission.ts`
+    - `src/components/ReviewForm/index.tsx`

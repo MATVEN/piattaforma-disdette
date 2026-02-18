@@ -95,8 +95,63 @@ export default function UploadPage() {
   }, [serviceId, supabase])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setFile(e.target.files[0])
+    const selectedFile = e.target.files?.[0]
+    if (!selectedFile) return
+
+    // ===== CLIENT-SIDE VALIDATIONS =====
+
+    // 1. File size check (max 10MB)
+    const MAX_SIZE = 10 * 1024 * 1024
+    if (selectedFile.size > MAX_SIZE) {
+      toast.error('File troppo grande. Massimo 10MB.')
+      e.target.value = ''
+      return
+    }
+
+    // 2. Format check
+    const allowedTypes = [
+      'application/pdf',
+      'image/png',
+      'image/jpeg',
+      'image/jpg',
+      'image/tiff'
+    ]
+    if (!allowedTypes.includes(selectedFile.type)) {
+      toast.error('Formato non supportato. Usa PDF, PNG, JPG o TIFF.')
+      e.target.value = ''
+      return
+    }
+
+    // 3. Image dimension check (if image)
+    if (selectedFile.type.startsWith('image/')) {
+      const img = new Image()
+      const objectUrl = URL.createObjectURL(selectedFile)
+
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl)
+
+        // Min dimensions: 800x600
+        if (img.width < 800 || img.height < 600) {
+          toast.error('Immagine troppo piccola. Minimo 800x600 pixel.')
+          e.target.value = ''
+          return
+        }
+
+        // Proceed with upload
+        setFile(selectedFile)
+        setError(null)
+      }
+
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl)
+        toast.error('Immagine corrotta. Riprova con un altro file.')
+        e.target.value = ''
+      }
+
+      img.src = objectUrl
+    } else {
+      // PDF - no dimension check needed
+      setFile(selectedFile)
       setError(null)
     }
   }
@@ -140,6 +195,44 @@ export default function UploadPage() {
         serviceId,
         userId: user.id
       })
+
+      // --- 1.5 Server-side Document Validation ---
+      logger.info('[Upload] Validating document quality...')
+
+      try {
+        const validationRes = await fetch('/api/validate-document', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            file_path: filePath,
+            bucket: 'documenti_utente'
+          })
+        })
+
+        const validationData = await validationRes.json()
+
+        if (!validationRes.ok || !validationData.is_valid) {
+          // Delete uploaded file (validation failed)
+          await supabase.storage
+            .from('documenti_utente')
+            .remove([filePath])
+
+          const reason = validationData.reason || 'qualità insufficiente'
+          toast.error(`Documento non valido: ${reason}`, {
+            duration: 6000
+          })
+          setError(`Documento non valido: ${reason}`)
+          setIsSubmitting(false)
+          return
+        }
+
+        logger.info('[Upload] Document validation passed')
+      } catch (validationError) {
+        // Non blocchiamo se la validazione fallisce per errore tecnico
+        logger.warn('[Upload] Validation check failed, proceeding anyway', {
+          error: validationError instanceof Error ? validationError.message : String(validationError)
+        })
+      }
 
       // --- 2. CREAZIONE RECORD DB (C14) ---
       // Creiamo il record 'placeholder' con stato 'PROCESSING'

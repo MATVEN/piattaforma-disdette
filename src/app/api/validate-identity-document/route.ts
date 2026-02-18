@@ -1,0 +1,151 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { createServerClient } from '@/lib/supabase/server'
+
+export const dynamic = 'force-dynamic'
+
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
+
+interface ValidationResult {
+  is_valid: boolean
+  document_type: string | null
+  reason: string
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const supabase = await createServerClient()
+
+    // Auth check
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Non autenticato' }, { status: 401 })
+    }
+
+    const { file_path, bucket } = await req.json()
+
+    if (!file_path || !bucket) {
+      return NextResponse.json({ error: 'Parametri mancanti' }, { status: 400 })
+    }
+
+    // Download file
+    const { data: fileBlob, error: downloadError } = await supabase
+      .storage
+      .from(bucket)
+      .download(file_path)
+
+    if (downloadError || !fileBlob) {
+      return NextResponse.json({ error: 'File non trovato' }, { status: 404 })
+    }
+
+    // Convert to base64
+    const arrayBuffer = await fileBlob.arrayBuffer()
+    const base64 = Buffer.from(arrayBuffer).toString('base64')
+
+    // Determine media type
+    const mimeType = fileBlob.type || 'application/pdf'
+
+    // Call Claude Haiku for identity document validation
+    const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': ANTHROPIC_API_KEY!,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 256,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: mimeType === 'application/pdf' ? 'document' : 'image',
+              source: {
+                type: 'base64',
+                media_type: mimeType,
+                data: base64
+              }
+            },
+            {
+              type: 'text',
+              text: `Analizza questo documento e verifica se è un documento d'identità italiano valido.
+
+Documenti accettati:
+- Carta d'identità italiana (fronte o retro)
+- Patente di guida italiana
+- Passaporto italiano
+
+Verifica:
+1. È uno dei documenti sopra elencati?
+2. La foto della persona è chiaramente visibile?
+3. I dati anagrafici sono leggibili (nome, cognome, data nascita)?
+4. Il documento non è sfocato o troppo scuro?
+5. Non è uno screenshot, bolletta, o altro tipo di documento?
+
+Rispondi SOLO con un JSON valido nel seguente formato (senza markdown):
+{
+  "is_valid": true o false,
+  "document_type": "carta_identita" o "patente" o "passaporto" o null,
+  "reason": "breve spiegazione (max 60 caratteri)"
+}
+
+Esempi di documenti NON validi:
+- Bollette o fatture
+- Screenshot
+- Foto di paesaggi o persone
+- Documenti esteri
+- Documenti scaduti o illeggibili
+- Carte di credito, tessere sanitarie`
+            }
+          ]
+        }]
+      })
+    })
+
+    if (!claudeResponse.ok) {
+      const errorText = await claudeResponse.text()
+      console.error('[Validate Identity] Claude error:', errorText)
+      return NextResponse.json({ error: 'Errore validazione' }, { status: 500 })
+    }
+
+    const claudeData = await claudeResponse.json()
+    const textContent = claudeData.content?.find((c: { type: string }) => c.type === 'text')?.text
+
+    if (!textContent) {
+      return NextResponse.json({ error: 'Risposta Claude vuota' }, { status: 500 })
+    }
+
+    // Parse JSON (remove markdown fences if present)
+    const cleanText = textContent
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '')
+      .trim()
+
+    let validation: ValidationResult
+    try {
+      validation = JSON.parse(cleanText)
+    } catch {
+      console.error('[Validate Identity] Parse error, raw:', cleanText)
+      return NextResponse.json({ error: 'Formato risposta non valido' }, { status: 500 })
+    }
+
+    // Map document_type to user-friendly names
+    const documentTypeNames: Record<string, string> = {
+      'carta_identita': "Carta d'Identità",
+      'patente': 'Patente di Guida',
+      'passaporto': 'Passaporto'
+    }
+
+    return NextResponse.json({
+      success: true,
+      is_valid: validation.is_valid,
+      document_type: validation.document_type,
+      document_type_name: validation.document_type ? documentTypeNames[validation.document_type] : null,
+      reason: validation.reason
+    })
+
+  } catch (error) {
+    console.error('[Validate Identity] Error:', error)
+    return NextResponse.json({ error: 'Errore server' }, { status: 500 })
+  }
+}

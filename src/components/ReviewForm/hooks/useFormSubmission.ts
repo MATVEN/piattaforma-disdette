@@ -70,6 +70,12 @@ interface SubmissionResult {
     status: DisdettaStatus
     contractNumber?: string
   }
+  warning?: string
+  operatorMismatchData?: {
+    extracted_supplier: string
+    selected_operator: string
+    similarity: number
+  }
 }
 
 interface UseFormSubmissionProps {
@@ -105,7 +111,7 @@ interface UseFormSubmissionProps {
 }
 
 export interface UseFormSubmissionReturn {
-  onSubmit: (data: ReviewFormData, bypassDuplicate?: boolean) => Promise<SubmissionResult>
+  onSubmit: (data: ReviewFormData, bypassDuplicate?: boolean, options?: { bypassOperatorCheck?: boolean }) => Promise<SubmissionResult>
   sendPEC: (disdettaId: number) => Promise<boolean>
   loading: boolean
   progress: SubmissionProgress
@@ -220,7 +226,8 @@ export function useFormSubmission({
 
   const onSubmit = async (
     data: ReviewFormData,
-    bypassDuplicate = false
+    bypassDuplicate = false,
+    options?: { bypassOperatorCheck?: boolean }
   ): Promise<SubmissionResult> => {
     setLoadingSafe(true)
     setProgressSafe({ step: 'validating', message: 'Validazione dati...', progress: 5 })
@@ -315,13 +322,58 @@ export function useFormSubmission({
             const { error: docError } = await supabase.storage
               .from('documenti-identita')
               .upload(docPath, files.documentoIdentita, { upsert: true })
-            
+
             await progressPromise
-            
+
             if (docError) throw docError
-            
+
+            // ===== Server-side identity document validation =====
+            setProgressSafe({
+              step: 'validating',
+              message: "Validazione documento d'identità...",
+              progress: 18
+            })
+
+            try {
+              const validationRes = await fetch('/api/validate-identity-document', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  file_path: docPath,
+                  bucket: 'documenti-identita'
+                })
+              })
+
+              const validationData = await validationRes.json()
+
+              if (!validationRes.ok || !validationData.is_valid) {
+                // Delete uploaded file (validation failed)
+                await supabase.storage
+                  .from('documenti-identita')
+                  .remove([docPath])
+
+                const errorMsg = validationData.document_type_name
+                  ? `Documento non valido. Rilevato: ${validationData.document_type_name}. ${validationData.reason}`
+                  : `Documento non valido: ${validationData.reason || "documento d'identità non riconosciuto"}`
+
+                toast.error(errorMsg, { duration: 7000 })
+                setProgressSafe({ step: 'error', message: errorMsg, progress: 0 })
+                return { success: false }
+              }
+
+              logger.info('Identity document validation passed', {
+                documentType: validationData.document_type_name,
+                userId: user?.id
+              })
+            } catch (validationError) {
+              // Non blocchiamo se la validazione fallisce per errore tecnico
+              logger.warn('Identity validation check failed, proceeding anyway', {
+                error: validationError instanceof Error ? validationError.message : String(validationError)
+              })
+            }
+
             documentoIdentitaPath = docPath
-            
+
             // Salva path in profilo per riutilizzo futuro
             const { error: profileError } = await supabase
               .from('profiles')
@@ -439,6 +491,52 @@ export function useFormSubmission({
           await progressPromise
 
           if (docError) throw docError
+
+          // ===== Server-side identity document validation for LR =====
+          setProgressSafe({
+            step: 'validating',
+            message: "Validazione documento LR...",
+            progress: 45
+          })
+
+          try {
+            const validationRes = await fetch('/api/validate-identity-document', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                file_path: docFilePath,
+                bucket: 'documenti-identita'
+              })
+            })
+
+            const validationData = await validationRes.json()
+
+            if (!validationRes.ok || !validationData.is_valid) {
+              // Delete uploaded file (validation failed)
+              await supabase.storage
+                .from('documenti-identita')
+                .remove([docFilePath])
+
+              const errorMsg = validationData.document_type_name
+                ? `Documento LR non valido. Rilevato: ${validationData.document_type_name}. ${validationData.reason}`
+                : `Documento LR non valido: ${validationData.reason || "documento d'identità non riconosciuto"}`
+
+              toast.error(errorMsg, { duration: 7000 })
+              setProgressSafe({ step: 'error', message: errorMsg, progress: 0 })
+              return { success: false }
+            }
+
+            logger.info('LR identity document validation passed', {
+              documentType: validationData.document_type_name,
+              userId: user?.id
+            })
+          } catch (validationError) {
+            // Non blocchiamo se la validazione fallisce per errore tecnico
+            logger.warn('LR identity validation check failed, proceeding anyway', {
+              error: validationError instanceof Error ? validationError.message : String(validationError)
+            })
+          }
+
           documentoPath = docFilePath
         } catch (err) {
           logger.error('Errore upload Documento LR', {
@@ -503,6 +601,7 @@ export function useFormSubmission({
         visura_camerale_path: visuraPath,
         delega_firma_path: delegaPath,
         bypassDuplicateCheck: bypassDuplicate,
+        bypassOperatorCheck: options?.bypassOperatorCheck ?? false,
       }
 
       const response = await fetch('/api/confirm-data', {
@@ -532,6 +631,21 @@ export function useFormSubmission({
       }
 
       /* ===== Handle Response ===== */
+
+      // Check for operator mismatch warning (status 200 with warning flag)
+      if (response.ok && responseData.warning === 'operator_mismatch') {
+        logger.info('Operator mismatch warning', {
+          data: responseData.data,
+          userId: user?.id,
+          step: 'operator-mismatch',
+        })
+        setProgressSafe({ step: 'idle', message: '', progress: 0 })
+        return {
+          success: false,
+          warning: 'operator_mismatch',
+          operatorMismatchData: responseData.data,
+        }
+      }
 
       if (!response.ok) {
         // Check for duplicate detection

@@ -11,6 +11,7 @@ docs\email-notifications-integration-guide.md
 docs\FEATURES.md
 docs\REFACTORING-REVIEWFORM.md
 docs\ROADMAP-LOG.md
+docs\STRIPE_SETUP_GUIDE.md
 docs\TECHNICAL_ANALYSIS.md
 docs\TESTING.md
 docs\TESTING_CHECKLIST.md
@@ -64,6 +65,8 @@ src\app\api\get-my-disdette
 src\app\api\get-my-disdette\route.ts
 src\app\api\get-status-history
 src\app\api\get-status-history\route.ts
+src\app\api\preview-delega
+src\app\api\preview-delega\route.ts
 src\app\api\send-followup
 src\app\api\send-followup\route.ts
 src\app\api\send-notification-email
@@ -73,11 +76,17 @@ src\app\api\send-pec\route.ts
 src\app\api\stripe
 src\app\api\stripe\create-checkout
 src\app\api\stripe\create-checkout\route.ts
+src\app\api\stripe\create-payment-intent
+src\app\api\stripe\create-payment-intent\route.ts
 src\app\api\stripe\verify-session
 src\app\api\stripe\verify-session\route.ts
 src\app\api\stripe\webhook
 src\app\api\stripe\webhook\route.ts
 src\app\api\update-sent-note
+src\app\api\validate-document
+src\app\api\validate-document\route.ts
+src\app\api\validate-identity-document
+src\app\api\validate-identity-document\route.ts
 src\app\contact
 src\app\contact\page.tsx
 src\app\dashboard
@@ -106,10 +115,14 @@ src\app\profileUser
 src\app\profileUser\page.tsx
 src\app\register
 src\app\register\page.tsx
+src\app\reset-password
+src\app\reset-password\page.tsx
 src\app\review
 src\app\review\page.tsx
 src\app\terms-of-service
 src\app\terms-of-service\page.tsx
+src\app\update-password
+src\app\update-password\page.tsx
 src\app\upload
 src\app\upload\[serviceId]
 src\app\upload\[serviceId]\page.tsx
@@ -117,6 +130,7 @@ src\components
 src\components\AuthHeader.tsx
 src\components\DashboardList.tsx
 src\components\DeleteAccountModal.tsx
+src\components\EmbeddedPaymentForm.tsx
 src\components\FileUploadField.tsx
 src\components\Footer.tsx
 src\components\GoogleIcon.tsx
@@ -133,7 +147,6 @@ src\components\onboarding\TourSpotlight.tsx
 src\components\onboarding\TourStep.tsx
 src\components\onboarding\WelcomeModal.tsx
 src\components\OnboardingSteps.tsx
-src\components\PaymentButton.tsx
 src\components\ReviewForm
 src\components\ReviewForm\components
 src\components\ReviewForm\components\B2BCompanyFields.tsx
@@ -199,7 +212,6 @@ src\types
 src\types\enums.ts
 src\types\statusHistory.ts
 src\types\tour.ts
-STRIPE_SETUP_GUIDE.md
 supabase
 supabase\.branches
 supabase\.branches\_current_branch
@@ -222,6 +234,7 @@ supabase\migrations\20250101000000_create_contact_messages.sql
 supabase\migrations\20251128_add_b2b_support.sql
 supabase\migrations\20260108000000_add_payment_tracking.sql
 tailwind.config.js
+TASK_VALIDATE_IDENTITY_DOCUMENT.md
 test-results
 test-results.json
 test-results\.last-run.json

@@ -195,7 +195,7 @@ Utente inserisce CF sbagliato → Messaggio in tempo reale: "Il codice fiscale n
 
 ---
 
-### **C30 - Document Preview** ✨ ⏸️🔄
+### **C30 - Document Preview** ✨ ⏸️🔄 ✅
 **Effort:** 2 giorni  
 **Priorità:** BASSA (UX)
 

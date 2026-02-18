@@ -135,11 +135,49 @@ export default function ProfilePage() {
 
       // Upload Document
       if (idDocumentFile) {
-        const newFilePath = `${user.id}/${idDocumentFile.name}`
+        // Extract extension from filename
+        const extension = idDocumentFile.name.split('.').pop()?.toLowerCase() || 'pdf'
+        const newFilePath = `${user.id}/documento_identita_${Date.now()}.${extension}`
         const { error: uploadError } = await supabase.storage
           .from('documenti-identita')
           .upload(newFilePath, idDocumentFile, { upsert: true })
         if (uploadError) throw uploadError
+
+        // ===== Server-side identity document validation =====
+        console.log('[Profile] Validating identity document...')
+
+        try {
+          const validationRes = await fetch('/api/validate-identity-document', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              file_path: newFilePath,
+              bucket: 'documenti-identita'
+            })
+          })
+
+          const validationData = await validationRes.json()
+
+          if (!validationRes.ok || !validationData.is_valid) {
+            // Delete uploaded file (validation failed)
+            await supabase.storage
+              .from('documenti-identita')
+              .remove([newFilePath])
+
+            const errorMsg = validationData.document_type_name
+              ? `Documento non valido. Rilevato: ${validationData.document_type_name}. ${validationData.reason}`
+              : `${validationData.reason || "Documento d'identità non riconosciuto"}`
+
+            toast.error(errorMsg, { duration: 7000 })
+            return
+          }
+
+          console.log('[Profile] Identity document validation passed:', validationData.document_type_name)
+        } catch (validationError) {
+          // Non blocchiamo se la validazione fallisce per errore tecnico
+          console.warn('[Profile] Validation check failed, proceeding anyway', validationError)
+        }
+
         filePath = newFilePath
       }
 
