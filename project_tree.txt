@@ -82,11 +82,12 @@ src\app\api\stripe\verify-session
 src\app\api\stripe\verify-session\route.ts
 src\app\api\stripe\webhook
 src\app\api\stripe\webhook\route.ts
-src\app\api\update-sent-note
 src\app\api\validate-document
 src\app\api\validate-document\route.ts
 src\app\api\validate-identity-document
 src\app\api\validate-identity-document\route.ts
+src\app\consumer-protection
+src\app\consumer-protection\page.tsx
 src\app\contact
 src\app\contact\page.tsx
 src\app\dashboard
@@ -139,7 +140,6 @@ src\components\LegalFooter.tsx
 src\components\Navbar.tsx
 src\components\OAuthButton.tsx
 src\components\onboarding
-src\components\onboarding\FormFieldWithTooltip.tsx
 src\components\onboarding\HelpButton.tsx
 src\components\onboarding\OnboardingTour.tsx
 src\components\onboarding\Tooltip.tsx
@@ -200,6 +200,7 @@ src\lib\supabase\database.types.ts
 src\lib\supabase\server.ts
 src\lib\supabaseClient.ts
 src\lib\toast.ts
+src\lib\utils
 src\middleware.ts
 src\repositories
 src\repositories\disdetta.repository.ts
@@ -234,7 +235,6 @@ supabase\migrations\20250101000000_create_contact_messages.sql
 supabase\migrations\20251128_add_b2b_support.sql
 supabase\migrations\20260108000000_add_payment_tracking.sql
 tailwind.config.js
-TASK_VALIDATE_IDENTITY_DOCUMENT.md
 test-results
 test-results.json
 test-results\.last-run.json

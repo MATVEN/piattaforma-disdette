@@ -45,6 +45,12 @@ export default function Footer() {
               >
                 Operatori
               </Link>
+              <Link
+                href="/who-we-are"
+                className="text-gray-300 hover:text-primary-400 transition-colors text-sm"
+              >
+                Chi siamo - Mission & Vision
+              </Link>
             </nav>
           </div>
 
@@ -64,6 +70,12 @@ export default function Footer() {
               >
                 Contatti
               </Link>
+              <a
+                href="mailto:support@DisdEasy.it?subject=Richiesta%20Supporto&body=Buongiorno,%0A%0Aho%20bisogno%20di%20assistenza%20per..."
+                className="text-gray-300 hover:text-primary-400 transition-colors text-sm"
+              >
+                support@DisdEasy.it
+              </a>
             </nav>
           </div>
 
@@ -82,6 +94,12 @@ export default function Footer() {
                 className="text-gray-300 hover:text-primary-400 transition-colors text-sm"
               >
                 Termini di Servizio
+              </Link>
+              <Link
+                href="/consumer-protection"
+                className="text-gray-300 hover:text-primary-400 transition-colors text-sm"
+              >
+                Tutela Consumatore
               </Link>
             </nav>
           </div>

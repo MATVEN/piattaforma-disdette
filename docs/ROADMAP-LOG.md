@@ -123,11 +123,11 @@
 
 - **Security & Validation Refactor(C11):**
   - **Middleware:** Replaces the client-side C9 (<ProfileRequired>) with a server-side 'src/middleware.ts' for robust route protection (auth + profile completion).
-  - * **Validation (Zod):** Introduces 'zod' and a central 'src/domain/schemas.ts' for type-safe validation (using the user's advanced refactored version).
-  - * **Edge Functions:** Hardens 'process-document' (v5) and 'send-pec-disdette' with Zod/type-guard validation, timeout/backoff logic, and PII-safe logging.
-  - * **API Routes:** Refactors all API routes ('/api/confirm-data', '/api/get-extracted-data', '/api/send-pec') to use Zod schemas.
-  - * **Bug Fix (SSR):** Fixes 500 crash across all API Routes by removing the 'NextResponse.next()' pattern and standardizing on the correct 'cookieStore' adapter for SSR auth token refreshes.
-  - * **Database:** Applies "least-privilege" select (no 'select(*)') to '/api/get-my-disdette'.
+  - **Validation (Zod):** Introduces 'zod' and a central 'src/domain/schemas.ts' for type-safe validation (using the user's advanced refactored version).
+  - **Edge Functions:** Hardens 'process-document' (v5) and 'send-pec-disdette' with Zod/type-guard validation, timeout/backoff logic, and PII-safe logging.
+  - **API Routes:** Refactors all API routes ('/api/confirm-data', '/api/get-extracted-data', '/api/send-pec') to use Zod schemas.
+  - **Bug Fix (SSR):** Fixes 500 crash across all API Routes by removing the 'NextResponse.next()' pattern and standardizing on the correct 'cookieStore' adapter for SSR auth token refreshes.
+  - **Database:** Applies "least-privilege" select (no 'select(*)') to '/api/get-my-disdette'.
 
 - **Security Hardening(C11.5):**
   - **Edge Function (`send-pec-disdetta`):**
@@ -1475,7 +1475,7 @@
     - `src/components/PaymentButton.tsx`
     - `src/app/api/stripe/webhook/route.ts`
 
-- **Embedded Stripe Payment Element:  (Post-Review)**
+- **Embedded Stripe Payment Element: (Post-Review)**
 
   - **What it does:**
   Replaces the external Stripe Checkout redirect with an embedded payment form, keeping users on-platform throughout the entire payment process.
@@ -1651,3 +1651,102 @@
     - `src/app/profileUser/page.tsx`
     - `src/components/ReviewForm/hooks/useFormSubmission.ts`
     - `src/components/ReviewForm/index.tsx`
+
+- **API Security Hardening & Endpoint Protection (Post-Review):**
+
+  - **Authentication & Authorization Controls:**
+    - Enforced `INTERNAL_API_SECRET` verification on internal email notification endpoint.
+    - Blocked unauthenticated requests with early 401 responses before business logic execution.
+    - Removed debug information from public error responses.
+    - Replaced `select('*')` with explicit field selection on sensitive queries.
+
+  - **Path Traversal & File Access Protection:**
+    - Introduced bucket whitelisting for document validation endpoints.
+    - Blocked path traversal patterns (`../`, absolute paths).
+    - Enforced `user_id` prefix validation on file paths to prevent cross-user access.
+    - Added MIME type validation before forwarding files to Claude API.
+
+  - **Edge Functions Hardening:**
+    - Secured internal email triggers with `INTERNAL_API_SECRET` header.
+    - Prevented execution when required secrets are not configured in Supabase.
+
+  - **Security Headers & CSP:**
+    - Added strict `Content-Security-Policy` with environment-aware configuration.
+    - Enabled `Strict-Transport-Security` with long max-age and subdomain coverage.
+    - Whitelisted only required external domains (Stripe, Supabase, Anthropic).
+    - Restricted `frame-src`, `object-src`, `base-uri`, and `form-action` to trusted origins.
+
+  - **Rate Limiting & Abuse Prevention:**
+    - Implemented in-memory rate limiting on `/api/contact` (5 requests / 10 minutes per IP).
+    - Extracted client IP via `x-forwarded-for` (Vercel compatible).
+    - Returns 429 with proper rate-limit headers when threshold exceeded.
+    - Added input type and length validation for contact form fields.
+
+  - **Data Exposure Reduction:**
+    - Removed raw OCR JSON data from export endpoints.
+    - Limited exported profile and disdetta fields to necessary attributes only.
+
+  - **Impact:**
+    - Reduced attack surface across public APIs.
+    - Prevented cross-user file access and path traversal exploits.
+    - Strengthened data minimization and compliance posture.
+    - Improved resilience against automated abuse.
+
+  - **Files Involved:**
+    - `next.config.js`
+    - API routes (notification, validation, contact, export)
+    - Supabase Edge Functions (document processing and PEC sending)
+
+- **Consumer Protection & Legal Info Page:**
+
+  - **New Information Page:**
+    - Creates /consumer-protection page explaining legal and service information for users
+    - Explains legal value of PEC (certified email) for cancellation proof
+    - Describes what happens after cancellation (energy/gas scenarios)
+    - Guides users if supplier does not respond
+    - Clarifies user responsibilities and service limitations
+    - Footer link added under Legal section
+
+  - **Page Structure & Navigation:**
+    - Hero section with quick-access CTA buttons for 5 key topics
+    - Sticky navigation pills with active section tracking
+    - Single unified content container for consistent reading flow
+    - Smooth scroll navigation between sections
+    - Bottom CTA linking to /new-disdetta
+
+  - **Design System Alignment:**
+    - Matches Privacy/Cookie Policy UI structure
+    - Mobile-first responsive layout
+    - Gradient background using primary → secondary palette
+    - Inline lucide-react icons for clarity without heavy visual blocks
+    - Consistent spacing, typography hierarchy (h1 → h2 → h3)
+
+  - **Accessibility & SEO:**
+    - Semantic HTML structure with clear headings hierarchy
+    - Readable contrast and touch-friendly mobile targets
+    - SEO metadata configured (title and description)
+    - Clear informational tone with reduced marketing language
+
+  - **UX Improvements:**
+    - Sticky nav appears when hero buttons scroll out of view
+    - Contextual guide system updated with new entry for /consumer-protection
+    - Added dedicated contextual tips covering PEC value, non-response, energy/gas cases, and service limits
+    - Continuous section flow with dividers for readability
+    - Professional tone aligned with legal pages
+  
+  - **Technical Implementation:**
+    - Server Component page with responsive layout
+    - Scroll tracking via useEffect and section state management
+    - Framer Motion animations for hero and sticky navigation
+    - Consistent integration with existing legal page design system
+
+  - **Results:**
+    - Clear explanation of legal process and service scope
+    - Reduced user confusion and support requests
+    - Improved trust and transparency for cancellations
+    - Consistent legal content structure across platform
+
+  - **Files Involved:**
+    - src/app/consumer-protection/page.tsx
+    - src/components/Footer.tsx
+    - src/components/onboarding/HelpButton.tsx

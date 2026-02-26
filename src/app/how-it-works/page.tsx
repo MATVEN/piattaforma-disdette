@@ -178,10 +178,10 @@ export default function HowItWorksPage() {
           className="bg-gradient-to-r from-primary-500 to-secondary-600 rounded-2xl p-8 md:p-12 text-center text-white shadow-2xl"
         >
           <h2 className="text-xl sm:text-2xl md:text-4xl font-bold mb-4">
-            Pronto per Iniziare?
+            Pronto a Inviare la tua Disdetta?
           </h2>
           <p className="text-sm sm:text-base text-white/90 mb-8">
-            Invia la tua prima disdetta in meno di 5 minuti
+            Con DisdEasy invii la tua disdetta in modo semplice, veloce e con valore legale garantito dalla PEC.
           </p>
           <Link
             href="/new-disdetta"

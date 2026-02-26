@@ -55,7 +55,6 @@ const contextualHelp: Record<string, { title: string; tips: string[] }> = {
     title: 'Termini e Condizioni',
     tips: [
       '📋 Leggi con attenzione prima di usare il servizio',
-      '🔝 Usa i bottoni in alto per navigare velocemente tra le sezioni',
       '⚖️ Sezioni chiave: Mandato, Responsabilità e Limitazioni',
       '📧 Per dubbi, contatta il supporto tramite il form contatti',
     ],
@@ -66,7 +65,15 @@ const contextualHelp: Record<string, { title: string; tips: string[] }> = {
       '🔒 Scopri come proteggiamo i tuoi dati personali',
       '🍪 Gestisci le tue preferenze sui cookie',
       '📊 Trovi info su: conservazione dati, diritti GDPR, e destinatari',
-      '🔝 Usa i bottoni in alto per passare da Privacy a Cookie Policy',
+    ],
+  },
+  '/consumer-protection': {
+    title: 'Tutela del consumatore',
+    tips: [
+      '📨 La PEC ha valore legale: garantisce prova di invio e consegna',
+      '⚡ Luce e gas: scopri cosa succede dopo la disdetta (3 scenari possibili)',
+      '🛡️ Se il fornitore non risponde, puoi inviare solleciti o avviare procedure di reclamo',
+      '📋 Sezioni chiave: Valore PEC, Responsabilità e Limiti del servizio',
     ],
   },
   '/faq': {
