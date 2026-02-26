@@ -170,10 +170,20 @@ function getServiceDescription(serviceType: string): string {
 async function triggerEmailNotification(disdettaId: number, type: 'ready' | 'sent' | 'error') {
   try {
     const baseUrl = Deno.env.get('NEXT_PUBLIC_BASE_URL') || 'http://localhost:3000'
-    
+    const internalSecret = Deno.env.get('INTERNAL_API_SECRET')
+
+    // ── SECURITY: blocca subito se il secret non è configurato ──
+    if (!internalSecret) {
+      console.error('[EMAIL] ⛔ INTERNAL_API_SECRET non configurata - notifica annullata')
+      return { success: false, error: 'Missing INTERNAL_API_SECRET' }
+    }
+
     const response = await fetch(`${baseUrl}/api/send-notification-email`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-internal-secret': internalSecret,
+      },
       body: JSON.stringify({ disdettaId, type }),
     })
 
@@ -185,6 +195,7 @@ async function triggerEmailNotification(disdettaId: number, type: 'ready' | 'sen
 
     const result = await response.json()
     return { success: true, result }
+
   } catch (error) {
     console.error('[EMAIL] Error triggering notification:', error)
     return { success: false, error }

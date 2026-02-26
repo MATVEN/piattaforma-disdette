@@ -1,8 +1,32 @@
-// next.config.js (Sintassi CommonJS corretta)
+// next.config.js
 
 /** @type {import('next').NextConfig} */
 
-// 1. Definizione degli Security Headers (invariati)
+const isDev = process.env.NODE_ENV === 'development'
+
+// 1. Content Security Policy
+// 'unsafe-eval' è necessario solo in sviluppo (Next.js source maps)
+// In produzione viene rimosso per maggiore sicurezza
+const ContentSecurityPolicy = `
+  default-src 'self';
+  script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ''} https://js.stripe.com;
+  style-src 'self' 'unsafe-inline';
+  font-src 'self';
+  img-src 'self' data: blob: https://*.supabase.co;
+  connect-src 'self'
+    https://*.supabase.co
+    wss://*.supabase.co
+    https://api.stripe.com
+    https://api.anthropic.com;
+  frame-src https://js.stripe.com https://hooks.stripe.com;
+  object-src 'none';
+  base-uri 'self';
+  form-action 'self';
+  upgrade-insecure-requests;
+`
+const cspValue = ContentSecurityPolicy.replace(/\s{2,}/g, ' ').trim()
+
+// 2. Security Headers
 const securityHeaders = [
   {
     key: 'X-Frame-Options',
@@ -20,23 +44,27 @@ const securityHeaders = [
     key: 'Permissions-Policy',
     value: 'camera=(), microphone=(), geolocation=()'
   },
+  {
+    key: 'Strict-Transport-Security',
+    value: 'max-age=31536000; includeSubDomains'
+  },
+  {
+    key: 'Content-Security-Policy',
+    value: cspValue
+  },
 ]
 
-// 2. Configurazione di Next.js
+// 3. Configurazione Next.js
 const nextConfig = {
-  // Aggiungi qui altre tue configurazioni se ne hai (es. 'reactStrictMode: true')
   reactStrictMode: false,
   experimental: {
     serverActions: {
       bodySizeLimit: '2mb'
     }
   },
-  
-  // 3. Applicazione degli headers
   async headers() {
     return [
       {
-        // Applica questi header a tutte le rotte
         source: '/(.*)',
         headers: securityHeaders,
       },
@@ -44,5 +72,4 @@ const nextConfig = {
   },
 }
 
-// 4. Esporta la configurazione (Sintassi JS corretta)
 module.exports = nextConfig

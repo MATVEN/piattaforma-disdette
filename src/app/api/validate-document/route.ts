@@ -5,6 +5,10 @@ export const dynamic = 'force-dynamic'
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
 
+// ─── Whitelist bucket e MIME consentiti ───────────────────────
+const ALLOWED_BUCKETS = ['documenti_utente'] as const
+const ALLOWED_MIME = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg', 'image/tiff']
+
 interface ValidationResult {
   is_valid: boolean
   reason: string
@@ -26,6 +30,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Parametri mancanti' }, { status: 400 })
     }
 
+    // ── SECURITY: Whitelist bucket ────────────────────────────
+    if (!ALLOWED_BUCKETS.includes(bucket)) {
+      console.warn(`[Validate Doc] ⛔ Bucket non autorizzato: "${bucket}" - user: ${user.id}`)
+      return NextResponse.json({ error: 'Bucket non autorizzato' }, { status: 403 })
+    }
+
+    // ── SECURITY: Path traversal prevention ──────────────────
+    // 1. Nessun path traversal (../)
+    // 2. Il path deve iniziare con l'user_id dell'utente autenticato
+    // 3. Nessun path assoluto
+    if (
+      file_path.includes('..') ||
+      file_path.startsWith('/') ||
+      !file_path.startsWith(`${user.id}/`)
+    ) {
+      console.warn(`[Validate Doc] ⛔ Path non autorizzato: "${file_path}" - user: ${user.id}`)
+      return NextResponse.json({ error: 'Accesso al file non autorizzato' }, { status: 403 })
+    }
+
     // Download file
     const { data: fileBlob, error: downloadError } = await supabase
       .storage
@@ -36,12 +59,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'File non trovato' }, { status: 404 })
     }
 
+    // ── SECURITY: Valida MIME type prima di passarlo a Claude ─
+    const mimeType = fileBlob.type || 'application/octet-stream'
+    if (!ALLOWED_MIME.includes(mimeType)) {
+      console.warn(`[Validate Doc] ⛔ MIME non consentito: "${mimeType}" - user: ${user.id}`)
+      return NextResponse.json({ error: 'Tipo file non supportato' }, { status: 400 })
+    }
+
     // Convert to base64
     const arrayBuffer = await fileBlob.arrayBuffer()
     const base64 = Buffer.from(arrayBuffer).toString('base64')
-
-    // Determine media type
-    const mimeType = fileBlob.type || 'application/pdf'
 
     // Call Claude Haiku for validation
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
@@ -67,22 +94,23 @@ export async function POST(req: NextRequest) {
             },
             {
               type: 'text',
-              text: `Analizza questo documento e verifica:
-1. È un documento di servizio (bolletta, fattura utenze)?
-2. Il testo è leggibile (non sfocato, non troppo scuro)?
-3. L'immagine è di qualità sufficiente per l'elaborazione?
+              text: `
+                Analizza questo documento e verifica:
+                1. È un documento di servizio (bolletta, fattura utenze)?
+                2. Il testo è leggibile (non sfocato, non troppo scuro)?
+                3. L'immagine è di qualità sufficiente per l'elaborazione?
 
-Rispondi SOLO con un JSON valido nel seguente formato (senza markdown):
-{
-  "is_valid": true o false,
-  "reason": "breve spiegazione (max 50 caratteri)"
-}
+                Rispondi SOLO con un JSON valido nel seguente formato (senza markdown):
+                {
+                  "is_valid": true o false,
+                  "reason": "breve spiegazione (max 50 caratteri)"
+                }
 
-Esempi di documenti NON validi:
-- Screenshot di chat/email
-- Foto sfocate o illeggibili
-- Immagini troppo scure
-- Documenti non relativi a utenze/servizi`
+                Esempi di documenti NON validi:
+                - Screenshot di chat/email
+                - Foto sfocate o illeggibili
+                - Immagini troppo scure
+                - Documenti non relativi a utenze/servizi`
             }
           ]
         }]
@@ -102,7 +130,6 @@ Esempi di documenti NON validi:
       return NextResponse.json({ error: 'Risposta Claude vuota' }, { status: 500 })
     }
 
-    // Parse JSON (remove markdown fences if present)
     const cleanText = textContent
       .replace(/```json\n?/g, '')
       .replace(/```\n?/g, '')

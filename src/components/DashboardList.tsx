@@ -893,7 +893,7 @@ function StatusBadgeAndAction({
           className={`${badgeClass} bg-primary-50 text-primary-700`}
         >
           <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
-          <span>In invio...</span>
+          <span>In attesa di invio...</span>
         </motion.div>
         
         <div className="w-full sm:max-w-[140px] h-1.5 bg-gray-200 rounded-full overflow-hidden">

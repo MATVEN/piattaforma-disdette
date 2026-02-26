@@ -5,6 +5,10 @@ export const dynamic = 'force-dynamic'
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
 
+// ─── Whitelist bucket e MIME consentiti ───────────────────────
+const ALLOWED_BUCKETS = ['documenti-identita'] as const
+const ALLOWED_MIME = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg', 'image/tiff']
+
 interface ValidationResult {
   is_valid: boolean
   document_type: string | null
@@ -27,6 +31,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Parametri mancanti' }, { status: 400 })
     }
 
+    // ── SECURITY: Whitelist bucket ────────────────────────────
+    if (!ALLOWED_BUCKETS.includes(bucket)) {
+      console.warn(`[Validate Identity] ⛔ Bucket non autorizzato: "${bucket}" - user: ${user.id}`)
+      return NextResponse.json({ error: 'Bucket non autorizzato' }, { status: 403 })
+    }
+
+    // ── SECURITY: Path traversal prevention ──────────────────
+    if (
+      file_path.includes('..') ||
+      file_path.startsWith('/') ||
+      !file_path.startsWith(`${user.id}/`)
+    ) {
+      console.warn(`[Validate Identity] ⛔ Path non autorizzato: "${file_path}" - user: ${user.id}`)
+      return NextResponse.json({ error: 'Accesso al file non autorizzato' }, { status: 403 })
+    }
+
     // Download file
     const { data: fileBlob, error: downloadError } = await supabase
       .storage
@@ -37,12 +57,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'File non trovato' }, { status: 404 })
     }
 
+    // ── SECURITY: Valida MIME type prima di passarlo a Claude ─
+    const mimeType = fileBlob.type || 'application/octet-stream'
+    if (!ALLOWED_MIME.includes(mimeType)) {
+      console.warn(`[Validate Identity] ⛔ MIME non consentito: "${mimeType}" - user: ${user.id}`)
+      return NextResponse.json({ error: 'Tipo file non supportato' }, { status: 400 })
+    }
+
     // Convert to base64
     const arrayBuffer = await fileBlob.arrayBuffer()
     const base64 = Buffer.from(arrayBuffer).toString('base64')
-
-    // Determine media type
-    const mimeType = fileBlob.type || 'application/pdf'
 
     // Call Claude Haiku for identity document validation
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
@@ -68,34 +92,35 @@ export async function POST(req: NextRequest) {
             },
             {
               type: 'text',
-              text: `Analizza questo documento e verifica se è un documento d'identità italiano valido.
+              text: `
+                Analizza questo documento e verifica se è un documento d'identità italiano valido.
 
-Documenti accettati:
-- Carta d'identità italiana (fronte o retro)
-- Patente di guida italiana
-- Passaporto italiano
+                Documenti accettati:
+                - Carta d'identità italiana (fronte o retro)
+                - Patente di guida italiana
+                - Passaporto italiano
 
-Verifica:
-1. È uno dei documenti sopra elencati?
-2. La foto della persona è chiaramente visibile?
-3. I dati anagrafici sono leggibili (nome, cognome, data nascita)?
-4. Il documento non è sfocato o troppo scuro?
-5. Non è uno screenshot, bolletta, o altro tipo di documento?
+                Verifica:
+                1. È uno dei documenti sopra elencati?
+                2. La foto della persona è chiaramente visibile?
+                3. I dati anagrafici sono leggibili (nome, cognome, data nascita)?
+                4. Il documento non è sfocato o troppo scuro?
+                5. Non è uno screenshot, bolletta, o altro tipo di documento?
 
-Rispondi SOLO con un JSON valido nel seguente formato (senza markdown):
-{
-  "is_valid": true o false,
-  "document_type": "carta_identita" o "patente" o "passaporto" o null,
-  "reason": "breve spiegazione (max 60 caratteri)"
-}
+                Rispondi SOLO con un JSON valido nel seguente formato (senza markdown):
+                {
+                  "is_valid": true o false,
+                  "document_type": "carta_identita" o "patente" o "passaporto" o null,
+                  "reason": "breve spiegazione (max 60 caratteri)"
+                }
 
-Esempi di documenti NON validi:
-- Bollette o fatture
-- Screenshot
-- Foto di paesaggi o persone
-- Documenti esteri
-- Documenti scaduti o illeggibili
-- Carte di credito, tessere sanitarie`
+                Esempi di documenti NON validi:
+                - Bollette o fatture
+                - Screenshot
+                - Foto di paesaggi o persone
+                - Documenti esteri
+                - Documenti scaduti o illeggibili
+                - Carte di credito, tessere sanitarie`
             }
           ]
         }]
@@ -115,7 +140,6 @@ Esempi di documenti NON validi:
       return NextResponse.json({ error: 'Risposta Claude vuota' }, { status: 500 })
     }
 
-    // Parse JSON (remove markdown fences if present)
     const cleanText = textContent
       .replace(/```json\n?/g, '')
       .replace(/```\n?/g, '')
@@ -129,7 +153,6 @@ Esempi di documenti NON validi:
       return NextResponse.json({ error: 'Formato risposta non valido' }, { status: 500 })
     }
 
-    // Map document_type to user-friendly names
     const documentTypeNames: Record<string, string> = {
       'carta_identita': "Carta d'Identità",
       'patente': 'Patente di Guida',
