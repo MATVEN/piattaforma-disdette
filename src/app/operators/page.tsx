@@ -134,13 +134,13 @@ export default function OperatorsPage() {
             >
               Operatori Supportati
             </h1>
-            <p className="text-sm sm:text-base text-gray-600 text-lg">
+            <p className="text-sm sm:text-base text-gray-600 text-lg mb-4">
               Puoi inviare disdette a tutti i principali fornitori italiani di energia, gas e telecomunicazioni
             </p>
 
             {/* Filters and Search */}
             <div className="relative max-w-2xl mx-auto">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Search Bar */}
                 <div className="relative max-w-md mx-auto mb-6">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -256,7 +256,7 @@ export default function OperatorsPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="bg-gradient-to-r from-primary-50 to-primary-100 rounded-2xl p-8 border border-primary-100 text-center"
+          className="bg-gradient-to-r from-primary-50 to-primary-100 rounded-2xl p-8 border border-primary-600 text-center"
         >
           <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
             Non trovi il tuo operatore?

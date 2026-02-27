@@ -396,7 +396,7 @@ export default function FAQPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="mt-16 text-center bg-gradient-to-r from-primary-50 to-primary-100 rounded-2xl p-8 border border-primary-100"
+          className="mt-16 text-center bg-gradient-to-r from-primary-50 to-primary-100 rounded-2xl p-8 border border-primary-600"
         >
           <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
             Non hai trovato quello che cercavi?

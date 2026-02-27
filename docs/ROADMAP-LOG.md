@@ -1638,7 +1638,7 @@
     - Automatic cleanup of invalid files in storage to avoid orphan data.
     - Maintains existing submission flow without extra friction.
 
-  - **Benefits:**
+  - **Results:**
     - Prevents invalid documents and wrong operator selections.
     - Reduces PEC rejection risk and support workload.
     - Improves data quality before payment and submission.
@@ -1747,6 +1747,45 @@
     - Consistent legal content structure across platform
 
   - **Files Involved:**
-    - src/app/consumer-protection/page.tsx
-    - src/components/Footer.tsx
-    - src/components/onboarding/HelpButton.tsx
+    - `src/app/consumer-protection/page.tsx`
+    - `src/components/Footer.tsx`
+    - `src/components/onboarding/HelpButton.tsx`
+
+- **About Us Page – Company Mission & Team:**
+
+  - **Company Presentation Page:**
+    - Creates `/who-we-are` informational page explaining DisdEasy’s mission, vision, philosophy, history, and team
+    - Sections include: Hero intro, Mission statement, Philosophy pillars, Company story, Core values, Team members, Final CTA to `/new-disdetta`
+    - Professional tone aligned with legal and informational pages (Privacy, Tutela Consumatore)
+    - Improves user trust through transparency about founders and project goals
+
+  - **Design & UX Implementation:**
+    - Glassmorphism cards with gradient background consistent with C17 design system
+    - Lucide React icons for visual consistency across informational pages
+    - Framer Motion animations with staggered transitions for section reveal
+    - Next.js Image component for optimized team photos
+    - Mobile-first responsive layout with optimized text widths (`max-w-5xl`, `max-w-4xl`)
+    - CTA integration to start new cancellation flow
+
+  - **Contextual Guide Integration:**
+    - Adds `/who-we-are` entry to contextual guide system
+    - Provides 4 tips explaining company philosophy, technology approach, team background, and project story
+    - Ensures consistent onboarding experience across informational pages
+
+  - **SEO & Technical Configuration:**
+    - Separate layout metadata for SEO-friendly title and description
+    - `next.config.js` updated with remote image patterns and CSP img-src rules for hosted team photos
+    - Semantic HTML structure with proper heading hierarchy and accessibility labels
+
+  - **Results:**
+    - Stronger brand credibility and transparency
+    - Consistent informational page ecosystem
+    - Improved conversion trust signals before starting a disdetta
+    - SEO-ready company profile page
+
+  - **Files Involved:**
+    - `src/app/who-we-are/page.tsx`
+    - `src/app/who-we-are/layout.tsx`
+    - `src/components/Footer.tsx`
+    - `src/components/onboarding/HelpButton.tsx`
+    - `next.config.js`

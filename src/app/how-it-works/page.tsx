@@ -134,7 +134,7 @@ export default function HowItWorksPage() {
             transition={{ delay: 0.4 }}
             className="text-center mb-12"
           >
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl sm:text-4xl font-bold text-gray-900 mb-4">
               Perché Scegliere DisdEasy
             </h2>
             <p className="text-sm sm:text-base text-gray-600">

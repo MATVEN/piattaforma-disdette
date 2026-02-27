@@ -12,7 +12,7 @@ const ContentSecurityPolicy = `
   script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ''} https://js.stripe.com;
   style-src 'self' 'unsafe-inline';
   font-src 'self';
-  img-src 'self' data: blob: https://*.supabase.co;
+  img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com;
   connect-src 'self'
     https://*.supabase.co
     wss://*.supabase.co
@@ -61,6 +61,15 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '2mb'
     }
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        pathname: '/aida-public/**',
+      },
+    ],
   },
   async headers() {
     return [

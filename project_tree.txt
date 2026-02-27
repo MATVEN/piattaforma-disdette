@@ -127,6 +127,9 @@ src\app\update-password\page.tsx
 src\app\upload
 src\app\upload\[serviceId]
 src\app\upload\[serviceId]\page.tsx
+src\app\who-we-are
+src\app\who-we-are\layout.tsx
+src\app\who-we-are\page.tsx
 src\components
 src\components\AuthHeader.tsx
 src\components\DashboardList.tsx

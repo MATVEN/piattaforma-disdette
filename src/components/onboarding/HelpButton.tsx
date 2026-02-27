@@ -103,6 +103,15 @@ const contextualHelp: Record<string, { title: string; tips: string[] }> = {
       '🚀 Pronto? Clicca "Nuova Disdetta" per iniziare',
     ],
   },
+  '/who-we-are': {
+    title: 'Chi siamo - Vision & Mission',
+    tips: [
+      '👥 Scopri il team dietro DisdEasy e la nostra mission',
+      '💡 Tre pilastri: Semplicità, Trasparenza e Affidabilità',
+      '🚀 Tecnologia proprietaria validata da avvocati esperti',
+      '📖 Leggi la storia di come è nato il progetto',
+    ],
+  },
   '/contact': {
     title: 'Contattaci',
     tips: [

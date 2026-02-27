@@ -49,7 +49,7 @@ export default function Footer() {
                 href="/who-we-are"
                 className="text-gray-300 hover:text-primary-400 transition-colors text-sm"
               >
-                Chi siamo - Mission & Vision
+                Chi siamo - Mission&Vision
               </Link>
             </nav>
           </div>
