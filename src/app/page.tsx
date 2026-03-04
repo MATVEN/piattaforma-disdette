@@ -131,7 +131,7 @@ export default function HomePage() {
                 easy
               </span>
               <svg className="absolute bottom-1 left-0 w-full h-3 text-primary-600 -z-10" preserveAspectRatio="none" viewBox="0 0 100 10">
-                <path d="M0 5 Q 50 10 100 5" fill="none" stroke="currentColor" strokeWidth="8" />
+                <path d="M0 5 Q 50 6 100 5" fill="none" stroke="currentColor" strokeWidth="8" />
               </svg>
             </span>
             <br/>Solo 6,99€ a pratica
@@ -143,7 +143,7 @@ export default function HomePage() {
             transition={{ delay: 0.2 }}
             className="mx-auto mt-6 max-w-3xl text-lg text-gray-600 sm:text-xl"
           >
-            Il servizio online numero 1 in Italia per inviare disdette con pieno valore legale.<br className="hidden sm:block" />
+            Il servizio online in Italia per inviare disdette con pieno valore legale<br className="hidden sm:block" />
             <span className="font-bold text-primary-600">Nessun costo nascosto, nessun abbonamento, nessuna fregatura.</span>
           </motion.p>
 
@@ -233,17 +233,6 @@ export default function HomePage() {
               <ShieldCheck className="text-primary-500 h-6 w-6" />
               <span className="text-sm font-medium text-gray-600">Valore Legale Garantito</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Users className="text-primary-500 h-6 w-6" />
-              <span className="text-sm font-medium text-gray-600">50.000+ Utenti Soddisfatti</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="flex text-yellow-400">
-                {[...Array(4)].map((_, i) => <Star key={i} className="h-5 w-5 fill-current" />)}
-                <Star className="h-5 w-5 fill-current opacity-50" />
-              </div>
-              <span className="text-sm font-bold text-gray-800">4.8/5</span>
-            </div>
           </motion.div>
         </div>
       </section>
@@ -331,7 +320,7 @@ export default function HomePage() {
       </section>
 
       {/* B2B Banner */}
-      <section className="relative py-24 bg-gradient-to-r from-primary-500 to-secondary-600">
+      <section className="relative py-24 bg-gradient-primary">
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-8">
           <div className="max-w-2xl">
             <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
@@ -352,64 +341,21 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-16 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-2xl font-bold text-gray-900">Cosa dicono di noi</h2>
-          </motion.div>
-
-          <div className="grid gap-8 md:grid-cols-3">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="flex flex-col rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100 p-6"
-              >
-                <div className="flex gap-1 text-yellow-400 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-current" />
-                  ))}
-                </div>
-                <p className="text-gray-600 italic mb-6 flex-grow">{testimonial.text}</p>
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-gradient-primary flex items-center justify-center text-white font-bold">
-                    {testimonial.initial}
-                  </div>
-                  <div>
-                    <p className="font-bold text-sm text-gray-900">{testimonial.name}</p>
-                    <p className="text-xs text-gray-500">Utente verificato</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Final CTA */}
-      <section>
+      <section className="mt-16 bg-white">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary-500 to-secondary-600 px-6 py-12 text-center shadow-2xl sm:px-12 sm:py-16"
+            className="relative overflow-hidden rounded-2xl bg-gradient-primary px-6 py-12 text-center shadow-2xl sm:px-12 sm:py-16"
           >
             <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
             <div className="relative z-10">
               <h2 className="mx-auto max-w-2xl text-3xl font-bold tracking-tight text-white sm:text-4xl">
                 Pronto a liberarti dai contratti inutili?
               </h2>
-              <p className="mx-auto mt-4 max-w-xl text-lg text-white/90">
+              <p className="mx-auto mt-4 max-w-4xl text-lg text-white/90">
                 Unisciti a migliaia di italiani che hanno già semplificato la loro vita con DisdEasy.
               </p>
               <div className="mt-8 flex justify-center gap-4">
@@ -432,10 +378,10 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-6"
           >
             <h2 className="text-3xl font-bold text-gray-900">Domande Frequenti</h2>
-            <p className="mt-4 text-gray-600">Tutto quello che devi sapere per disdire in tranquillità.</p>
+            <p className="text-gray-600">Tutto quello che devi sapere per disdire in tranquillità.</p>
           </motion.div>
 
           <div className="space-y-4">

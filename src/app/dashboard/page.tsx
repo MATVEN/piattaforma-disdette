@@ -78,13 +78,13 @@ function DashboardContent() {
   return (
     <div className="bg-gray-50">
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-6 sm:py-12 w-full overflow-x-hidden">
-        <div className="mb-6 sm:mb-8">
+        <div className="mb-4 sm:mb-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
             Le mie Disdette
           </h1>
         </div>
 
-        <p className="text-gray-600 mb-6 sm:mb-8">
+        <p className="text-gray-600 mb-4 sm:mb-4">
           Qui puoi vedere lo stato di tutte le disdette che hai caricato.
         </p>
 

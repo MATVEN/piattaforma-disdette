@@ -177,12 +177,13 @@ export default function FAQPage() {
            animate={{ opacity: 1, y: 0 }}
            className="text-center"
           >
-            <h1 className="text-4xl sm:text-5xl font-bold mb-4"
+            <h1
+              className="text-4xl sm:text-5xl font-bold inline-block py-2"
               style={{
                 backgroundImage: 'linear-gradient(135deg, #00C4B4 0%, #0D417D 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
+                backgroundClip: 'text',
               }}
             >
               Domande Frequenti

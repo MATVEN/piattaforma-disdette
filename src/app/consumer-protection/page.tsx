@@ -51,22 +51,37 @@ export default function TutelaConsumatorePage() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Auto-scroll al bottone attivo nella sticky nav
+  useEffect(() => {
+    if (!showStickyNav) return
+
+    const activeButton = document.querySelector(`button[data-section="${activeSection}"]`)
+    if (activeButton) {
+      activeButton.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center'
+      })
+    }
+  }, [activeSection, showStickyNav])
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-primary-100 to-secondary-50">
       {/* Hero Section */}
       <div className="bg-white/80 backdrop-blur-md border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-6">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <h1 className="text-4xl md:text-5xl font-bold mb-4"
+            <h1
+              className="text-4xl sm:text-5xl font-bold inline-block py-2"
               style={{
                 backgroundImage: 'linear-gradient(135deg, #00C4B4 0%, #0D417D 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
+                backgroundClip: 'text',
               }}
             >
               Tutela del Consumatore
@@ -154,10 +169,11 @@ export default function TutelaConsumatorePage() {
             transition={{ duration: 0.3 }}
             className="fixed top-16 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-lg"
           >
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex justify-center items-center gap-2 py-3 overflow-x-auto">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex items-center gap-2 py-3 px-4 sm:px-6 lg:px-8 overflow-x-auto scrollbar-hide">
                 <button
                   onClick={() => scrollToSection('cose-disdeasy')}
+                  data-section="cose-disdeasy"
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all text-sm ${
                     activeSection === 'cose-disdeasy'
                       ? 'bg-gradient-primary text-white shadow-lg scale-105'
@@ -170,6 +186,7 @@ export default function TutelaConsumatorePage() {
 
                 <button
                   onClick={() => scrollToSection('valore-pec')}
+                  data-section="valore-pec"
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all text-sm ${
                     activeSection === 'valore-pec'
                       ? 'bg-gradient-primary text-white shadow-lg scale-105'
@@ -182,6 +199,7 @@ export default function TutelaConsumatorePage() {
 
                 <button
                   onClick={() => scrollToSection('dopo-disdetta')}
+                  data-section="dopo-disdetta"
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all text-sm ${
                     activeSection === 'dopo-disdetta'
                       ? 'bg-gradient-primary text-white shadow-lg scale-105'
@@ -194,6 +212,7 @@ export default function TutelaConsumatorePage() {
 
                 <button
                   onClick={() => scrollToSection('non-risponde')}
+                  data-section="non-risponde"
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all text-sm ${
                     activeSection === 'non-risponde'
                       ? 'bg-gradient-primary text-white shadow-lg scale-105'
@@ -206,6 +225,7 @@ export default function TutelaConsumatorePage() {
 
                 <button
                   onClick={() => scrollToSection('responsabilita')}
+                  data-section="responsabilita"
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all text-sm ${
                     activeSection === 'responsabilita'
                       ? 'bg-gradient-primary text-white shadow-lg scale-105'

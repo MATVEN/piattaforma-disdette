@@ -38,6 +38,7 @@
     - Deploys the `process-document` Edge Function to the Supabase project.
 
 - **Data Persistence & Review(C5):**
+
   - **Backend:**
     - Creates `disdette` table with RLS policies.
     - Adds a new secure API route `/api/get-extracted-data` to fetch results via RLS.
@@ -51,34 +52,41 @@
     - Configures CORS on the Edge Function to allow `http://localhost:3000`.
 
 - **Data Confirmation(C6):**
+
   - **Frontend:**
     - Converts `ReviewForm`(C5) into a controlled component using `useState`.
     - Implements `handleFormChange` and `handleSubmit` to manage submission state.
     - Redirects user to `/dashboard` upon successful submission.
+
   - **Backend:**
     - Creates the new API route `/api/confirm-data` (PATCH).
     - The API securely authenticates the user (ANON_KEY) and implements a safe `cookieAdapter`.
     - On success, the API updates the `disdette` record with user-supplied data and sets the `status` to `CONFIRMED`.
 
 - **User Dashboard(C7):**
+
   - **Backend:**
     - Creates the new API route `GET /api/get-my-disdette`.
     - The API securely fetches all records from `disdette` matching the `user_id`.
+
   - **Frontend:**
     - Creates the new `/dashboard` page (Server Component) to act as the user's main hub, including a `Suspense` boundary.
     - Creates the `DashboardList`(Client Component) which calls the new API, handles loading/error states, and renders the list of submissions.
     - Adds a `StatusBadge` component to show the state (`PENDING_REVIEW` or `CONFIRMED`).
 
 - **PEC Send-Flow(C8):**
+
   - **Frontend (Review Page):**
     - Updates `ReviewForm`(C6) `handleSubmit` to a 2-phase process:
       1. Calls `PATCH /api/confirm-data` to confirm data.
       2. Calls `POST /api/send-pec` to trigger the send.
     - Button text changed to "Conferma e Invia PEC".
+
   - **Backend (API Trigger):**
     - Creates the new API route `POST /api/send-pec`.
     - This route securely validates the user and the disdetta status (`CONFIRMED`).
     - Invokes the `send-pec-disdetta` Edge Function.
+
   - **Backend (Edge Function):**
     - Creates the new `send-pec-disdetta` Edge Function.
     - (Fase 1 - Recupero): Uses SERVICE_ROLE_KEY to fetch 'disdette' and 'profiles' data, and downloads the 'documento_delega' file from Storage.
@@ -87,6 +95,7 @@
     - Updates the disdetta status to `SENT` upon successful PDF generation.
 
 - **Profile Enforcement(C9):**
+
   - **AuthContext(C1.5):**
     - Updates `AuthContext` to fetch the user's `profiles` data on login.
     - Exposes a new boolean `isProfileComplete` (true only if `nome`, `cognome`, `indirizzo_residenza` are not null).
@@ -109,6 +118,7 @@
     - Adds redirect from `/profileUser` back to `/dashboard` after successful save.
 
 - **Implements Google Social Login(C10):**
+
   - **Backend (Supabase Config):**
     - Configured Google as an OAuth provider in the Supabase dashboard (requires Client ID and Secret from Google Cloud Console).
 
@@ -130,6 +140,7 @@
   - **Database:** Applies "least-privilege" select (no 'select(*)') to '/api/get-my-disdette'.
 
 - **Security Hardening(C11.5):**
+
   - **Edge Function (`send-pec-disdetta`):**
     - Implements "Dual Client Auth" pattern to verify user ownership (RLS) *before* using the `SERVICE_ROLE_KEY`.
     - Implements "State Transition Check" (`.eq('status', 'CONFIRMED')`) to prevent duplicate disdetta sends.
@@ -164,6 +175,7 @@
     - If `status: 'FAILED'` is detected, it displays the `error_message` from the database.
 
 - **Architecture Refactoring(C15):**
+
   - **Foundation Layer:**
     - Introduces `src/lib/errors/AppError.ts` with error types `(UnauthorizedError, NotFoundError, ValidationError, …)` and code mapping.
     - Adds AuthService `(src/services/auth.service.ts)` to centralize authentication (removes duplication across APIs).
@@ -205,6 +217,7 @@
     - Stronger end-to-end types and ready foundation for infinite scroll(C16).
 
 - **Infinite Scroll Pagination(C16):**
+
   - **Custom Hook (useInfiniteScroll)**
     - Creates `src/hooks/useInfiniteScroll.ts` to centralize all pagination logic.
     - Manages full pagination state: `items, page, isLoading, isLoadingMore, hasMore, error, totalCount.`
@@ -268,6 +281,7 @@
     - Smooth transitions thanks to skeletons, spinners, and preloading.
 
 - **Modern Design System & UI Overhaul(C17):**
+
   - **Design System Foundation:**
     - Implements comprehensive `tailwind.config.js` with modern color palette:
       - Primary indigo gradient (`#6366F1` → `#4F46E5`)
@@ -377,6 +391,7 @@
     - Scalable design system ready for new features
 
 - **Custom Error Pages(C18):**
+
   - **Error Page Design:**
     - Creates custom 404 (not-found.tsx) with AlertCircle icon and primary-600 color
     - Creates custom 500 (error.tsx) with XCircle icon, dual action buttons (retry + dashboard), and error logging
@@ -412,6 +427,7 @@
     - Professional polish aligned with modern design system
 
 - **Footer & Legal Pages(C19):**
+
   - **Footer Component:**
     - Creates responsive footer with 4-column layout (Brand, Product, Support, Legal)
     - Dark theme design (bg-gray-900) with consistent hover states (text-primary-400)
@@ -548,6 +564,7 @@
     - `src/app/faq/page.tsx`
 
 - **Duplicate Detection System(C20):**
+
   - **Data Access Layer:**
     - Adds `checkDuplicate()` in `src/repositories/disdetta.repository.ts` to detect existing cancellations matching the tuple  
       `(user_id, supplier_tax_id, receiver_tax_id, supplier_contract_number)`.
@@ -608,6 +625,7 @@
     - Ensures consistent metadata, logging, and type-safety across the entire stack.
 
 - **Testing & QA Suite(C21):**
+
   - **Testing Framework Setup:**
     - Adds Jest 30.2.0 with full Next.js and TypeScript integration.
     - Configures React Testing Library, MSW mocks, and global Jest setup.
@@ -958,6 +976,7 @@
       - `src/app/profile/page.tsx`
 
 - **Email Notification System(C31):**
+
   - **Problem Addressed:**
     - Users had no visibility on asynchronous processing steps (OCR completion, PEC sending, errors).
     - Required manual dashboard polling with poor UX and high uncertainty.
@@ -1476,12 +1495,6 @@
     - `src/app/api/stripe/webhook/route.ts`
 
 - **Embedded Stripe Payment Element: (Post-Review)**
-
-  - **What it does:**
-  Replaces the external Stripe Checkout redirect with an embedded payment form, keeping users on-platform throughout the entire payment process.
-
-  - **Why it matters:**
-  Eliminates context switches and redirects during checkout, reduces drop-off, and ensures form data persistence across the full payment flow.
 
   - **Payment Flow Changes:**
     - Replaced legacy `PaymentButton` with an inline `EmbeddedPaymentForm`.

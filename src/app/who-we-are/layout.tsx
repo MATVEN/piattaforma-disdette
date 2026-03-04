@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Chi Siamo - Mission&Vision | DisdEasy',
+  title: 'Chi Siamo | DisdEasy',
   description: 'Scopri la mission di DisdEasy: semplificare la gestione dei contratti. Conosci il team e la nostra filosofia di trasparenza e affidabilità.',
 }
 

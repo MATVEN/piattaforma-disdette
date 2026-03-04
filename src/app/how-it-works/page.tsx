@@ -58,18 +58,19 @@ export default function HowItWorksPage() {
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-primary-100 to-secondary-50">
       {/* Hero Section */}
       <div className="bg-white/80 backdrop-blur-md border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-12">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <h1 className="text-4xl sm:text-5xl font-bold mb-4"
+            <h1
+              className="text-4xl sm:text-5xl font-bold inline-block py-2"
               style={{
                 backgroundImage: 'linear-gradient(135deg, #00C4B4 0%, #0D417D 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
+                backgroundClip: 'text',
               }}
             >
               Come funziona DisdEasy
@@ -175,7 +176,7 @@ export default function HowItWorksPage() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.8 }}
-          className="bg-gradient-to-r from-primary-500 to-secondary-600 rounded-2xl p-8 md:p-12 text-center text-white shadow-2xl"
+          className="bg-gradient-primary rounded-2xl p-8 md:p-12 text-center text-white shadow-2xl"
         >
           <h2 className="text-xl sm:text-2xl md:text-4xl font-bold mb-4">
             Pronto a Inviare la tua Disdetta?

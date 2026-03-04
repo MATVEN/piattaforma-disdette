@@ -52,6 +52,15 @@ body {
   .border-gradient-primary {
     border-image: linear-gradient(135deg, #00C4B4 0%, #0D417D 100%) 1;
   }
+
+  /* Nascondi scrollbar ma mantieni funzionalità scroll */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, Opera */
+  }
 }
 
 input[type="text"],
@@ -59,18 +68,6 @@ input[type="email"],
 input[type="password"],
 input[type="tel"] {
   color: #111827;
-}
-
-/* Touch-friendly form inputs - Prevent iOS zoom */
-@media screen and (max-width: 768px) {
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  input[type="number"],
-  textarea,
-  select {
-    font-size: 16px !important;
-  }
 }
 
 /* Ensure minimum touch target size */
@@ -93,8 +90,17 @@ button:active {
   display: none;
 }
 
-/* FORCE FIT TUTTO DENTRO VIEWPORT */
+/* FORCE FIT VIEWPORT */
+/* Touch-friendly form inputs - Prevent iOS zoom */
 @media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 
   /* Forza tutto a non superare la viewport */
   html, body, #__next, main, main > * {

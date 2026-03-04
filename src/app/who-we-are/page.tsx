@@ -15,18 +15,17 @@ export default function ChiSiamoPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="space-y-6"
           >
-            <h1 
-              className="text-4xl md:text-5xl font-bold text-gray-900"
+            <h1
+              className="text-4xl sm:text-5xl font-bold inline-block py-2"
               style={{
                 backgroundImage: 'linear-gradient(135deg, #00C4B4 0%, #0D417D 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
+                backgroundClip: 'text',
               }}
             >
-              Chi Siamo - Mission&Vision
+              Chi Siamo
             </h1>
 
             <p className="text-lg text-gray-600 leading-relaxed">
@@ -38,16 +37,10 @@ export default function ChiSiamoPage() {
       </section>
 
       {/* Mission Statement Section */}
-      <section className="sm:px-6 lg:px-8 py-16">
+      <section className="px-4 sm:px-6 lg:px-8 py-16">
         <div className="max-w-5xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 md:p-8 border border-white/20"
-          >
             <div className="text-center">
-              <span className="inline-block px-4 py-1 rounded-full bg-primary-100 text-primary-700 text-xs font-bold uppercase tracking-wider mb-4">
+              <span className="inline-block px-4 py-1 rounded-full bg-white text-primary-700 text-xs font-bold border border-primary-600 uppercase tracking-wider mb-4">
                 La Nostra Mission
               </span>
               <h2
@@ -76,7 +69,6 @@ export default function ChiSiamoPage() {
                 eliminando inutili complessità e restituendo alle persone il controllo delle proprie scelte.
               </p>
             </div>
-          </motion.div>
         </div>
       </section>
 
@@ -84,7 +76,7 @@ export default function ChiSiamoPage() {
       <section className="px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <span className="inline-block px-4 py-1 rounded-full bg-white text-primary-700 text-xs font-bold uppercase tracking-wider mb-4">
+            <span className="inline-block px-4 py-1 rounded-full bg-white text-primary-700 text-xs border border-primary-600 font-bold uppercase tracking-wider mb-4">
               La Nostra Filosofia
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -147,8 +139,8 @@ export default function ChiSiamoPage() {
           </div>
 
           {/* Obiettivo futuro */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-white/20">
-            <p className="text-lg text-gray-600 text-center max-w-3xl mx-auto">
+          <div className="bg-gradient-primary rounded-2xl p-12">
+            <p className="text-lg text-white/90 text-center max-w-4xl mx-auto font-bold">
               Il nostro obiettivo è costruire una piattaforma capace di semplificare tutte le principali 
               pratiche amministrative: dalle disdette ai reclami, dai rimborsi alle pratiche assicurative.
             </p>
@@ -185,7 +177,7 @@ export default function ChiSiamoPage() {
                 guidato e affidabile. Da questa idea nasce DisdEasy.
               </p>
 
-              <div className="flex items-center gap-4">
+              <div className="hidden md:flex flex items-center gap-4">
                 <div className="h-px bg-gray-300 flex-1"></div>
                 <BookOpen className="w-6 h-6 text-primary-600" />
                 <div className="h-px bg-gray-300 flex-1"></div>
@@ -196,7 +188,7 @@ export default function ChiSiamoPage() {
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="relative h-80 lg:h-[500px] rounded-2xl overflow-hidden shadow-2xl group"
+              className="hidden md:flex relative h-80 lg:h-[500px] rounded-2xl overflow-hidden shadow-2xl group"
             >
               <Image
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8hWM6LzsaZRcFssHamlKLfk7mIGtdOu68CqAZ3jxj1Dq26kkcNLRAXvdnyPok5Dyfxwz02YqEG82Zu3Ao1Uidjbibg1oNBnIIpsWI4mSBIbQVxPArRujOTxdsvizf91cyjsjVR9sJ4cE4yIxsxvoJD3gXpPcGzBlmT4dpWdZOvBrflQ5ypZP7gRRE-BniGSDzS5xUAeq4qQHz4hqutpfZIgvsLUu7EQ-ccxJeLivWp-P4yucrD-alfpi_AWaU7jLf8LnXe05DA76H"
@@ -412,34 +404,6 @@ export default function ChiSiamoPage() {
         </div>
       </section>
 
-      {/* CTA Final Section */}
-      <section className="py-16 px-4 text-center bg-white/40 border-t border-white/20">
-        <div className="max-w-3xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="space-y-8"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900">
-              Pronto a riprenderti la tua libertà?
-            </h2>
-            <p className="text-xl text-gray-600">
-              Unisciti a migliaia di utenti che hanno scelto la semplicità. Disdici in pochi click.
-            </p>
-            <a
-              href="/new-disdetta"
-              className="inline-flex items-center gap-2 px-10 py-4 bg-gradient-primary text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105"
-            >
-              <span>Inizia una disdetta</span>
-              <ArrowRight className="w-5 h-5" />
-            </a>
-            <p className="text-xs text-gray-500 mt-4">
-              Nessuna carta di credito richiesta per iniziare.
-            </p>
-          </motion.div>
-        </div>
-      </section>
     </div>
   )
 }

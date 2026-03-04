@@ -52,23 +52,24 @@ export default function PrivacyPage() {
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-primary-100 to-secondary-50">
       {/* Hero */}
       <div className="bg-white/80 backdrop-blur-md border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <h1 className="text-4xl sm:text-5xl font-bold mb-4"
+            <h1
+              className="text-4xl sm:text-5xl font-bold inline-block py-2"
               style={{
                 backgroundImage: 'linear-gradient(135deg, #00C4B4 0%, #0D417D 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
+                backgroundClip: 'text',
               }}
             >
               Privacy & Cookie Policy
             </h1>
-            <div className="flex items-center justify-center gap-2 text-gray-600 mb-8">
+            <div className="flex items-center justify-center gap-2 text-gray-600 mb-4">
               <Calendar className="h-4 w-4" />
               <p>Ultimo aggiornamento: [DA COMPILARE: GG/MM/2025]</p>
             </div>

@@ -199,7 +199,7 @@ export default function Navbar() {
                   <>
                     <MobileNavLink href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
                       <Home className="h-5 w-5" />
-                      Dashboard
+                      <span className="font-medium">Dashboard</span>
                     </MobileNavLink>
                     <Link
                       href="/new-disdetta"
@@ -207,11 +207,11 @@ export default function Navbar() {
                       className="flex items-center space-x-3 rounded-lg px-4 py-3 mx-2 bg-gradient-primary text-white font-semibold transition-all hover:scale-105"
                     >
                       <Plus className="h-5 w-5" />
-                      <span>Nuova Disdetta</span>
+                      <span className="font-medium">Nuova Disdetta</span>
                     </Link>
                     <MobileNavLink href="/profileUser" onClick={() => setIsMobileMenuOpen(false)}>
                       <User className="h-5 w-5" />
-                      Profilo
+                      <span className="font-medium">Profilo</span>
                     </MobileNavLink>
                     <button
                       onClick={() => {

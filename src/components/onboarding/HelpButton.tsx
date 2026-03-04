@@ -104,7 +104,7 @@ const contextualHelp: Record<string, { title: string; tips: string[] }> = {
     ],
   },
   '/who-we-are': {
-    title: 'Chi siamo - Vision & Mission',
+    title: 'Chi siamo',
     tips: [
       '👥 Scopri il team dietro DisdEasy e la nostra mission',
       '💡 Tre pilastri: Semplicità, Trasparenza e Affidabilità',
