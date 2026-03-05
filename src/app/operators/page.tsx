@@ -13,11 +13,10 @@ const supabase = createClient(
 interface Operator {
   id: number
   name: string
-  category_id: number
-  categories: {
+  categories: Array<{
     id: number
     name: string
-  } | null
+  }>
 }
 
 const categoryColors: Record<string, { bg: string; text: string }> = {
@@ -48,26 +47,25 @@ export default function OperatorsPage() {
           .select(`
             id,
             name,
-            category_id,
-            categories!inner (
-              id,
-              name
+            operator_categories (
+              categories (
+                id,
+                name
+              )
             )
           `)
           .order('name')
 
         if (error) throw error
-        
-        // ✅ Trasformazione esplicita: no cast, no errori TypeScript
+
         if (data) {
           const transformedData: Operator[] = data.map(op => ({
             id: op.id,
-            name: op.name,
-            category_id: op.category_id,
-            // ✅ Se è array, prendi primo elemento; se è oggetto, usa direttamente
-            categories: Array.isArray(op.categories)
-              ? (op.categories.length > 0 ? op.categories[0] : null)
-              : op.categories || null
+            name: op.name || '',
+            // Estrai array di categorie dalla struttura many-to-many
+            categories: (op.operator_categories || [])
+              .map((oc: any) => oc.categories)
+              .filter(Boolean)
           }))
           setOperators(transformedData)
         }
@@ -85,9 +83,7 @@ export default function OperatorsPage() {
   const categories = useMemo(() => {
     const cats = new Set(['Tutti'])
     operators.forEach(op => {
-      if (op.categories) {  // ✅ Controlla solo esistenza
-        cats.add(op.categories.name)  // ✅ Accesso diretto
-      }
+      op.categories.forEach(cat => cats.add(cat.name))
     })
     return Array.from(cats)
   }, [operators])
@@ -96,10 +92,10 @@ export default function OperatorsPage() {
   const filteredOperators = useMemo(() => {
     let filtered = operators
 
-    // Filter by category
+    // Filter by category (many-to-many: un operatore può avere più categorie)
     if (activeFilter !== 'Tutti') {
       filtered = filtered.filter(op =>
-        op.categories && op.categories.name === activeFilter  // ✅
+        op.categories.some(cat => cat.name === activeFilter)
       )
     }
 
@@ -213,8 +209,8 @@ export default function OperatorsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredOperators.map((operator, index) => {
-                const categoryName = operator.categories
-                  ? operator.categories.name
+                const categoryName = operator.categories.length > 0
+                  ? operator.categories[0].name
                   : 'Altro'
                 const colors = categoryColors[categoryName] || { bg: 'bg-gray-100', text: 'text-gray-800' }
                 const Icon = categoryIcons[categoryName] || Building2

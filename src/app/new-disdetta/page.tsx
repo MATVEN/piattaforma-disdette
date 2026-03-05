@@ -18,7 +18,6 @@ type Category = {
 type Operator = {
   id: number
   name: string
-  category_id: number
 }
 
 type ServiceType = {
@@ -97,14 +96,21 @@ function NewDisdettaContent() {
         setServiceTypes([]) // Svuota la lista successiva
         
         const { data, error } = await supabase
-            .from('operators')
-            .select('*')
-            .eq('category_id', selectedCategory.id) // Filtra per ID categoria!
-        
+            .from('operator_categories')
+            .select(`
+              operators (
+                id,
+                name
+              )
+            `)
+            .eq('category_id', selectedCategory.id)
+
         if (error) {
             setError(error.message)
         } else if (data) {
-            setOperators(data)
+            // Estrai operatori dalla struttura annidata many-to-many
+            const ops = (data.map(item => item.operators).filter(Boolean) as unknown) as Operator[]
+            setOperators(ops)
             setStep(2) // Avanza allo step 2
         }
         setIsLoading(false)
