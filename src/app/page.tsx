@@ -19,19 +19,17 @@ import {
   Lock,
   Archive,
   ShieldCheck,
-  Users,
-  Star,
   ChevronDown
 } from 'lucide-react'
 import Link from 'next/link'
 
 const categories = [
-  { id: 'mobile', name: 'Telefonia Mobile', icon: Smartphone, dbName: 'telefonia', available: true },
-  { id: 'internet', name: 'Telefonia fissa / Internet', icon: Wifi, dbName: 'telefonia', available: true },
-  { id: 'tv', name: 'Pay TV', icon: Tv, dbName: 'pay-tv', available: false },
-  { id: 'energy', name: 'Energia', icon: Zap, dbName: 'energia', available: true },
-  { id: 'insurance', name: 'Assicurazioni', icon: Shield, dbName: 'assicurazioni', available: false },
-  { id: 'gym', name: 'Palestre / abbonamenti vari', icon: Dumbbell, dbName: 'palestre', available: false }
+  { id: 'mobile', name: 'Telefonia Mobile', icon: Smartphone, categoryId: 1, categoryName: 'Mobile', available: true },
+  { id: 'internet', name: 'Telefonia fissa / Internet', icon: Wifi, categoryId: 2, categoryName: 'Internet', available: true },
+  { id: 'tv', name: 'Pay TV', icon: Tv, categoryId: null, categoryName: null, available: false },
+  { id: 'energy', name: 'Energia', icon: Zap, categoryId: 3, categoryName: 'Energia', available: true },
+  { id: 'insurance', name: 'Assicurazioni', icon: Shield, categoryId: null, categoryName: null, available: false },
+  { id: 'gym', name: 'Palestre / abbonamenti vari', icon: Dumbbell, categoryId: null, categoryName: null, available: false }
 ]
 
 const steps = [
@@ -59,12 +57,6 @@ const benefits = [
   { icon: Headphones, title: 'Supporto Dedicato', description: 'Il nostro team ti assiste in caso di problemi con il fornitore.' },
   { icon: Lock, title: 'Sicurezza Dati', description: 'I tuoi dati sono criptati e gestiti nel rispetto della privacy.' },
   { icon: Archive, title: 'Archivio Digitale', description: 'Tieni traccia di tutte le tue disdette in un unico posto.' }
-]
-
-const testimonials = [
-  { initial: 'M', name: 'Marco R.', text: 'Servizio eccezionale! Ho disdetto Sky in 5 minuti senza dover mandare raccomandate in posta. Consigliatissimo.' },
-  { initial: 'G', name: 'Giulia B.', text: 'Finalmente un sito chiaro e trasparente. Costa poco e fa risparmiare un sacco di tempo e mal di pancia.' },
-  { initial: 'L', name: 'Luca T.', text: 'Utilizzato per una pratica di cambio operatore energia. Tutto perfetto, ricevuta arrivata in 24h.' }
 ]
 
 const faqs = [
@@ -192,7 +184,7 @@ export default function HomePage() {
                       transition={{ delay: 0.4 + index * 0.05 }}
                     >
                       {category.available ? (
-                        <Link href={`/new-disdetta?category=${category.dbName}`}>
+                        <Link href={`/new-disdetta?categoryId=${category.categoryId}`}>
                           <div className="h-full flex flex-col items-center justify-center gap-3 p-4 rounded-xl border border-gray-200 bg-gray-50 hover:border-primary-600 hover:bg-primary-50 hover:shadow-md transition-all group cursor-pointer">
                             <div className="p-3 rounded-full bg-white shadow-sm text-gray-600 group-hover:text-primary-600 group-hover:bg-white">
                               <Icon className="h-6 w-6" />

@@ -11,39 +11,60 @@ import { onboardingFlowSteps } from '@/config/onboardingSteps'
 // Definiamo i "tipi" di dati che ci aspettiamo dal database
 // Devono corrispondere ai nomi delle colonne che hai creato
 type Category = {
-  id: number
-  name: string
+    id: number
+    name: string
 }
 
 type Operator = {
-  id: number
-  name: string
+    id: number
+    name: string
+    display_order?: number
 }
 
 type ServiceType = {
-  id: number
-  name: string
-  operator_id: number
+    id: number
+    name: string
+    operator_id: number
+}
+
+const CATEGORIES_CACHE = {
+   1: { id: 1, name: 'Mobile' },
+   2: { id: 2, name: 'Internet' },
+   3: { id: 3, name: 'Energia' },
+   4: { id: 4, name: 'Pay TV' },
+   5: { id: 5, name: 'Palestra' },
+   6: { id: 6, name: 'Assicurazioni' }
 }
 
 function NewDisdettaContent() {
     const { user, isAuthLoading } = useAuth()
     const router = useRouter()
     const searchParams = useSearchParams()
-    const categoryParam = searchParams.get('category')
+    const categoryIdParam = searchParams.get('categoryId')
 
-    // Stati per il wizard
-    const [step, setStep] = useState(1) // Step 1: Categorie, 2: Operatori, 3: Servizi
+    // Lazy init: se categoryId valido nell'URL → inizia da step 2 direttamente (no flash)
+    const [step, setStep] = useState(() =>
+        categoryIdParam && !isNaN(Number(categoryIdParam)) && Number(categoryIdParam) > 0 ? 2 : 1
+    )
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
     // Stati per i dati caricati
-    const [categories, setCategories] = useState<Category[]>([])
+    const categories = Object.values(CATEGORIES_CACHE)
     const [operators, setOperators] = useState<Operator[]>([])
     const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([])
 
     // Stati per le selezioni dell'utente
-    const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
+    const [selectedCategory, setSelectedCategory] = useState<Category | null>(() => {
+        const categoryIdFromUrl = searchParams.get('categoryId')
+
+        if (categoryIdFromUrl) {
+            const categoryId = Number(categoryIdFromUrl)
+            return CATEGORIES_CACHE[categoryId as keyof typeof CATEGORIES_CACHE] || null
+        }
+        return null
+    })
+
     const [selectedOperator, setSelectedOperator] = useState<Operator | null>(null)
 
     // --- 1. PROTEZIONE PAGINA ---
@@ -56,36 +77,6 @@ function NewDisdettaContent() {
     }, [user, isAuthLoading, router])
 
     // --- 2. CARICAMENTO DATI ---
-
-    // Carica le categorie al montaggio del componente
-    useEffect(() => {
-        const fetchCategories = async () => {
-            setIsLoading(true)
-            const { data, error } = await supabase
-                .from('categories')
-                .select('*')
-            if (error) {
-                setError(error.message)
-            } else if (data) {
-                setCategories(data)
-                // AUTO-SELECT se c'è categoryParam
-                if (categoryParam && data.length > 0) {
-                    const matchedCategory = data.find(
-                        cat => cat.name.toLowerCase() === categoryParam.toLowerCase() ||
-                        cat.name.toLowerCase().includes(categoryParam.toLowerCase())
-                    )
-                    if (matchedCategory) {
-                        setSelectedCategory(matchedCategory)
-                    }
-                }
-            }
-            setIsLoading(false)
-        }
-        if (user) {
-            fetchCategories()
-        }
-    }, [user, categoryParam])
-
     // Carica gli operatori QUANDO l'utente seleziona una categoria
     useEffect(() => {
         if (!selectedCategory) return // Non fare nulla se non c'è categoria
@@ -98,12 +89,31 @@ function NewDisdettaContent() {
         const { data, error } = await supabase
             .from('operator_categories')
             .select(`
-              operators (
+                operators (
                 id,
-                name
-              )
+                name,
+                display_order
+                )
             `)
             .eq('category_id', selectedCategory.id)
+
+        if (error) {
+            setError(error.message)
+        } else if (data) {
+            const ops = (data.map(item => item.operators).filter(Boolean) as unknown) as Operator[]
+            
+            // ✅ Ordina: prima per display_order, poi alfabetico
+            ops.sort((a, b) => {
+                // ✅ Usa 999 come default se display_order è undefined
+                const orderA = a.display_order ?? 999
+                const orderB = b.display_order ?? 999
+                if (orderA !== orderB) {
+                    return orderA - orderB
+                }
+                return a.name.localeCompare(b.name)
+            })
+            setOperators(ops)
+        }
 
         if (error) {
             setError(error.message)
@@ -111,7 +121,7 @@ function NewDisdettaContent() {
             // Estrai operatori dalla struttura annidata many-to-many
             const ops = (data.map(item => item.operators).filter(Boolean) as unknown) as Operator[]
             setOperators(ops)
-            setStep(2) // Avanza allo step 2
+            // step gestito da lazy init (URL) o onClick (manuale)
         }
         setIsLoading(false)
         }
@@ -120,7 +130,7 @@ function NewDisdettaContent() {
 
     // Carica i tipi di servizio QUANDO l'utente seleziona un operatore
     useEffect(() => {
-        if (!selectedOperator) return
+        if (!selectedOperator || !selectedCategory) return
 
         const fetchServiceTypes = async () => {
         setIsLoading(true)
@@ -129,7 +139,8 @@ function NewDisdettaContent() {
         const { data, error } = await supabase
             .from('service_types')
             .select('*')
-            .eq('operator_id', selectedOperator.id) // Filtra per ID operatore!
+            .eq('operator_id', selectedOperator.id) // Filtra per ID operatore
+            .eq('category_id', selectedCategory.id) // Filtra per categoria
         
         if (error) {
             setError(error.message)
@@ -140,7 +151,7 @@ function NewDisdettaContent() {
         setIsLoading(false)
         }
         fetchServiceTypes()
-    }, [selectedOperator]) // Si attiva quando selectedOperator cambia
+    }, [selectedOperator, selectedCategory]) // Si attiva quando selectedOperator cambia
 
 
     // --- 3. GESTORI DI EVENTI ---
@@ -167,7 +178,6 @@ function NewDisdettaContent() {
     }
 
     // --- 4. RENDER ---
-
     // Mostra un caricamento generale se l'autenticazione sta caricando
     if (isAuthLoading) {
         return <div className="p-8 text-center">Verifica sessione...</div>
@@ -196,8 +206,7 @@ function NewDisdettaContent() {
                     </button>
                 )}
 
-                {/* Messaggi di errore o caricamento */}
-                {isLoading && <p className="text-center">Caricamento...</p>}
+                {/* Messaggi di errore */}
                 {error && <p className="text-center text-red-500">{error}</p>}
 
                 {/* --- STEP 1: CATEGORIE --- */}
@@ -207,7 +216,7 @@ function NewDisdettaContent() {
                         {categories.map((category) => (
                             <button
                                 key={category.id}
-                                onClick={() => setSelectedCategory(category)}
+                                onClick={() => { setSelectedCategory(category); setStep(2) }}
                                 className="block w-full rounded-lg border p-4 text-left text-lg hover:bg-gray-50"
                             >
                                 {category.name}
@@ -219,36 +228,72 @@ function NewDisdettaContent() {
                 {/* --- STEP 2: OPERATORI --- */}
                 {step === 2 && (
                     <div className="space-y-3">
-                        <h2 className="text-xl font-semibold">
-                            2. Scegli l&apos;operatore (per {selectedCategory?.name})
-                        </h2>
-                        {operators.map((operator) => (
-                            <button
-                                key={operator.id}
-                                onClick={() => setSelectedOperator(operator)}
-                                className="block w-full rounded-lg border p-4 text-left text-lg hover:bg-gray-50"
-                            >
-                                {operator.name}
-                            </button>
-                        ))}
+                        <h2 className="text-xl font-semibold">2. Scegli l'operatore (per {selectedCategory?.name})</h2>
+                        
+                        {isLoading ? (
+                            // ✅ Skeleton SOLO durante caricamento
+                            <>
+                                <div className="block w-full rounded-lg border border-gray-200 bg-gray-50 p-4 h-14 animate-pulse" />
+                                <div className="block w-full rounded-lg border border-gray-200 bg-gray-50 p-4 h-14 animate-pulse" />
+                                <div className="block w-full rounded-lg border border-gray-200 bg-gray-50 p-4 h-14 animate-pulse" />
+                            </>
+                        ) : operators.length === 0 ? (
+                            // ✅ Messaggio quando categoria senza operatori
+                            <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center">
+                                <p className="text-gray-600">
+                                    Nessun operatore disponibile per questa categoria.
+                                </p>
+                                <p className="text-sm text-gray-500 mt-2">
+                                    Gli operatori saranno aggiunti a breve.
+                                </p>
+                            </div>
+                        ) : (
+                            // ✅ Lista operatori
+                            operators.map((operator) => (
+                                <button
+                                    key={operator.id}
+                                    onClick={() => setSelectedOperator(operator)}
+                                    className="block w-full rounded-lg border p-4 text-left text-lg hover:bg-gray-50"
+                                >
+                                    {operator.name}
+                                </button>
+                            ))
+                        )}
                     </div>
                 )}
-
                 {/* --- STEP 3: TIPO SERVIZIO --- */}
                 {step === 3 && (
                     <div className="space-y-3">
-                        <h2 className="text-xl font-semibold">
-                            3. Scegli il tipo di servizio (per {selectedOperator?.name})
-                        </h2>
-                        {serviceTypes.map((service) => (
-                            <button
-                                key={service.id}
-                                onClick={() => handleSelectService(service)}
-                                className="block w-full rounded-lg border p-4 text-left text-lg hover:bg-gray-50"
-                            >
-                                {service.name}
-                            </button>
-                        ))}
+                        <h2 className="text-xl font-semibold">3. Scegli il tipo di servizio (per {selectedOperator?.name})</h2>
+                        
+                        {isLoading ? (
+                            // Skeleton durante caricamento
+                            <>
+                                <div className="block w-full rounded-lg border border-gray-200 bg-gray-50 p-4 h-14 animate-pulse" />
+                                <div className="block w-full rounded-lg border border-gray-200 bg-gray-50 p-4 h-14 animate-pulse" />
+                            </>
+                        ) : serviceTypes.length === 0 ? (
+                            // ✅ Messaggio quando nessun service_type (solo durante sviluppo)
+                            <div className="rounded-lg border border-amber-200 bg-amber-50 p-6 text-center">
+                                <p className="text-amber-800 font-medium">
+                                    ⚠️ Nessun servizio configurato per questo operatore nella categoria corrente.
+                                </p>
+                                <p className="text-sm text-amber-600 mt-2">
+                                    (Questo messaggio apparirà solo durante lo sviluppo - in produzione ogni operatore avrà almeno un servizio)
+                                </p>
+                            </div>
+                        ) : (
+                            // Lista service_types
+                            serviceTypes.map((service) => (
+                                <button
+                                    key={service.id}
+                                    onClick={() => handleSelectService(service)}
+                                    className="block w-full rounded-lg border p-4 text-left text-lg hover:bg-gray-50"
+                                >
+                                    {service.name}
+                                </button>
+                            ))
+                        )}
                     </div>
                 )}
             </div>
@@ -257,11 +302,10 @@ function NewDisdettaContent() {
     )
 }
 
-
 export default function NewDisdettaPage() {
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <NewDisdettaContent />
-        </Suspense>
-    )
+   return (
+       <Suspense fallback={<div>Loading...</div>}>
+           <NewDisdettaContent />
+       </Suspense>
+   )
 }
