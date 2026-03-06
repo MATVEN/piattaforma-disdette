@@ -4,6 +4,21 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 import { PDFDocument, StandardFonts, rgb } from 'https://esm.sh/pdf-lib@1.17.1'
 import type { PDFFont } from 'https://esm.sh/pdf-lib@1.17.1'
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts"
+
+// ==========================================
+// PEC SMTP CONFIGURATION
+// ==========================================
+
+const PEC_CONFIG = {
+  enabled: Deno.env.get('PEC_ENABLED') === 'true',
+  host: Deno.env.get('PEC_SMTP_HOST') || 'smtps.pec.aruba.it',
+  port: Number(Deno.env.get('PEC_SMTP_PORT')) || 465,
+  username: Deno.env.get('PEC_SMTP_USER') || '',
+  password: Deno.env.get('PEC_SMTP_PASS') || '',
+  senderEmail: Deno.env.get('PEC_SENDER_EMAIL') || 'disdette@pec.disdeasy.it',
+  senderName: Deno.env.get('PEC_SENDER_NAME') || 'DisdEasy - Gestione Disdette',
+}
 
 // ==========================
 // 1) COSTANTI & CONFIG
@@ -116,6 +131,7 @@ type DisdettaStatus = typeof DISDETTA_STATUS[keyof typeof DISDETTA_STATUS]
 interface DisdettaData {
   id: number
   user_id: string
+  service_type_id: number | null
   receiver_tax_id: string | null
   supplier_tax_id: string | null
   supplier_name: string | null
@@ -1073,7 +1089,79 @@ async function creaPdfSollecitoB2B(disdetta: DisdettaData): Promise<Uint8Array> 
 }
 
 // ==========================
-// 9) HANDLER (B2C/B2B PDF)
+// 9) HELPER: INVIO PEC
+// ==========================
+
+/**
+ * Invia email PEC con allegati.
+ * Modalità simulazione se PEC_ENABLED=false.
+ */
+async function sendPecEmail(
+  to: string,
+  subject: string,
+  body: string,
+  attachments: { filename: string; content: ArrayBuffer }[]
+): Promise<{ success: boolean; simulated: boolean }> {
+  // Modalità simulazione (quando non abbiamo ancora PEC)
+  if (!PEC_CONFIG.enabled) {
+    console.log('⚠️ PEC invio DISABILITATO (PEC_ENABLED=false)')
+    console.log(`📧 Simulazione invio a: ${to}`)
+    console.log(`📄 Oggetto: ${subject}`)
+    console.log(`📎 Allegati: ${attachments.length} file`)
+    attachments.forEach(att => {
+      console.log(`   - ${att.filename} (${(att.content.byteLength / 1024).toFixed(2)} KB)`)
+    })
+    return { success: true, simulated: true }
+  }
+
+  // Verifica configurazione
+  if (!PEC_CONFIG.username || !PEC_CONFIG.password) {
+    throw new Error('Configurazione PEC mancante: verifica PEC_SMTP_USER e PEC_SMTP_PASS')
+  }
+
+  console.log(`📧 Invio PEC REALE a: ${to}`)
+  console.log(`📄 Oggetto: ${subject}`)
+
+  // Configurazione client SMTP
+  const client = new SMTPClient({
+    connection: {
+      hostname: PEC_CONFIG.host,
+      port: PEC_CONFIG.port,
+      tls: true,
+      auth: {
+        username: PEC_CONFIG.username,
+        password: PEC_CONFIG.password,
+      },
+    },
+  })
+
+  try {
+    await client.send({
+      from: `${PEC_CONFIG.senderName} <${PEC_CONFIG.senderEmail}>`,
+      to: to,
+      subject: subject,
+      content: body,
+      html: body,
+      attachments: attachments.map(att => ({
+        filename: att.filename,
+        content: new Uint8Array(att.content),
+        contentType: 'application/pdf',
+      })),
+    })
+
+    await client.close()
+
+    console.log('✅ PEC inviata con successo')
+    return { success: true, simulated: false }
+
+  } catch (error) {
+    console.error('❌ Errore invio PEC:', error)
+    throw new Error(`Invio PEC fallito: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  }
+}
+
+// ==========================
+// 10) HANDLER (B2C/B2B PDF)
 // ==========================
 serve(async (req: Request) => {
   const origin = resolveCorsOrigin(req)
@@ -1114,7 +1202,7 @@ serve(async (req: Request) => {
       .from('disdette')
       .select(`
         id, user_id, receiver_tax_id, supplier_tax_id, supplier_name, supplier_contract_number,
-        status, tipo_intestatario,
+        status, tipo_intestatario, service_type_id,
         nome, cognome, codice_fiscale, indirizzo_residenza,
         ragione_sociale, partita_iva, sede_legale, indirizzo_fornitura, indirizzo_fatturazione,
         lr_nome, lr_cognome, lr_codice_fiscale, richiedente_ruolo,
@@ -1276,22 +1364,125 @@ serve(async (req: Request) => {
       }
     }
 
-    // 10. Invio PEC (DISABILITATO IN TEST)
-    if (isTest) {
-      // (In futuro, la logica SMTP userà l'array attachments)
-    }
-
-    // --- 10. Aggiornamento Stato ---
-    const newStatus = isTest ? 'SENT' : 'SENT'
-
+    // --- Pre-fetch record esistente (necessario per handler errore PEC e update) ---
     const { data: existingRecord, error: fetchError } = await supabaseAdmin
       .from('disdette')
-      .select('supplier_contract_number, supplier_tax_id, receiver_tax_id, supplier_iban')
+      .select('supplier_contract_number, supplier_tax_id, receiver_tax_id, supplier_iban, followup_count')
       .eq('id', disdettaId)
       .single()
 
     if (fetchError) throw new Error(`Errore recupero record: ${fetchError.message}`)
     if (!existingRecord) throw new Error(`Record ${disdettaId} non trovato`)
+
+    // --- 10. Recupera Email PEC Operatore dal Database ---
+    console.log(`🔍 Recupero email PEC operatore per service_type_id: ${typedDisdettaData.service_type_id}`)
+
+    const { data: serviceTypeData, error: serviceError } = await supabaseAdmin
+      .from('service_types')
+      .select(`
+        id,
+        name,
+        operators (
+          id,
+          name,
+          pec_email
+        )
+      `)
+      .eq('id', typedDisdettaData.service_type_id)
+      .single()
+
+    if (serviceError) {
+      console.error('❌ Errore recupero service_type:', serviceError)
+      throw new Error(`Impossibile recuperare operatore: ${serviceError.message}`)
+    }
+
+    // Estrai email PEC - operators può essere oggetto o array (Supabase FK join)
+    const operatorData = Array.isArray(serviceTypeData?.operators)
+      ? serviceTypeData.operators[0]
+      : serviceTypeData?.operators
+
+    if (!operatorData?.pec_email) {
+      console.error('❌ Email PEC mancante per operatore:', serviceTypeData)
+      throw new Error('Email PEC operatore non configurata. Contatta il supporto.')
+    }
+
+    const recipientEmail = operatorData.pec_email
+    const operatorName = operatorData.name || 'Operatore'
+
+    console.log(`🎯 Destinatario: ${operatorName} <${recipientEmail}>`)
+
+    // --- 11. Prepara Contenuto Email ---
+    const emailSubject = requestType === 'followup'
+      ? `SOLLECITO - Disdetta contratto ${operatorName}`
+      : `Disdetta contratto ${operatorName}`
+
+    const emailBody = requestType === 'followup'
+      ? `Gentile ${operatorName},
+
+con la presente si sollecita riscontro alla richiesta di disdetta precedentemente inviata.
+
+In allegato la comunicazione formale.
+
+Distinti saluti,
+DisdEasy - Gestione Disdette`
+      : `Gentile ${operatorName},
+
+con la presente si comunica la richiesta di disdetta del contratto.
+
+In allegato la documentazione completa.
+
+Distinti saluti,
+DisdEasy - Gestione Disdette`
+
+    // --- 12. Converti Attachments per Invio PEC ---
+    // Rimuove contentType che non serve a sendPecEmail
+    const pecAttachments = attachments.map(att => ({
+      filename: att.filename,
+      content: att.content
+    }))
+
+    console.log(`📎 Preparati ${pecAttachments.length} allegati:`)
+    pecAttachments.forEach(att => {
+      console.log(`   - ${att.filename}`)
+    })
+
+    // --- 13. Invio PEC ---
+    let pecResult: { success: boolean; simulated: boolean }
+
+    try {
+      pecResult = await sendPecEmail(
+        recipientEmail,
+        emailSubject,
+        emailBody,
+        pecAttachments
+      )
+
+      if (pecResult.simulated) {
+        console.log('✅ Invio PEC SIMULATO con successo (modalità test)')
+      } else {
+        console.log('✅ PEC inviata con successo (modalità produzione)')
+      }
+
+    } catch (pecError) {
+      console.error('❌ Errore invio PEC:', pecError)
+
+      // Se PEC fallisce, aggiorna stato a FAILED
+      await supabaseAdmin
+        .from('disdette')
+        .update({
+          status: 'FAILED',
+          supplier_contract_number: existingRecord.supplier_contract_number,
+          supplier_tax_id: existingRecord.supplier_tax_id,
+          receiver_tax_id: existingRecord.receiver_tax_id,
+          supplier_iban: existingRecord.supplier_iban,
+        })
+        .eq('id', disdettaId)
+
+      throw new Error(`Invio PEC fallito: ${pecError instanceof Error ? pecError.message : 'Unknown error'}`)
+    }
+
+    // --- Aggiornamento Stato ---
+    const newStatus = isTest ? 'SENT' : 'SENT'
 
     // Prepare update object based on request type
     const updateData: Record<string, any> = {

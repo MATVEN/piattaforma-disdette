@@ -1802,3 +1802,118 @@
     - `src/components/Footer.tsx`
     - `src/components/onboarding/HelpButton.tsx`
     - `next.config.js`
+
+- **Operators Many-to-Many Categories Refactor:**
+
+  - **Database Model Update:**
+    - Migrates operators categorization from single `category_id` field to `operator_categories` junction table
+    - Enables many-to-many relationship between operators and categories
+    - Allows operators to belong to multiple categories (e.g., TIM in Mobile + Internet)
+
+  - **New Disdetta Wizard (/new-disdetta):**
+    - Removes `category_id` from Operator type (no longer stored on operators table)
+    - Updates `fetchOperators` query to use `operator_categories` join
+    - Query pattern: `from('operator_categories').select('operators(id, name)').eq('category_id', id)`
+    - Adds TypeScript-safe casting (`unknown`) to satisfy strict type checks
+
+  - **Operators Listing Page (/operators):**
+    - Updates Operator interface: `categories` becomes `Array<{id, name}>` instead of single object
+    - Updates Supabase query to fetch operators via `operator_categories` join
+    - Updates transformation logic to extract categories array from nested join structure
+    - Updates category filter logic to support multi-category operators
+    - `filteredOperators` now uses `.some()` to match selected category
+    - Operator cards display first category badge while supporting multiple categories internally
+
+  - **Filtering & UI Logic:**
+    - `uniqueCategories` useMemo updated to iterate over categories array per operator
+    - Prevents duplicates within same category
+    - Maintains consistent filtering experience for users
+
+  - **Files Involved:**
+    - `src/app/new-disdetta/page.tsx`
+    - `src/app/operators/page.tsx`
+
+- **Disdette Service Type Linking (PEC Routing Prerequisite):**
+
+  - **Database Schema Update:**
+    - Adds `service_type_id` column to `disdette` table (nullable foreign key to `service_types`)
+    - Enables automatic mapping between cancellation requests and operator service types
+    - Creates index `idx_disdette_service_type` for query performance
+
+  - **Data Migration Logic:**
+    - Backfills existing records using supplier name pattern matching
+    - Recognizes common providers such as TIM, Enel, Vodafone, WindTre, and Fastweb
+    - Records without a reliable match remain `NULL` to preserve data integrity
+
+  - **Frontend Integration:**
+    - Updates `upload/[serviceId]/page.tsx` to persist `service_type_id` when creating a disdetta
+    - URL parameter `serviceId` now maps directly to the database `service_type_id`
+
+  - **Type System Updates:**
+    - Regenerates `database.types.ts` to include the new `service_type_id` field
+    - Ensures full TypeScript compatibility across Supabase queries
+
+  - **System Impact:**
+    - Establishes the relational lookup chain required for automated PEC delivery:
+      - `disdetta.service_type_id → service_types → operators → pec_email`
+    - Forms the foundation for the automated PEC sending workflow
+
+  - **Validation:**
+    - Migration applied successfully
+    - Column correctly indexed
+    - New disdette automatically store `service_type_id`
+    - Existing records populated where supplier names match known operators
+
+  - **Files Involved:**
+    - `supabase/migrations/20260306100000_add_service_type_id_to_disdette.sql`
+    - `src/app/upload/[serviceId]/page.tsx`
+    - `src/lib/supabase/database.types.ts`
+
+- **PEC Email Sending System (Simulation Mode)(C37):**
+
+  - **PEC Sending Implementation:**
+    - Implements PEC email sending system for termination letters via SMTP
+    - Introduces simulation mode controlled by `PEC_ENABLED=false` (current default)
+    - Retrieves operator PEC address through DB lookup using `service_type_id`
+    - Query chain: `disdette.service_type_id → service_types → operators → pec_email`
+    - Supports sending two PDF attachments: termination letter and delegation
+    - Handles both initial PEC sending and follow-up communications
+
+  - **SMTP Integration:**
+    - Integrates SMTP sending using the `denomailer` library
+    - Designed for Aruba PEC compatibility (`smtps.pec.aruba.it`)
+    - Configurable via environment variables
+    - Sender email configurable via `PEC_SENDER_EMAIL`
+
+  - **Simulation Mode (Current State):**
+    - When `PEC_ENABLED=false`, emails are not actually sent
+    - System logs simulated recipient email in Supabase logs
+    - Attachments are still generated and prepared
+    - Disdetta status updates to `SENT` to simulate real workflow
+
+  - **Error Handling & Logging:**
+    - Comprehensive error handling for SMTP failures
+    - Failed PEC attempts update disdetta status to `FAILED`
+    - Detailed `console.log` entries for Supabase Edge Function debugging
+    - Validation ensures operator PEC email exists before sending
+
+  - **Production Activation (Future Step):**
+    - System ready for activation once PEC mailbox is purchased
+    - Required configuration:
+      - `PEC_ENABLED=true`
+      - `PEC_SMTP_USER` and `PEC_SMTP_PASS`
+      - Valid `PEC_SENDER_EMAIL`
+    - Redeploying Edge Function enables real PEC sending
+
+  - **Dependencies & Prerequisites:**
+    - Requires `service_type_id` field in `disdette` table
+    - Uses `denomailer@1.6.0` for SMTP email handling
+    - Depends on previously implemented PDF generation system
+
+  - **Results:**
+    - Full PEC sending pipeline implemented and production-ready
+    - Safe testing environment via simulation mode
+    - Activation requires only SMTP credentials and environment variable switch
+
+  - **Files Involved:**
+    - `supabase/functions/send-pec-disdetta/index.ts`

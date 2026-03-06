@@ -150,7 +150,7 @@ Utente ha dubbio → Va su FAQ → Cerca "quanto tempo" → Trova "Le disdette v
 
 ---
 
-### **C27 - Service Templates** 🎯⏸️🔄
+### **C27 - Service Templates** 🎯⏸️⏳
 **Effort:** 2-3 giorni  
 **Priorità:** MEDIA (UX fluida)
 
@@ -180,7 +180,7 @@ Utente clicca "Scarica dati" → Riceve ZIP con profilo, lista disdette, copie d
 
 ---
 
-### **C29 - Advanced Form Validation** ✨⏸️🔄
+### **C29 - Advanced Form Validation** ✨⏸️⏳
 **Effort:** 1-2 giorni  
 **Priorità:** BASSA (Qualità dati)
 
@@ -195,7 +195,7 @@ Utente inserisce CF sbagliato → Messaggio in tempo reale: "Il codice fiscale n
 
 ---
 
-### **C30 - Document Preview** ✨ ⏸️🔄 ✅
+### **C30 - Document Preview** ✨ ⏸️⏳ ✅
 **Effort:** 2 giorni  
 **Priorità:** BASSA (UX)
 
@@ -226,7 +226,7 @@ OCR finisce → Email "✅ La tua disdetta è pronta" → Click CTA → Vai dire
 
 ---
 
-### **C32 - In-App Notifications** ✨ ⏸️🔄
+### **C32 - In-App Notifications** ✨ ⏸️⏳
 **Effort:** 2 giorni  
 **Priorità:** BASSA (Engagement)
 
@@ -241,7 +241,7 @@ OCR finisce → Badge rosso su campanella → Click → "La tua disdetta Enel è
 
 ---
 
-### **C33 - Activity Log** ✨ ⏸️🔄
+### **C33 - Activity Log** ✨ ⏸️⏳
 **Effort:** 1-2 giorni  
 **Priorità:** BASSA (Sicurezza)
 
@@ -256,7 +256,7 @@ Profilo → Tab "Cronologia" → "Login da Milano il 15/11 ore 10:30", "Disdetta
 
 ---
 
-### **C34 - Wizard Save & Resume** 🎯 ⏸️🔄
+### **C34 - Wizard Save & Resume** 🎯 ⏸️⏳
 **Effort:** 2-3 giorni  
 **Priorità:** BASSA (Prevenzione frustrazione)
 
@@ -309,7 +309,7 @@ Queste feature richiedono servizi a pagamento o hanno senso solo con il servizio
 
 ---
 
-### **C37 - PEC Real Send** 🔴 CRITICO (Post-Test)
+### **C37 - PEC Real Send** 🔴 CRITICO (Post-Test) ⚙️🔄
 **Effort:** 0.5-1 giorno  
 **Costo:** Casella PEC certificata (~€50-100/anno) + SMTP
 
