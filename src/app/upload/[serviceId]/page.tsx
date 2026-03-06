@@ -241,6 +241,7 @@ export default function UploadPage() {
         .from('disdette')
         .insert({
           user_id: user.id,
+          service_type_id: Number(serviceId),
           file_path: filePath,
         })
         .select('id')
