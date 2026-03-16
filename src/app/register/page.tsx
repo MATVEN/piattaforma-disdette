@@ -200,7 +200,7 @@ export default function RegisterPage() {
                   Termini di Servizio
                 </Link>{' '}
                 e la{' '}
-                <Link href="/privacy-policy" className="text-primary-600 hover:text-primary-700 font-medium">
+                <Link href="//privacy-cookie-policy" className="text-primary-600 hover:text-primary-700 font-medium">
                   Privacy Policy
                 </Link>
               </label>

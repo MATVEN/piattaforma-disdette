@@ -37,7 +37,7 @@ const CATEGORIES_CACHE = {
 }
 
 function NewDisdettaContent() {
-    const { user, isAuthLoading } = useAuth()
+    const { user, isAuthLoading, isProfileLoading } = useAuth()
     const router = useRouter()
     const searchParams = useSearchParams()
     const categoryIdParam = searchParams.get('categoryId')
@@ -69,12 +69,15 @@ function NewDisdettaContent() {
 
     // --- 1. PROTEZIONE PAGINA ---
     useEffect(() => {
-        // Se l'autenticazione ha finito di caricare e l'utente NON c'è...
-        if (!isAuthLoading && !user) {
-        // ...rimandalo al login.
-        router.push('/login')
+        if (isAuthLoading || isProfileLoading) {
+            // Ancora in caricamento, aspetta
+            return
         }
-    }, [user, isAuthLoading, router])
+        if (!user) {
+            // Caricamento completo, ma nessun user → redirect
+            router.push('/login')
+        }
+    }, [user, isAuthLoading, isProfileLoading, router])
 
     // --- 2. CARICAMENTO DATI ---
     // Carica gli operatori QUANDO l'utente seleziona una categoria
@@ -178,9 +181,16 @@ function NewDisdettaContent() {
     }
 
     // --- 4. RENDER ---
-    // Mostra un caricamento generale se l'autenticazione sta caricando
-    if (isAuthLoading) {
-        return <div className="p-8 text-center">Verifica sessione...</div>
+    // ✅ Mostra loading mentre verifica auth
+    if (isAuthLoading || isProfileLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Verifica autenticazione...</p>
+                </div>
+            </div>
+        )
     }
 
     // Mostra il wizard solo se l'utente è loggato
