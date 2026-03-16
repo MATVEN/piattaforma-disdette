@@ -40,22 +40,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // --- EFFECT 1: GESTIONE AUTENTICAZIONE ---
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    console.log('🔐 AuthContext mounted')
+    
+    supabase.auth.getUser().then(({ data: { user }, error }) => {
+      console.log('🔐 Initial getUser:', { 
+        user: user?.email, 
+        userId: user?.id,
+        error: error?.message,
+        env: process.env.NODE_ENV,
+        url: window.location.href
+      })
       setUser(user)
       setIsAuthLoading(false)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('🔐 Auth state changed:', { 
+        event, 
+        user: session?.user?.email,
+        userId: session?.user?.id,
+        hasSession: !!session,
+        url: window.location.href
+      })
       setUser(session?.user ?? null)
       setIsAuthLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      console.log('🔐 AuthContext unmounted')
+      subscription.unsubscribe()
+    }
   }, [])
 
-  // --- EFFECT 2: GESTIONE PROFILO (CORRETTO C9) ---
+  // --- EFFECT 2: GESTIONE PROFILO ---
   useEffect(() => {
-    
+
+    console.log('👤 Profile effect triggered:', {
+      hasUser: !!user,
+      userId: user?.id
+    })
+
     // Definiamo la funzione di fetch *all'interno* dell'effect
     async function fetchProfile(user: User) { // <-- 1. Accetta 'user' come parametro
       setIsProfileLoading(true)
@@ -63,7 +87,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const { data, error } = await supabase
           .from('profiles')
           .select('nome, cognome, indirizzo_residenza, documento_identita_path')
-          .eq('user_id', user.id) // <-- 2. ERRORE SPARITO (user è garantito)
+          .eq('user_id', user.id)
           .maybeSingle()
 
         if (error) throw error
@@ -91,8 +115,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // --- 3. CONTROLLO LOGICO ---
     if (user) {
       // Se l'utente è loggato, carica il profilo
+      console.log('👤 Fetching profile for:', user.email)
       fetchProfile(user)
     } else {
+      console.log('👤 No user, resetting profile')
       // Se l'utente fa logout, resetta tutto
       setProfile(null)
       setIsProfileComplete(false)
