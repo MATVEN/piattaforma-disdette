@@ -20,7 +20,10 @@
       "Bash(dir \"%USERPROFILE%\\\\.deno\\\\bin\\\\deno.exe\")",
       "Bash(cmd /c \"where deno 2>nul || dir %USERPROFILE%\\\\.deno\\\\bin\\\\deno.exe 2>nul\")",
       "Bash(npx next build:*)",
-      "Bash(deno:*)"
+      "Bash(deno:*)",
+      "Bash(cd \"C:/Users/Matti/Documents/piattaforma-disdette\" && file src/lib/supabase/database.types.ts && head -c 10 src/lib/supabase/database.types.ts | xxd)",
+      "Bash(cd \"C:/Users/Matti/Documents/piattaforma-disdette\" && node -e \"\nconst fs = require\\('fs'\\);\nconst buf = fs.readFileSync\\('src/lib/supabase/database.types.ts'\\);\n// Check for UTF-16 LE BOM \\(FF FE\\)\nlet text;\nif \\(buf[0] === 0xFF && buf[1] === 0xFE\\) {\n  text = buf.slice\\(2\\).toString\\('utf16le'\\);\n} else {\n  text = buf.toString\\('utf16le'\\);\n}\nconsole.log\\('First 80 chars:', JSON.stringify\\(text.slice\\(0, 80\\)\\)\\);\n\")",
+      "Bash(cd \"C:/Users/Matti/Documents/piattaforma-disdette\" && node -e \"\nconst fs = require\\('fs'\\);\nconst buf = fs.readFileSync\\('src/lib/supabase/database.types.ts'\\);\nlet text;\nif \\(buf[0] === 0xFF && buf[1] === 0xFE\\) {\n  text = buf.slice\\(2\\).toString\\('utf16le'\\);\n} else {\n  text = buf.toString\\('utf16le'\\);\n}\n// Write as UTF-8\nfs.writeFileSync\\('src/lib/supabase/database.types.ts', text, 'utf8'\\);\nconsole.log\\('Converted to UTF-8 successfully. Length:', text.length\\);\n// Verify\nconst verify = fs.readFileSync\\('src/lib/supabase/database.types.ts', 'utf8'\\);\nconsole.log\\('Verification first 80 chars:', JSON.stringify\\(verify.slice\\(0, 80\\)\\)\\);\n\")"
     ],
     "deny": [],
     "ask": []

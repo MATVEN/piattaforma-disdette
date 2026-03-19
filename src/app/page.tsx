@@ -19,7 +19,8 @@ import {
   Lock,
   Archive,
   ShieldCheck,
-  ChevronDown
+  ChevronDown,
+  ArrowRight
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -163,10 +164,6 @@ export default function HomePage() {
                   </div>
                   <div className="flex flex-col items-center gap-2 px-2">
                     <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-500 text-xs font-bold ring-4 ring-white">3</div>
-                    <span className="text-xs font-medium text-gray-500 hidden sm:block">Servizio</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-2 px-2">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-500 text-xs font-bold ring-4 ring-white">4</div>
                     <span className="text-xs font-medium text-gray-500 hidden sm:block">Caricamento</span>
                   </div>
                 </div>
@@ -308,6 +305,23 @@ export default function HomePage() {
               )
             })}
           </div>
+
+          {/* CTA Chi Siamo */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="mt-12 text-center"
+          >
+            <Link
+              href="/who-we-are"
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-primary px-6 py-3 text-sm font-medium text-white shadow-glass transition-all hover:shadow-glass-hover hover:scale-105"
+            >
+              <span>Scopri chi siamo</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </motion.div>
         </div>
       </section>
 

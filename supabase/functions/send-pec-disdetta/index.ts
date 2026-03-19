@@ -131,7 +131,8 @@ type DisdettaStatus = typeof DISDETTA_STATUS[keyof typeof DISDETTA_STATUS]
 interface DisdettaData {
   id: number
   user_id: string
-  service_type_id: number | null
+  operator_id: number | null
+  category_id: number | null
   receiver_tax_id: string | null
   supplier_tax_id: string | null
   supplier_name: string | null
@@ -1202,7 +1203,7 @@ serve(async (req: Request) => {
       .from('disdette')
       .select(`
         id, user_id, receiver_tax_id, supplier_tax_id, supplier_name, supplier_contract_number,
-        status, tipo_intestatario, service_type_id,
+        status, tipo_intestatario, operator_id, category_id,
         nome, cognome, codice_fiscale, indirizzo_residenza,
         ragione_sociale, partita_iva, sede_legale, indirizzo_fornitura, indirizzo_fatturazione,
         lr_nome, lr_cognome, lr_codice_fiscale, richiedente_ruolo,
@@ -1375,34 +1376,25 @@ serve(async (req: Request) => {
     if (!existingRecord) throw new Error(`Record ${disdettaId} non trovato`)
 
     // --- 10. Recupera Email PEC Operatore dal Database ---
-    console.log(`🔍 Recupero email PEC operatore per service_type_id: ${typedDisdettaData.service_type_id}`)
+    console.log(`🔍 Recupero email PEC operatore per operator_id: ${typedDisdettaData.operator_id}`)
 
-    const { data: serviceTypeData, error: serviceError } = await supabaseAdmin
-      .from('service_types')
-      .select(`
-        id,
-        name,
-        operators (
-          id,
-          name,
-          pec_email
-        )
-      `)
-      .eq('id', typedDisdettaData.service_type_id)
-      .single()
-
-    if (serviceError) {
-      console.error('❌ Errore recupero service_type:', serviceError)
-      throw new Error(`Impossibile recuperare operatore: ${serviceError.message}`)
+    if (!typedDisdettaData.operator_id) {
+      throw new Error('operator_id mancante sulla disdetta. Impossibile determinare il destinatario PEC.')
     }
 
-    // Estrai email PEC - operators può essere oggetto o array (Supabase FK join)
-    const operatorData = Array.isArray(serviceTypeData?.operators)
-      ? serviceTypeData.operators[0]
-      : serviceTypeData?.operators
+    const { data: operatorData, error: operatorError } = await supabaseAdmin
+      .from('operators')
+      .select('id, name, pec_email')
+      .eq('id', typedDisdettaData.operator_id)
+      .single()
+
+    if (operatorError) {
+      console.error('❌ Errore recupero operatore:', operatorError)
+      throw new Error(`Impossibile recuperare operatore: ${operatorError.message}`)
+    }
 
     if (!operatorData?.pec_email) {
-      console.error('❌ Email PEC mancante per operatore:', serviceTypeData)
+      console.error('❌ Email PEC mancante per operatore:', operatorData)
       throw new Error('Email PEC operatore non configurata. Contatta il supporto.')
     }
 

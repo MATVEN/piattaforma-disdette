@@ -10,7 +10,7 @@ VALUES ('Nome Operatore', 'email@pec.operatore.it', 999)
 RETURNING id;
 ```
 
-**Copia l’ID restituito** (es: 27)
+**Copia l'ID restituito** (es: 27)
 
 -----
 
@@ -36,33 +36,16 @@ VALUES
 
 -----
 
-### Step 3: Crea Service Types
-
-```sql
-INSERT INTO service_types (name, operator_id, category_id)
-VALUES ('Nome Operatore', 27, 2);
-
--- Se l'operatore è in più categorie
-INSERT INTO service_types (name, operator_id, category_id)
-VALUES 
- ('Nome Operatore', 27, 1),  -- Mobile
- ('Nome Operatore', 27, 2);  -- Internet
-```
-
------
-
-### Step 4: Verifica
+### Step 3: Verifica
 
 ```sql
 SELECT 
  o.name AS operatore,
  c.name AS categoria,
- st.id AS service_type_id,
  o.pec_email
 FROM operators o
 JOIN operator_categories oc ON o.id = oc.operator_id
 JOIN categories c ON oc.category_id = c.id
-LEFT JOIN service_types st ON st.operator_id = o.id AND st.category_id = c.id
 WHERE o.name = 'Nome Operatore';
 ```
 
@@ -80,10 +63,6 @@ VALUES ('___NOME___', '___EMAIL___', 999) RETURNING id;
 -- 2. Associa categorie
 INSERT INTO operator_categories (operator_id, category_id)
 VALUES (___ID___, ___CATEGORIA___);
-
--- 3. Crea service_types
-INSERT INTO service_types (name, operator_id, category_id)
-VALUES ('___NOME___', ___ID___, ___CATEGORIA___);
 ```
 
 -----
@@ -149,16 +128,10 @@ ORDER BY name;
 - Senza PEC, invio disdetta fallirà
 - Usa `NOT_CONFIGURED_YET` come placeholder temporaneo
 
-**Nome service_type:**
-
-- Di solito uguale al nome operatore
-- Es: operatore “TIM” → service_type “TIM”
-
 **Many-to-many:**
 
 - Un operatore può essere in più categorie (es: TIM in Mobile + Internet)
 - Serve un record in `operator_categories` per ogni categoria
-- Serve un `service_type` per ogni combinazione operatore+categoria
 
 -----
 
@@ -170,17 +143,13 @@ ORDER BY name;
 
 ```sql
 -- 1. Insert
-INSERT INTO operators (name, pec_email, dispaly_order)
+INSERT INTO operators (name, pec_email, display_order)
 VALUES ('Iliad', 'iliaditaliaspa@legalmail.it', 999)
 RETURNING id;  -- ID: 28
 
 -- 2. Category
 INSERT INTO operator_categories (operator_id, category_id)
 VALUES (28, 1);  -- Mobile
-
--- 3. Service Type
-INSERT INTO service_types (name, operator_id, category_id)
-VALUES ('Iliad', 28, 1);
 ```
 
 ### Esempio 2: Operatore Multi Category
@@ -198,12 +167,6 @@ INSERT INTO operator_categories (operator_id, category_id)
 VALUES 
  (29, 1),  -- Mobile
  (29, 2);  -- Internet
-
--- 3. Service Types (2)
-INSERT INTO service_types (name, operator_id, category_id)
-VALUES 
- ('WindTre', 29, 1),  -- Mobile
- ('WindTre', 29, 2);  -- Internet
 ```
 
 ### Esempio 3: Aggiornare Email PEC
@@ -223,11 +186,77 @@ WHERE id = 28;
 - [ ] Inserito operatore in `operators`
 - [ ] Copiato ID operatore restituito
 - [ ] Associato a categorie corrette in `operator_categories`
-- [ ] Creato `service_types` per ogni categoria
 - [ ] Verificato query finale mostra tutto correttamente
 - [ ] Testato su piattaforma: operatore appare nella categoria giusta
 - [ ] Testato invio PEC simulato funziona
 
 -----
+
+## 🔧 Query di Manutenzione
+
+```sql
+-- Elimina prima lo storico stati (foreign key dependency)
+DELETE FROM disdetta_status_history;
+-- Elimina le disdette
+DELETE FROM disdette;
+-- Verifica eliminazione
+SELECT COUNT(*) as remaining_disdette FROM disdette;
+SELECT COUNT(*) as remaining_history FROM disdetta_status_history;
+
+-- Verifica aggiornamento disdetta
+SELECT id, supplier_name, status
+FROM disdette
+WHERE id = 153;
+
+-- Aggiungi nuove categorie
+INSERT INTO categories (name) VALUES
+ ('Pay TV'),
+ ('Palestra'),
+ ('Assicurazioni')
+RETURNING id, name;
+```
+
+-----
+
+## ============================================
+## TEMPLATE: Aggiungi Nuovo Operatore
+## ============================================
+
+```sql
+-- 1️⃣ INSERISCI OPERATORE
+INSERT INTO operators (name, pec_email)
+VALUES ('Enel Energia', 'servizio.clienti.enelenergia@pec.enel.it')
+RETURNING id;
+-- ⬆️ Copia ID restituito
+
+-- 2️⃣ ASSOCIA A CATEGORIE
+-- Mobile (id: 1), Internet (id: 2), Energia (id: 3)
+INSERT INTO operator_categories (operator_id, category_id)
+VALUES
+ (22, 3);
+-- Ripeti per ogni categoria in cui l'operatore opera
+
+-- 3️⃣ VERIFICA
+SELECT
+ o.name AS operatore,
+ c.name AS categoria,
+ o.pec_email
+FROM operators o
+JOIN operator_categories oc ON o.id = oc.operator_id
+JOIN categories c ON oc.category_id = c.id
+WHERE o.name = 'Enel Energia';
+
+-- Verifica associazioni per categoria specifica (es. Pay TV id 4)
+SELECT
+ c.id AS category_id,
+ c.name AS category_name,
+ o.id AS operator_id,
+ o.name AS operator_name
+FROM categories c
+LEFT JOIN operator_categories oc ON c.id = oc.category_id
+LEFT JOIN operators o ON oc.operator_id = o.id
+WHERE c.id IN (4, 5, 6)  -- Pay TV, Palestra, Assicurazioni
+ORDER BY c.id, o.name;
+```
 
 **Fine Guida**

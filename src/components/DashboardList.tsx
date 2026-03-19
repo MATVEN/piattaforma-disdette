@@ -309,7 +309,7 @@ export default function DashboardList() {
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between flex-wrap gap-2" // ← Changed: added flex-wrap gap-2
+        className="flex items-center justify-between flex-wrap gap-2"
       >
         <div className="flex items-center space-x-3">
           <div className="h-10 w-1 bg-gradient-primary rounded-full" />
@@ -612,7 +612,7 @@ function DisdettaCard({
 
           {/* Right side - Status & Actions Column */}
           <div className="flex-shrink-0 w-full sm:w-auto max-w-full">
-            <div className="flex flex-col items-end gap-2">
+            <div className="flex flex-row sm:flex-col items-center sm:items-end gap-2 justify-start"> 
               {/* Status Badge */}
               <StatusBadgeAndAction
                 status={
@@ -673,7 +673,7 @@ function DisdettaCard({
       </div>
 
       {/* Timeline + Download Button Row */}
-      <div className="px-3 sm:px-5 pb-3 sm:pb-5 border-t border-gray-100 pt-6">
+      <div className="px-3 sm:px-5 pb-3 sm:pb-5 border-t border-gray-100 pt-4">
         <div className="flex items-start justify-between gap-4 mb-3">
 
           {/* Left - Compact Timeline */}
@@ -712,7 +712,7 @@ function DisdettaCard({
         {/* Expand/Collapse Button */}
         <button
           onClick={onToggleExpand}
-          className="mt-3 text-sm text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1 transition-colors"
+          className="mb-2 text-sm text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1 transition-colors"
         >
           {expanded ? (
             <>
@@ -884,7 +884,7 @@ function StatusBadgeAndAction({
     const progress = getStatusProgress(DISDETTA_STATUS.CONFIRMED)
     
     return (
-      <div className="flex flex-col items-center gap-1.5 w-full sm:w-auto">
+      <div className="flex flex-col gap-1.5 sm:w-auto">
         <motion.div
           key={status}
           initial={{ scale: 0.8, opacity: 0 }}

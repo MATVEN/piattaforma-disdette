@@ -53,10 +53,10 @@ export async function PATCH(request: NextRequest) {
     if (!body.bypassOperatorCheck && body.id) {
       console.log('[CONFIRM] ✅ Entering operator match block')
 
-      // Step 1: Fetch disdetta
+      // Step 1: Fetch disdetta con operator_id
       const { data: disdetta, error: fetchError } = await supabase
         .from("disdette")
-        .select("supplier_name, file_path")
+        .select("supplier_name, operator_id")
         .eq("id", body.id)
         .eq("user_id", user.id)
         .single();
@@ -68,60 +68,42 @@ export async function PATCH(request: NextRequest) {
         disdetta
       })
 
-      if (disdetta?.file_path) {
-        
-        // Step 2: Extract service_type_id from file_path
-        // Format: user_id/service_type_id/timestamp_filename.pdf
-        const pathParts = disdetta.file_path.split('/')
-        const serviceTypeId = parseInt(pathParts[1], 10)
-        console.log('[CONFIRM] Extracted service_type_id from path:', serviceTypeId)
+      if (disdetta?.operator_id) {
+        // Step 2: Fetch operator name direttamente da operators
+        const { data: operator } = await supabase
+          .from("operators")
+          .select("name")
+          .eq("id", disdetta.operator_id)
+          .single();
+        console.log('[CONFIRM] Operator fetch:', { operator })
 
-        if (!isNaN(serviceTypeId)) {
-          // Step 3: Fetch operator_id from service_types
-          const { data: serviceType } = await supabase
-            .from("service_types")
-            .select("operator_id")
-            .eq("id", serviceTypeId)
-            .single();
-          console.log('[CONFIRM] Service type fetch:', { serviceType })
+        const extractedSupplier = disdetta.supplier_name as string | null;
+        const selectedOperator = operator?.name as string | null;
+        console.log('[CONFIRM] Extracted values:', {
+          extractedSupplier,
+          selectedOperator
+        })
 
-          if (serviceType?.operator_id) {
-            // Step 4: Fetch operator name
-            const { data: operator } = await supabase
-              .from("operators")
-              .select("name")
-              .eq("id", serviceType.operator_id)
-              .single();
-            console.log('[CONFIRM] Operator fetch:', { operator })
-            const extractedSupplier = disdetta.supplier_name as string | null;
-            const selectedOperator = operator?.name as string | null;
-            console.log('[CONFIRM] Extracted values:', {
-              extractedSupplier,
-              selectedOperator
-            })
+        if (extractedSupplier && selectedOperator) {
+          // Fuzzy match using token_set_ratio (handles partial matches)
+          const similarity = fuzz.token_set_ratio(
+            extractedSupplier.toLowerCase(),
+            selectedOperator.toLowerCase()
+          );
+          console.log(`[Operator Match] "${extractedSupplier}" vs "${selectedOperator}": ${similarity}%`);
 
-            if (extractedSupplier && selectedOperator) {
-              // Fuzzy match using token_set_ratio (handles partial matches)
-              const similarity = fuzz.token_set_ratio(
-                extractedSupplier.toLowerCase(),
-                selectedOperator.toLowerCase()
-              );
-              console.log(`[Operator Match] "${extractedSupplier}" vs "${selectedOperator}": ${similarity}%`);
-
-              // If similarity < 60%, warn user
-              if (similarity < 60) {
-                return NextResponse.json({
-                  success: false,
-                  warning: "operator_mismatch",
-                  data: {
-                    extracted_supplier: extractedSupplier,
-                    selected_operator: selectedOperator,
-                    similarity: similarity,
-                  },
-                  message: `Hai selezionato "${selectedOperator}" ma la bolletta sembra di "${extractedSupplier}". Vuoi procedere comunque?`,
-                }, { status: 200 });
-              }
-            }
+          // If similarity < 60%, warn user
+          if (similarity < 60) {
+            return NextResponse.json({
+              success: false,
+              warning: "operator_mismatch",
+              data: {
+                extracted_supplier: extractedSupplier,
+                selected_operator: selectedOperator,
+                similarity: similarity,
+              },
+              message: `Hai selezionato "${selectedOperator}" ma la bolletta sembra di "${extractedSupplier}". Vuoi procedere comunque?`,
+            }, { status: 200 });
           }
         }
       }

@@ -15,11 +15,6 @@ export const onboardingFlowSteps: OnboardingStep[] = [
     description: 'Seleziona il fornitore',
   },
   {
-    id: 'service',
-    label: 'Servizio',
-    description: 'Specifica il contratto',
-  },
-  {
     id: 'upload',
     label: 'Caricamento',
     description: 'Upload documento',
@@ -30,9 +25,8 @@ export const onboardingFlowSteps: OnboardingStep[] = [
  * Get current step index based on pathname
  */
 export function getCurrentStepFromPath(pathname: string): number {
-  if (pathname === '/new-disdetta') return 0 // Category
-  if (pathname.startsWith('/operator/')) return 1 // Operator (se hai questa route)
-  if (pathname.startsWith('/upload/')) return 2 // Service/Upload
-  if (pathname === '/review') return 3 // Review (bonus step)
+  if (pathname === '/new-disdetta') return 0 // Category / Operator
+  if (pathname === '/upload') return 2        // Upload
+  if (pathname === '/review') return 3        // Review (bonus step)
   return 0 // Default
 }

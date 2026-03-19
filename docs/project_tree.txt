@@ -7,6 +7,7 @@
 .vercel\README.txt
 CLAUDE.md
 docs
+docs\add-operator-guide.md
 docs\email-notifications-integration-guide.md
 docs\FEATURES.md
 docs\REFACTORING-REVIEWFORM.md
@@ -98,7 +99,6 @@ src\app\faq\page.tsx
 src\app\favicon.ico
 src\app\global-error.tsx
 src\app\globals.css
-src\app\help
 src\app\how-it-works
 src\app\how-it-works\page.tsx
 src\app\layout.tsx
@@ -127,6 +127,7 @@ src\app\update-password\page.tsx
 src\app\upload
 src\app\upload\[serviceId]
 src\app\upload\[serviceId]\page.tsx
+src\app\upload\page.tsx
 src\app\who-we-are
 src\app\who-we-are\layout.tsx
 src\app\who-we-are\page.tsx
@@ -238,6 +239,7 @@ supabase\migrations\20250101000000_create_contact_messages.sql
 supabase\migrations\20251128_add_b2b_support.sql
 supabase\migrations\20260108000000_add_payment_tracking.sql
 supabase\migrations\20260306100000_add_service_type_id_to_disdette.sql
+supabase\migrations\20260319000000_remove_service_types.sql
 tailwind.config.js
 test-results
 test-results.json

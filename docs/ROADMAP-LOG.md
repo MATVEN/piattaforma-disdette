@@ -91,7 +91,7 @@
     - Creates the new `send-pec-disdetta` Edge Function.
     - (Fase 1 - Recupero): Uses SERVICE_ROLE_KEY to fetch 'disdette' and 'profiles' data, and downloads the 'documento_delega' file from Storage.
     - (Fase 2 - Generazione PDF): Imports `pdf-lib` and dynamically generates the PDF disdetta letter populated with user and contract data.
-    - (Fase 3 - Invio): **(Test Mode)** SMTP/PEC logic is implemented but commented out.
+    - (Fase 3 - Invio): **(Test Mode)*- SMTP/PEC logic is implemented but commented out.
     - Updates the disdetta status to `SENT` upon successful PDF generation.
 
 - **Profile Enforcement(C9):**
@@ -132,17 +132,17 @@
     - Automatically parses 'full_name' into 'nome' and 'cognome' and pre-populates these fields in the 'profiles' table upon a new social login.
 
 - **Security & Validation Refactor(C11):**
-  - **Middleware:** Replaces the client-side C9 (<ProfileRequired>) with a server-side 'src/middleware.ts' for robust route protection (auth + profile completion).
-  - **Validation (Zod):** Introduces 'zod' and a central 'src/domain/schemas.ts' for type-safe validation (using the user's advanced refactored version).
-  - **Edge Functions:** Hardens 'process-document' (v5) and 'send-pec-disdette' with Zod/type-guard validation, timeout/backoff logic, and PII-safe logging.
-  - **API Routes:** Refactors all API routes ('/api/confirm-data', '/api/get-extracted-data', '/api/send-pec') to use Zod schemas.
-  - **Bug Fix (SSR):** Fixes 500 crash across all API Routes by removing the 'NextResponse.next()' pattern and standardizing on the correct 'cookieStore' adapter for SSR auth token refreshes.
-  - **Database:** Applies "least-privilege" select (no 'select(*)') to '/api/get-my-disdette'.
+  - **Middleware:*- Replaces the client-side C9 (<ProfileRequired>) with a server-side 'src/middleware.ts' for robust route protection (auth + profile completion).
+  - **Validation (Zod):*- Introduces 'zod' and a central 'src/domain/schemas.ts' for type-safe validation (using the user's advanced refactored version).
+  - **Edge Functions:*- Hardens 'process-document' (v5) and 'send-pec-disdette' with Zod/type-guard validation, timeout/backoff logic, and PII-safe logging.
+  - **API Routes:*- Refactors all API routes ('/api/confirm-data', '/api/get-extracted-data', '/api/send-pec') to use Zod schemas.
+  - **Bug Fix (SSR):*- Fixes 500 crash across all API Routes by removing the 'NextResponse.next()' pattern and standardizing on the correct 'cookieStore' adapter for SSR auth token refreshes.
+  - **Database:*- Applies "least-privilege" select (no 'select(*)') to '/api/get-my-disdette'.
 
 - **Security Hardening(C11.5):**
 
   - **Edge Function (`send-pec-disdetta`):**
-    - Implements "Dual Client Auth" pattern to verify user ownership (RLS) *before* using the `SERVICE_ROLE_KEY`.
+    - Implements "Dual Client Auth" pattern to verify user ownership (RLS) *before- using the `SERVICE_ROLE_KEY`.
     - Implements "State Transition Check" (`.eq('status', 'CONFIRMED')`) to prevent duplicate disdetta sends.
     - Implements "MIME & Size Whitelist" to validate delega and ID files before processing.
 
@@ -151,24 +151,24 @@
     - Updates the `StatusBadge` component to render the new `TEST_SENT` and `FAILED` states.
 
 - **Form Styling(C12):**
-  - **Install:** Adds `tailwindcss@^3` (removing v4) and the `@tailwindcss/forms` plugin.
-  - **Config:** Creates and configures `tailwind.config.js` (ESM version) and `postcss.config.js`.
-  - **CSS:** Fixes "white-on-white" input bug by adding `@tailwind` directives and a text-color override in `globals.css`.
+  - **Install:*- Adds `tailwindcss@^3` (removing v4) and the `@tailwindcss/forms` plugin.
+  - **Config:*- Creates and configures `tailwind.config.js` (ESM version) and `postcss.config.js`.
+  - **CSS:*- Fixes "white-on-white" input bug by adding `@tailwind` directives and a text-color override in `globals.css`.
 
 - **Form Refactor & Delega PDF(C13):**
-  - **Database(Cleanup):** DROPPED `documento_delega_path` column and `documenti-delega` bucket/RLS.
-  - **C3/C4(Cleanup):** Removed "Step 2" (Delega Upload) from C3 and removed `delegaPath` logic from C4.
+  - **Database(Cleanup):*- DROPPED `documento_delega_path` column and `documenti-delega` bucket/RLS.
+  - **C3/C4(Cleanup):*- Removed "Step 2" (Delega Upload) from C3 and removed `delegaPath` logic from C4.
   - **C6/C13 (ReviewForm):**
     - Refactored the form to use `react-hook-form` and `zod`.
     - Added a mandatory `delegaCheckbox` to the form and Zod schema.
   - **C8 (send-pec-disdetta):**
     - Added `creaPdfDelega` helper to auto-generate the delega PDF using profile data.
-    - Updated the function to upload *both* the Lettera PDF and Delega PDF to storage for tracking.
+    - Updated the function to upload *both- the Lettera PDF and Delega PDF to storage for tracking.
 
 - **OCR Error Handling(C14):**
-  - **Database (Schema):** Adds `error_message` column to `disdette`.
-  - **C3 (Upload Page):** Refactored to create a record with `status: 'PROCESSING'` *before* invoking the function, passing only the record `id`.
-  - **C4 (process-document):** Refactored to receive an `id`. Implements a `try...catch` block to update the record to `status: 'FAILED'` and save the `error_message` on failure, preventing a crash.
+  - **Database (Schema):*- Adds `error_message` column to `disdette`.
+  - **C3 (Upload Page):*- Refactored to create a record with `status: 'PROCESSING'` *before- invoking the function, passing only the record `id`.
+  - **C4 (process-document):*- Refactored to receive an `id`. Implements a `try...catch` block to update the record to `status: 'FAILED'` and save the `error_message` on failure, preventing a crash.
   - **C13 (ReviewForm):**
     - Implements "polling" logic in `useEffect` to check the status (`PROCESSING`).
     - Adds a new `StatusDisplay` component to show loading/processing messages.
@@ -633,9 +633,9 @@
     - Provides reusable mock factories and shared test utilities (`testHelpers.ts`).
 
   - **Unit Test Coverage (62 tests, ~3s):**
-    - **Repository:** validates `checkDuplicate`, status filtering, pagination, and CRUD behaviors.
-    - **Service:** tests `confirmAndPrepareForSend`, bypass logic, state transitions, and business rules.
-    - **Schema:** Zod validation for `bypassDuplicateCheck` and domain fields across 30 schema tests.
+    - **Repository:*- validates `checkDuplicate`, status filtering, pagination, and CRUD behaviors.
+    - **Service:*- tests `confirmAndPrepareForSend`, bypass logic, state transitions, and business rules.
+    - **Schema:*- Zod validation for `bypassDuplicateCheck` and domain fields across 30 schema tests.
 
   - **C20 Duplicate Detection Validation:**
     - Full cross-layer coverage (repository → service → schema).
@@ -716,7 +716,7 @@
     - Improvements include easier testing, cleaner logic boundaries, and significantly reduced cognitive load.
 
   - **PDF Generation System:**
-    - New Edge Function (800+ lines) using **pdf-lib** for runtime PDF generation.
+    - New Edge Function (800+ lines) using **pdf-lib*- for runtime PDF generation.
     - B2C template: standard cancellation letter for private users.
     - B2B template: company cancellation letter with support for multiple attachments.
     - Automatic data population from database records.
@@ -995,14 +995,14 @@
 
   - **Email Templates:**
     - 3 production-ready, mobile-responsive HTML templates:
-      - *Disdetta Ready:* green gradient header, review CTA.
-      - *PEC Sent:* success styling, dashboard CTA, next-steps explanation.
-      - *Processing Error:* warning styling, recovery CTAs and troubleshooting tips.
+      - *Disdetta Ready:- green gradient header, review CTA.
+      - *PEC Sent:- success styling, dashboard CTA, next-steps explanation.
+      - *Processing Error:- warning styling, recovery CTAs and troubleshooting tips.
     - Consistent DisdEasy branding, support links, and accessible CTAs.
 
   - **Integration Completed:**
-    - `process-document` Edge Function triggers *ready* and *error* emails.
-    - `send-pec-disdetta` Edge Function triggers *sent* emails.
+    - `process-document` Edge Function triggers *ready- and *error- emails.
+    - `send-pec-disdetta` Edge Function triggers *sent- emails.
     - Error handlers consistently emit notification events.
 
   - **CORS & Auth Fixes:**
@@ -1066,7 +1066,7 @@
     - Enhancements span onboarding, dashboard, footer pages, and legal/informational content.
 
   - **Form Validation & Schemas:**
-    - Fixed *Codice Fiscale* validation to handle lowercase characters and extra whitespace.
+    - Fixed *Codice Fiscale- validation to handle lowercase characters and extra whitespace.
     - Normalized CF input (trim + uppercase) before validation.
     - Applied fixes consistently across B2C and B2B form fields.
     - Updated domain schemas to align frontend and backend validation rules.
@@ -1233,7 +1233,7 @@
 - **Mandatory Identity Document & PDF Merge(C39):**
 
   - **Documento Identità – B2C Enforcement:**
-    - Added mandatory **documento di identità** upload for B2C users in Review flow.
+    - Added mandatory **documento di identità*- upload for B2C users in Review flow.
     - Auto-population from user profile when available, with replacement support.
     - Submission blocked if document is missing (B2C only).
     - Identity documents uploaded to `documenti-identita` bucket.
@@ -1248,7 +1248,7 @@
 
   - **PDF Generation & Merge Pipeline:**
     - Introduced `mergePDFs` helper in `send-pec-disdetta` Edge Function.
-    - Automatic merge of **Delega + Documento Identità** into single PDF.
+    - Automatic merge of **Delega + Documento Identità*- into single PDF.
     - Generated `delega_con_documento.pdf` stored in `documenti-disdetta` bucket.
     - Merged PDF included in PEC attachments array.
     - Fixed initialization-order bug (`Cannot access before initialization`).
@@ -1276,7 +1276,7 @@
 
   - **Brand Color System Refactor:**
     - Complete alignment of the UI with the official logo colors.
-    - Replacement of the legacy **indigo → pink** gradients with **turchese (#00C4B4) → blu navy (#0D417D)**.
+    - Replacement of the legacy **indigo → pink*- gradients with **turchese (#00C4B4) → blu navy (#0D417D)**.
     - New primary palette (turchese/green) and secondary palette (blu navy).
     - Success, warning, danger and dark palettes intentionally left unchanged.
 
@@ -1498,7 +1498,7 @@
 
   - **Payment Flow Changes:**
     - Replaced legacy `PaymentButton` with an inline `EmbeddedPaymentForm`.
-    - Migrated from **Checkout Sessions** to **Payment Intents**.
+    - Migrated from **Checkout Sessions*- to **Payment Intents**.
     - Payment handled entirely within the app (no external redirect).
     - Disdetta form data remains available during payment and confirmation.
 
@@ -1917,3 +1917,38 @@
 
   - **Files Involved:**
     - `supabase/functions/send-pec-disdetta/index.ts`
+
+- **Wizard Simplification & Service Types Removal (Post-Review Refactor):**
+
+  - **Wizard Flow Refactor:**
+    - Simplified disdetta creation flow from 4 steps to 3 steps.
+    - New flow: Category → Operator → Upload.
+    - Removed redundant “service type” selection step.
+    - Improved UX with faster and more intuitive navigation.
+
+  - **Database Refactor (Breaking Change):**
+    - Removed `service_types` table entirely.
+    - Added `operator_id` and `category_id` directly to `disdette` table.
+    - Migrated all existing data from `service_types` to new structure.
+    - Added indexes for performance (`idx_disdette_operator`, `idx_disdette_category`).
+
+  - **Frontend Updates:**
+    - Updated wizard to reflect 3-step flow.
+    - Upload page now uses URL params: `?operator=X&category=Y`.
+    - Deprecated `/upload/[serviceId]` route with redirect to `/new-disdetta`.
+    - Cleaner navigation and reduced cognitive load for users.
+
+  - **Backend Updates:**
+    - Refactored API queries to use `operators` and `categories` directly.
+    - Updated PEC sending logic to retrieve `operator.pec_email`.
+    - Updated confirm-data flow to resolve operator without service_types.
+
+  - **Results:**
+    - Reduced complexity (one less entity and step).
+    - Faster user flow and improved conversion.
+    - Cleaner data model with direct relationships.
+    - Easier maintainability and future extensions.
+
+  - **Files Involved:**
+    - `supabase/migrations/20260319000000_remove_service_types.sql`
+    - Multiple frontend and backend files updated for new data model.
