@@ -1,5 +1,7 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -22,6 +24,28 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json(
         { error: 'Password richiesta' },
         { status: 400 }
+      )
+    }
+
+    // Rate limiting: max 5 attempts per 15 minutes per IP
+    const ip = getClientIp(request)
+    const { allowed, resetAt } = checkRateLimit(
+      `delete-account:${ip}`,
+      5,
+      15 * 60 * 1000
+    )
+
+    if (!allowed) {
+      const retryAfterSeconds = resetAt ? Math.ceil((resetAt - Date.now()) / 1000) : 900
+      return NextResponse.json(
+        { error: 'Troppi tentativi. Riprova più tardi.' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': retryAfterSeconds.toString(),
+            'X-RateLimit-Remaining': '0',
+          },
+        }
       )
     }
 
@@ -75,38 +99,22 @@ export async function DELETE(request: NextRequest) {
       // Continue with deletion even if storage fails
     }
 
-    // Delete database records (cascade will handle related records)
-    // Status history will be deleted automatically via foreign key cascade
-    await supabase
-      .from('disdette')
-      .delete()
-      .eq('user_id', user.id)
-
-    await supabase
-      .from('profiles')
-      .delete()
-      .eq('user_id', user.id)
-
-    // Delete auth user
-    // Note: This requires service role or the user calling deleteUser on themselves
-    // The user can delete their own account via the client
-    const { error: deleteUserError } = await supabase.auth.admin.deleteUser(
-      user.id
+    // Delete auth user — requires service role client
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { persistSession: false } }
     )
 
-    if (deleteUserError) {
-      console.error('Auth deletion error:', deleteUserError)
-      // If admin delete fails, try regular user deletion
-      // This will work if RLS allows users to delete themselves
-      const { error: fallbackError } = await supabase.rpc('delete_user')
+    const { error: deleteUserError } = await supabaseAdmin.auth.admin.deleteUser(user.id)
 
-      if (fallbackError) {
-        return NextResponse.json(
-          { error: 'Errore durante l\'eliminazione dell\'account' },
-          { status: 500 }
-        )
-      }
+    if (deleteUserError) {
+      return NextResponse.json(
+        { error: 'Errore eliminazione account' },
+        { status: 500 }
+      )
     }
+    console.log('✅ Auth user deleted successfully')
 
     // Sign out
     await supabase.auth.signOut()

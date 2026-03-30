@@ -12,6 +12,7 @@ docs\email-notifications-integration-guide.md
 docs\FEATURES.md
 docs\REFACTORING-REVIEWFORM.md
 docs\ROADMAP-LOG.md
+docs\SECURITY_AUDIT_REPORT.md
 docs\STRIPE_SETUP_GUIDE.md
 docs\TECHNICAL_ANALYSIS.md
 docs\TESTING.md
@@ -195,6 +196,7 @@ src\lib\email\triggerNotification.ts
 src\lib\errors
 src\lib\errors\AppError.ts
 src\lib\logger.ts
+src\lib\rate-limit.ts
 src\lib\stripe
 src\lib\stripe\stripe-client.ts
 src\lib\stripe\stripe-config.ts

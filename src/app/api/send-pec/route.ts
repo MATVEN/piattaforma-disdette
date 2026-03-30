@@ -27,6 +27,7 @@ import { AuthService } from "@/services/auth.service";
 import { DisdettaService } from "@/services/disdetta.service";
 import { DisdettaRepository } from "@/repositories/disdetta.repository";
 import { handleApiError, ValidationError, ExternalServiceError, UnauthorizedError } from "@/lib/errors/AppError";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,7 +35,28 @@ export async function POST(request: NextRequest) {
     const supabase = await createServerClient();
     const user = await AuthService.getCurrentUser(supabase);
 
-    // 2. Parse body JSON
+    // 2. Rate limiting: max 3 PEC sends per hour per user
+    const { allowed, resetAt } = checkRateLimit(
+      `send-pec:${user.id}`,
+      3,
+      60 * 60 * 1000
+    )
+
+    if (!allowed) {
+      const retryAfterSeconds = resetAt ? Math.ceil((resetAt - Date.now()) / 1000) : 3600
+      return NextResponse.json(
+        { error: 'Limite invii raggiunto. Riprova tra 1 ora.' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': retryAfterSeconds.toString(),
+            'X-RateLimit-Remaining': '0',
+          },
+        }
+      )
+    }
+
+    // 3. Parse body JSON
     let body;
     try {
       body = await request.json();
@@ -60,8 +82,10 @@ export async function POST(request: NextRequest) {
     // 4. Chiama l'Edge Function send-pec-disdetta
     const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-pec-disdetta`;
     
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+    // Validate session exists and matches already-verified user
+    if (sessionError || !session || session.user.id !== user.id) {
       throw new UnauthorizedError("Sessione non valida");
     }
 
