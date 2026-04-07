@@ -196,7 +196,7 @@ export function useReviewForm(): UseReviewFormReturn {
         const { data: disdettaData, error: fetchError } = await supabase
           .from('disdette')
           .select('*')
-          .eq('id', id) // ← Usa direttamente id (già number)
+          .eq('id', id)
           .single()
 
         // ===== CHECK 3: Record non trovato =====

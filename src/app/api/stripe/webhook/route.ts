@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
       const { data: existingDisdetta, error: checkError } = await supabase
         .from('disdette')
         .select('id, user_id, status')
-        .eq('id', parseInt(disdettaId, 10))  // ← Converti a number
+        .eq('id', parseInt(disdettaId, 10))
         .single()
 
       // Update disdetta

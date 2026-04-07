@@ -91,14 +91,12 @@ async function creaPdfDelega(profile: ProfileData): Promise<Uint8Array> {
 
     if (currentLine) lines.push(currentLine);
 
-    // separazione paragrafi: una riga vuota (modifica qui se vuoi più spazio)
     lines.push('');
   }
 
   // Disegna le linee, creando nuove pagine quando necessario
   let cursorY = height - margin.top; // start from top margin
   for (const line of lines) {
-    // se la prossima linea uscirebbe oltre il margine bottom -> nuova pagina
     if (cursorY - lineHeight < margin.bottom) {
       page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
       size = page.getSize();

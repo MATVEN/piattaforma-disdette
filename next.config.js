@@ -9,7 +9,7 @@ const isDev = process.env.NODE_ENV === 'development'
 // In produzione viene rimosso per maggiore sicurezza
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' ${isDev ? "'unsafe-inline' 'unsafe-eval'" : ''} https://js.stripe.com;
+  script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ''} https://js.stripe.com;
   style-src 'self' 'unsafe-inline';
   font-src 'self';
   img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com;

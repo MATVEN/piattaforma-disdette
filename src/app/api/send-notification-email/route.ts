@@ -57,14 +57,14 @@ export async function POST(request: NextRequest) {
 
     const { data: disdetta, error: fetchError } = await supabaseAdmin
       .from('disdette')
-      .select('id, user_id, supplier_name, error_message')  // ← solo campi necessari, non select('*')
+      .select('id, user_id, supplier_name, error_message')
       .eq('id', disdettaId)
       .single()
 
     if (fetchError || !disdetta) {
       console.error('[EMAIL] Disdetta fetch error:', fetchError)
       return NextResponse.json(
-        { error: 'Disdetta not found' },  // ← rimosso debug: fetchError dalla risposta pubblica
+        { error: 'Disdetta not found' },
         { status: 404 }
       )
     }
@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
     if (!result.success) {
       console.error('[EMAIL] Failed to send:', result.error)
       return NextResponse.json(
-        { error: 'Failed to send email' },  // ← non esporre result.error al client
+        { error: 'Failed to send email' },
         { status: 500 }
       )
     }

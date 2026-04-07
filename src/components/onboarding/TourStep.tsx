@@ -161,7 +161,7 @@ export function TourStepComponent({ step, currentStep, totalSteps, onNext, onPre
           // Forza ricalcolo posizione
           const event = new Event('resize')
           window.dispatchEvent(event)
-        }, 500) // ← AUMENTATO da 350 a 500ms
+        }, 500)
       }
     }
   }

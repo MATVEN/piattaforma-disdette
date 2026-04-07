@@ -24,7 +24,7 @@ export async function GET() {
     const [profileResult, disdette] = await Promise.all([
       supabase
         .from('profiles')
-        .select('nome, cognome, codice_fiscale, indirizzo_residenza')  // ← solo campi necessari
+        .select('nome, cognome, codice_fiscale, indirizzo_residenza')
         .eq('user_id', user.id)
         .single(),
 
@@ -38,7 +38,7 @@ export async function GET() {
           payment_amount,
           sent_at,
           supplier_contract_number
-        `)  // ← escluso raw_json_response e altri campi sensibili
+        `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false }),
     ])
