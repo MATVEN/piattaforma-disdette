@@ -1101,13 +1101,15 @@ async function sendPecEmail(
   to: string,
   subject: string,
   body: string,
-  attachments: { filename: string; content: ArrayBuffer }[]
+  attachments: { filename: string; content: ArrayBuffer }[],
+  messageId: string
 ): Promise<{ success: boolean; simulated: boolean }> {
   // Modalità simulazione (quando non abbiamo ancora PEC)
   if (!PEC_CONFIG.enabled) {
     console.log('⚠️ PEC invio DISABILITATO (PEC_ENABLED=false)')
     console.log(`📧 Simulazione invio a: ${to}`)
     console.log(`📄 Oggetto: ${subject}`)
+    console.log(`🆔 Message-ID: ${messageId}`)
     console.log(`📎 Allegati: ${attachments.length} file`)
     attachments.forEach(att => {
       console.log(`   - ${att.filename} (${(att.content.byteLength / 1024).toFixed(2)} KB)`)
@@ -1122,6 +1124,7 @@ async function sendPecEmail(
 
   console.log(`📧 Invio PEC REALE a: ${to}`)
   console.log(`📄 Oggetto: ${subject}`)
+  console.log(`🆔 Message-ID: ${messageId}`)
 
   // Configurazione client SMTP
   const client = new SMTPClient({
@@ -1143,6 +1146,10 @@ async function sendPecEmail(
       subject: subject,
       content: body,
       html: body,
+      mimeHeaders: {
+        'Message-ID': messageId,
+        'X-Disdetta-ID': messageId.match(/disdetta-(\d+)-/)?.[1] ?? '',
+      },
       attachments: attachments.map(att => ({
         filename: att.filename,
         content: new Uint8Array(att.content),
@@ -1439,6 +1446,9 @@ DisdEasy - Gestione Disdette`
     })
 
     // --- 13. Invio PEC ---
+    // Genera Message-ID univoco per il tracking delle ricevute
+    const messageId = `<disdetta-${disdettaId}-${Date.now()}@disdeasy.it>`
+
     let pecResult: { success: boolean; simulated: boolean }
 
     try {
@@ -1446,13 +1456,31 @@ DisdEasy - Gestione Disdette`
         recipientEmail,
         emailSubject,
         emailBody,
-        pecAttachments
+        pecAttachments,
+        messageId
       )
 
       if (pecResult.simulated) {
         console.log('✅ Invio PEC SIMULATO con successo (modalità test)')
       } else {
         console.log('✅ PEC inviata con successo (modalità produzione)')
+      }
+
+      // Salva Message-ID nel database per tracking futuro ricevute
+      const { error: messageIdError } = await supabaseAdmin
+        .from('disdette')
+        .update({
+          message_id: messageId,
+          sent_at: new Date().toISOString(),
+          delivery_status: 'sent',
+        })
+        .eq('id', disdettaId)
+
+      if (messageIdError) {
+        console.error('⚠️ Impossibile salvare message_id:', messageIdError)
+        // Non blocca: il PEC è già stato inviato
+      } else {
+        console.log(`✅ Message-ID salvato: ${messageId}`)
       }
 
     } catch (pecError) {
