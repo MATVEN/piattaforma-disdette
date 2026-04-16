@@ -1952,3 +1952,110 @@
   - **Files Involved:**
     - `supabase/migrations/20260319000000_remove_service_types.sql`
     - Multiple frontend and backend files updated for new data model.
+
+- **Security Hardening & Rate Limiting Implementation:**
+
+  - **Critical Security Fixes:**
+    - Fixes account deletion flow by enforcing use of service role client (C1)
+    - Prevents orphaned authentication users after account deletion
+    - Ensures proper cleanup between application database and auth system
+
+  - **Authentication & Authorization Validation:**
+    - Validates that `session.user.id` matches the authenticated user
+    - Prevents unauthorized actions through session spoofing or mismatch
+
+  - **Rate Limiting System:**
+    - Introduces in-memory rate limiter (`src/lib/rate-limit.ts`)
+    - Protects sensitive endpoints from abuse and brute-force attempts
+    - Applies limits:
+      - `delete-account`: max 5 attempts per 15 minutes
+      - `send-pec`: max 3 sends per hour
+
+  - **Middleware & Route Protection:**
+    - Removes unintended middleware bypass on `/new-disdetta`
+    - Adds `/new-disdetta` to protected routes
+    - Ensures consistent access control across authenticated flows
+
+  - **Frontend Security Improvements:**
+    - Removes `unsafe-inline` from Content Security Policy in production
+    - Reduces exposure to XSS vulnerabilities
+
+  - **Security Audit Resolution:**
+    - Resolves identified vulnerabilities: C1, C2, C3, C7, C8, C12
+    - Aligns application with security best practices
+
+  - **Files Involved:**
+    - `src/lib/rate-limit.ts`
+    - `src/app/api/delete-account/route.ts`
+    - `src/app/api/send-pec/route.ts`
+    - `src/middleware.ts`
+    - `next.config.js`
+
+- **PEC Message-ID Tracking & Receipt Processing Foundation:**
+
+  - **Database Schema Enhancements:**
+    - Adds `message_id` field for unique PEC email tracking
+    - Adds `sent_at` timestamp to record send time
+    - Adds `delivered_at` timestamp for delivery confirmation
+    - Introduces `delivery_status` with enum constraint (`sent`, `delivered`, `bounced`, `failed`)
+    - Creates index `idx_disdette_message_id` for efficient receipt lookup
+
+  - **PEC Sending Integration (Edge Function):**
+    - Generates unique Message-ID per disdetta (`<disdetta-{id}-{timestamp}@disdeasy.it>`)
+    - Injects Message-ID into SMTP headers for reliable receipt matching
+    - Persists `message_id`, `sent_at`, and `delivery_status` after PEC send
+    - Implements non-blocking metadata persistence (send flow not interrupted on failure)
+
+  - **Manual Receipt Processing Tooling:**
+    - Provides SQL helper script to retrieve disdetta by Message-ID
+    - JOIN queries return enriched context (user, operator, category)
+    - Includes update templates for `delivered` and `bounced` statuses
+
+  - **Testing & Validation:**
+    - Migration applied successfully
+    - Test PEC sent with valid Message-ID
+    - Lookup helper verified for correct record retrieval
+    - Metadata fields correctly populated across flow
+
+  - **Future Automation Enablement:**
+    - Data model designed for IMAP-based receipt polling
+    - Message-ID tracking enables deterministic receipt matching
+    - Establishes foundation for fully automated PEC delivery status updates
+
+  - **Files Involved:**
+    - Database migration for message tracking fields
+    - `supabase/functions/send-pec-disdetta/index.ts`
+    - SQL helper scripts for manual receipt processing
+
+- **PEC Test Mode & SMTP Routing Refactor:**
+
+  - **Test Mode Implementation:**
+    - Introduces `PEC_TEST_MODE` environment variable to enable safe testing
+    - Adds `PEC_TEST_RECIPIENT` to override destination email in test scenarios
+    - Clear logging distinguishes test mode from production behavior
+    - Prevents accidental PEC sends to real recipients during development
+
+  - **SMTP Routing Refactor (Infrastructure Constraint):**
+    - Addresses Supabase restriction on outbound SMTP ports (465, 587, 2525)
+    - Moves SMTP sending from Edge Function to Next.js API route (`/api/send-pec-smtp`)
+    - Uses `nodemailer` for SMTP handling within server environment
+    - Edge Function delegates sending via HTTP request instead of direct SMTP
+
+  - **Decoupled Sending Architecture:**
+    - Separates orchestration (Edge Function) from transport (Next.js API)
+    - Improves flexibility and portability across environments
+    - Enables easier debugging and monitoring of SMTP layer
+
+  - **Environment-Based Provider Switching:**
+    - Supports seamless switch between providers (e.g., Mailtrap → Aruba PEC)
+    - Requires only environment variable changes (no code modifications)
+
+  - **System Impact:**
+    - Restores full PEC sending capability despite platform limitations
+    - Provides safe testing workflow without impacting real users
+    - Improves maintainability and deployment flexibility
+
+  - **Files Involved:**
+    - `src/app/api/send-pec-smtp/route.ts`
+    - `supabase/functions/send-pec-disdetta/index.ts`
+    - Environment configuration (`.env`)

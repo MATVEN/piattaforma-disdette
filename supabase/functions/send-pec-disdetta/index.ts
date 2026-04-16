@@ -4,12 +4,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 import { PDFDocument, StandardFonts, rgb } from 'https://esm.sh/pdf-lib@1.17.1'
 import type { PDFFont } from 'https://esm.sh/pdf-lib@1.17.1'
-import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts"
 
 // ==========================================
 // PEC SMTP CONFIGURATION
 // ==========================================
-
 const PEC_CONFIG = {
   enabled: Deno.env.get('PEC_ENABLED') === 'true',
   host: Deno.env.get('PEC_SMTP_HOST') || 'smtps.pec.aruba.it',
@@ -18,6 +16,14 @@ const PEC_CONFIG = {
   password: Deno.env.get('PEC_SMTP_PASS') || '',
   senderEmail: Deno.env.get('PEC_SENDER_EMAIL') || 'disdette@pec.disdeasy.it',
   senderName: Deno.env.get('PEC_SENDER_NAME') || 'DisdEasy - Gestione Disdette',
+}
+
+// ==========================================
+// TEST MODE CONFIGURATION
+// ==========================================
+const TEST_MODE = {
+  enabled: Deno.env.get('PEC_TEST_MODE') === 'true',
+  recipient: Deno.env.get('PEC_TEST_RECIPIENT') || '',
 }
 
 // ==========================
@@ -1102,9 +1108,11 @@ async function sendPecEmail(
   subject: string,
   body: string,
   attachments: { filename: string; content: ArrayBuffer }[],
-  messageId: string
+  messageId: string,
+  disdettaId: number
 ): Promise<{ success: boolean; simulated: boolean }> {
-  // Modalità simulazione (quando non abbiamo ancora PEC)
+
+  // Modalità simulazione
   if (!PEC_CONFIG.enabled) {
     console.log('⚠️ PEC invio DISABILITATO (PEC_ENABLED=false)')
     console.log(`📧 Simulazione invio a: ${to}`)
@@ -1117,55 +1125,37 @@ async function sendPecEmail(
     return { success: true, simulated: true }
   }
 
-  // Verifica configurazione
   if (!PEC_CONFIG.username || !PEC_CONFIG.password) {
     throw new Error('Configurazione PEC mancante: verifica PEC_SMTP_USER e PEC_SMTP_PASS')
   }
 
-  console.log(`📧 Invio PEC REALE a: ${to}`)
+  const baseUrl = Deno.env.get('NEXT_PUBLIC_BASE_URL')
+  const secret = Deno.env.get('INTERNAL_API_SECRET')
+
+  if (!baseUrl || !secret) {
+    throw new Error('NEXT_PUBLIC_BASE_URL o INTERNAL_API_SECRET non configurati')
+  }
+
+  console.log(`📧 Invio PEC via Next.js SMTP route a: ${to}`)
   console.log(`📄 Oggetto: ${subject}`)
   console.log(`🆔 Message-ID: ${messageId}`)
 
-  // Configurazione client SMTP
-  const client = new SMTPClient({
-    connection: {
-      hostname: PEC_CONFIG.host,
-      port: PEC_CONFIG.port,
-      tls: true,
-      auth: {
-        username: PEC_CONFIG.username,
-        password: PEC_CONFIG.password,
-      },
+  const response = await fetch(`${baseUrl}/api/send-pec-smtp`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-internal-secret': secret,
     },
+    body: JSON.stringify({ disdettaId, recipientEmail: to, subject, body }),
   })
 
-  try {
-    await client.send({
-      from: `${PEC_CONFIG.senderName} <${PEC_CONFIG.senderEmail}>`,
-      to: to,
-      subject: subject,
-      content: body,
-      html: body,
-      mimeHeaders: {
-        'Message-ID': messageId,
-        'X-Disdetta-ID': messageId.match(/disdetta-(\d+)-/)?.[1] ?? '',
-      },
-      attachments: attachments.map(att => ({
-        filename: att.filename,
-        content: new Uint8Array(att.content),
-        contentType: 'application/pdf',
-      })),
-    })
-
-    await client.close()
-
-    console.log('✅ PEC inviata con successo')
-    return { success: true, simulated: false }
-
-  } catch (error) {
-    console.error('❌ Errore invio PEC:', error)
-    throw new Error(`Invio PEC fallito: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ error: 'Unknown error' }))
+    throw new Error(`Invio PEC fallito: ${err.error ?? response.statusText}`)
   }
+
+  console.log('✅ PEC inviata con successo via SMTP route')
+  return { success: true, simulated: false }
 }
 
 // ==========================
@@ -1405,10 +1395,18 @@ serve(async (req: Request) => {
       throw new Error('Email PEC operatore non configurata. Contatta il supporto.')
     }
 
-    const recipientEmail = operatorData.pec_email
+    // Test mode: override recipient email if enabled
+    let recipientEmail = operatorData.pec_email
     const operatorName = operatorData.name || 'Operatore'
-
-    console.log(`🎯 Destinatario: ${operatorName} <${recipientEmail}>`)
+    if (TEST_MODE.enabled && TEST_MODE.recipient) {
+      console.log(`🧪 TEST MODE ATTIVO`)
+      console.log(`   ├─ Destinatario reale: ${operatorName} <${operatorData.pec_email}>`)
+      console.log(`   └─ Override test email: ${TEST_MODE.recipient}`)
+      recipientEmail = TEST_MODE.recipient
+    } else if (TEST_MODE.enabled && !TEST_MODE.recipient) {
+      console.warn(`⚠️  PEC_TEST_MODE attivo ma PEC_TEST_RECIPIENT non configurata - uso email reale`)
+    }
+    console.log(`🎯 Destinatario finale: ${operatorName} <${recipientEmail}>`)
 
     // --- 11. Prepara Contenuto Email ---
     const emailSubject = requestType === 'followup'
@@ -1457,13 +1455,18 @@ DisdEasy - Gestione Disdette`
         emailSubject,
         emailBody,
         pecAttachments,
-        messageId
+        messageId,
+        disdettaId
       )
 
       if (pecResult.simulated) {
         console.log('✅ Invio PEC SIMULATO con successo (modalità test)')
       } else {
-        console.log('✅ PEC inviata con successo (modalità produzione)')
+        const modeLabel = TEST_MODE.enabled ? '🧪 TEST MODE' : '🚀 PRODUZIONE'
+        console.log(`✅ PEC inviata con successo (${modeLabel})`)
+        if (TEST_MODE.enabled) {
+          console.log(`   └─ Email inviata a: ${recipientEmail} (override test)`)
+        }
       }
 
       // Salva Message-ID nel database per tracking futuro ricevute

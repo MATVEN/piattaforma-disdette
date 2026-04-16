@@ -37,6 +37,8 @@ public\next.svg
 public\vercel.svg
 public\window.svg
 README.md
+scripts
+scripts\lookup-disdetta-by-message-id.sql
 src
 src\__tests__
 src\__tests__\domain
@@ -75,6 +77,8 @@ src\app\api\send-notification-email
 src\app\api\send-notification-email\route.ts
 src\app\api\send-pec
 src\app\api\send-pec\route.ts
+src\app\api\send-pec-smpt
+src\app\api\send-pec-smpt\route.ts
 src\app\api\stripe
 src\app\api\stripe\create-checkout
 src\app\api\stripe\create-checkout\route.ts
@@ -242,6 +246,7 @@ supabase\migrations\20251128_add_b2b_support.sql
 supabase\migrations\20260108000000_add_payment_tracking.sql
 supabase\migrations\20260306100000_add_service_type_id_to_disdette.sql
 supabase\migrations\20260319000000_remove_service_types.sql
+supabase\migrations\20260414000000_add_pec_tracking.sql
 tailwind.config.js
 test-results
 test-results.json
