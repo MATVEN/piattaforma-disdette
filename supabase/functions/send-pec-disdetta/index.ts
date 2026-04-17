@@ -1109,7 +1109,9 @@ async function sendPecEmail(
   body: string,
   attachments: { filename: string; content: ArrayBuffer }[],
   messageId: string,
-  disdettaId: number
+  disdettaId: number,
+  pdfPath?: string,
+  delegaPath?: string
 ): Promise<{ success: boolean; simulated: boolean }> {
 
   // Modalità simulazione
@@ -1146,7 +1148,7 @@ async function sendPecEmail(
       'Content-Type': 'application/json',
       'x-internal-secret': secret,
     },
-    body: JSON.stringify({ disdettaId, recipientEmail: to, subject, body }),
+    body: JSON.stringify({ disdettaId, recipientEmail: to, subject, body, pdfPath, delegaPath }),
   })
 
   if (!response.ok) {
@@ -1456,7 +1458,9 @@ DisdEasy - Gestione Disdette`
         emailBody,
         pecAttachments,
         messageId,
-        disdettaId
+        disdettaId,
+        pdfDisdettaPath,
+        pdfDelegaPath
       )
 
       if (pecResult.simulated) {

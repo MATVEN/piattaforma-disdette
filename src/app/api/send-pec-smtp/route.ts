@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { disdettaId, recipientEmail, subject, body } = await req.json()
+  const { disdettaId, recipientEmail, subject, body, pdfPath, delegaPath } = await req.json()
 
   if (!disdettaId || !recipientEmail || !subject || !body) {
     return NextResponse.json({ error: 'Parametri mancanti' }, { status: 400 })
@@ -25,48 +25,40 @@ export async function POST(req: NextRequest) {
     },
   })
 
-  // Recupera allegati da Supabase Storage
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const { data: disdetta, error: disdettaError } = await supabase
-    .from('disdette')
-    .select('pdf_path, delega_con_documento_path')
-    .eq('id', disdettaId)
-    .single()
-
-  if (disdettaError || !disdetta) {
-    console.error('[send-pec-smtp] Disdetta non trovata:', disdettaError)
-    return NextResponse.json({ error: 'Disdetta non trovata' }, { status: 404 })
-  }
-
   const attachments: { filename: string; content: Buffer; contentType: string }[] = []
 
-  if (disdetta.pdf_path) {
+  if (pdfPath) {
     const { data } = await supabase.storage
       .from('documenti-disdetta')
-      .download(disdetta.pdf_path)
+      .download(pdfPath)
     if (data) {
       attachments.push({
         filename: 'lettera_disdetta.pdf',
         content: Buffer.from(await data.arrayBuffer()),
         contentType: 'application/pdf',
       })
+    } else {
+      console.warn('[send-pec-smtp] ⚠️ PDF lettera non trovato su Storage:', pdfPath)
     }
   }
 
-  if (disdetta.delega_con_documento_path) {
+  if (delegaPath) {
     const { data } = await supabase.storage
       .from('documenti-disdetta')
-      .download(disdetta.delega_con_documento_path)
+      .download(delegaPath)
     if (data) {
       attachments.push({
         filename: 'delega_con_documento.pdf',
         content: Buffer.from(await data.arrayBuffer()),
         contentType: 'application/pdf',
       })
+    } else {
+      console.warn('[send-pec-smtp] ⚠️ PDF delega non trovato su Storage:', delegaPath)
     }
   }
 
