@@ -34,14 +34,18 @@ interface B2BDocumentsSectionProps {
   }
   richiedenteRuolo: 'legale_rappresentante' | 'delegato' | null
   errors: any
+  allegaBolletta: boolean
+  onAllegaBollettaChange: (value: boolean) => void
 }
 
 export function B2BDocumentsSection({
   files,
   onFileChange,
-  uploadStates, 
+  uploadStates,
   richiedenteRuolo,
   errors,
+  allegaBolletta,
+  onAllegaBollettaChange,
 }: B2BDocumentsSectionProps) {
   return (
     <>
@@ -158,6 +162,24 @@ export function B2BDocumentsSection({
             </div>
           </>
         )}
+
+        {/* Checkbox: allega documento originale */}
+        <div className="md:col-span-2">
+          <label className="flex items-start gap-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={allegaBolletta}
+              onChange={(e) => onAllegaBollettaChange(e.target.checked)}
+              className="mt-1 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            />
+            <span className="text-sm text-gray-700">
+              <span className="font-medium">Allega anche il documento caricato</span>
+              <span className="text-gray-500 ml-1">
+                (bolletta, contratto, modulo — non sempre obbligatorio)
+              </span>
+            </span>
+          </label>
+        </div>
 
         {/* Info Card - B2B Requirements */}
         <div className="md:col-span-2 bg-blue-50/80 backdrop-blur-xl rounded-xl border border-blue-100 p-4">

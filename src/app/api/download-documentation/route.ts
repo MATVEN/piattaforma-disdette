@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
         } else if (disdetta.file_path) {
             filePaths.push({ 
                 path: disdetta.file_path, 
-                name: 'documento_originale.pdf',
+                name: 'documento_fornitura.pdf',
                 bucket: 'documenti_utente'
             })
         }

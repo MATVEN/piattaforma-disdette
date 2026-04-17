@@ -29,15 +29,19 @@ export interface B2CFieldsProps {
   documentoIdentita: File | null
   onDocumentoChange: (file: File | null) => void
   uploadingDocumento: boolean
+  allegaBolletta: boolean
+  onAllegaBollettaChange: (value: boolean) => void
 }
 
-export function B2CFields({ 
-  register, 
+export function B2CFields({
+  register,
   errors,
-  profile,              
-  documentoIdentita,    
-  onDocumentoChange,    
-  uploadingDocumento    
+  profile,
+  documentoIdentita,
+  onDocumentoChange,
+  uploadingDocumento,
+  allegaBolletta,
+  onAllegaBollettaChange,
 }: B2CFieldsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t-2 border-gray-100 py-6">
@@ -234,6 +238,24 @@ export function B2CFields({
             <span>Caricamento in corso...</span>
           </div>
         )}
+      </div>
+
+      {/* Checkbox: allega documento originale */}
+      <div className="md:col-span-2">
+        <label className="flex items-start gap-3 cursor-pointer group">
+          <input
+            type="checkbox"
+            checked={allegaBolletta}
+            onChange={(e) => onAllegaBollettaChange(e.target.checked)}
+            className="mt-1 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+          />
+          <span className="text-sm text-gray-700">
+            <span className="font-medium">Allega anche il documento caricato</span>
+            <span className="text-gray-500 ml-1">
+              (bolletta, contratto, modulo — non sempre obbligatorio)
+            </span>
+          </span>
+        </label>
       </div>
     </div>
   )

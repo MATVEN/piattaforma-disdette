@@ -74,6 +74,7 @@ function getSupabaseAdmin() {
 type RequestBody = {
   id: number
   type?: 'initial' | 'followup'
+  allegaBolletta?: boolean
 }
 
 function isRequestBody(x: unknown): x is RequestBody {
@@ -139,6 +140,7 @@ interface DisdettaData {
   user_id: string
   operator_id: number | null
   category_id: number | null
+  file_path: string | null
   receiver_tax_id: string | null
   supplier_tax_id: string | null
   supplier_name: string | null
@@ -1111,7 +1113,8 @@ async function sendPecEmail(
   messageId: string,
   disdettaId: number,
   pdfPath?: string,
-  delegaPath?: string
+  delegaPath?: string,
+  bollettaPath?: string
 ): Promise<{ success: boolean; simulated: boolean }> {
 
   // Modalità simulazione
@@ -1148,7 +1151,7 @@ async function sendPecEmail(
       'Content-Type': 'application/json',
       'x-internal-secret': secret,
     },
-    body: JSON.stringify({ disdettaId, recipientEmail: to, subject, body, pdfPath, delegaPath }),
+    body: JSON.stringify({ disdettaId, recipientEmail: to, subject, body, pdfPath, delegaPath, bollettaPath }),
   })
 
   if (!response.ok) {
@@ -1201,7 +1204,7 @@ serve(async (req: Request) => {
     const { data: disdettaData, error: disdettaError } = await supabaseUser
       .from('disdette')
       .select(`
-        id, user_id, receiver_tax_id, supplier_tax_id, supplier_name, supplier_contract_number,
+        id, user_id, file_path, receiver_tax_id, supplier_tax_id, supplier_name, supplier_contract_number,
         status, tipo_intestatario, operator_id, category_id,
         nome, cognome, codice_fiscale, indirizzo_residenza,
         ragione_sociale, partita_iva, sede_legale, indirizzo_fornitura, indirizzo_fatturazione,
@@ -1452,6 +1455,8 @@ DisdEasy - Gestione Disdette`
     let pecResult: { success: boolean; simulated: boolean }
 
     try {
+      const allegaBolletta = (body as RequestBody).allegaBolletta ?? false
+
       pecResult = await sendPecEmail(
         recipientEmail,
         emailSubject,
@@ -1460,7 +1465,8 @@ DisdEasy - Gestione Disdette`
         messageId,
         disdettaId,
         pdfDisdettaPath,
-        pdfDelegaPath
+        pdfDelegaPath,
+        allegaBolletta ? (typedDisdettaData.file_path ?? undefined) : undefined
       )
 
       if (pecResult.simulated) {

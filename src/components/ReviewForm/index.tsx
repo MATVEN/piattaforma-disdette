@@ -122,6 +122,7 @@ export default function ReviewForm() {
   const [confirmedDisdettaId, setConfirmedDisdettaId] = useState<number | null>(null)
   // Payment verification in progress (for UX feedback when returning from 3DS redirect)
   const [verifyingPayment, setVerifyingPayment] = useState(false)
+  const [allegaBolletta, setAllegaBolletta] = useState(false)
   const {
     register,
     handleSubmit,
@@ -228,7 +229,7 @@ export default function ReviewForm() {
     }
 
     setFlowState('sending')
-    const success = await sendPEC(confirmedDisdettaId)
+    const success = await sendPEC(confirmedDisdettaId, allegaBolletta)
     setFlowState(success ? 'sent' : 'paid')
   }
 
@@ -494,13 +495,15 @@ export default function ReviewForm() {
         <SupplierFields register={register} errors={errors} />
 
         {tipoIntestatario === 'privato' && (
-          <B2CFields 
-            register={register} 
+          <B2CFields
+            register={register}
             errors={errors}
             profile={profile}
             documentoIdentita={files.documentoIdentita}
             onDocumentoChange={handleFileChange.handleDocumentoIdentitaChange}
             uploadingDocumento={uploadStates.documentoIdentita?.uploading ?? false}
+            allegaBolletta={allegaBolletta}
+            onAllegaBollettaChange={setAllegaBolletta}
           />
         )}
 
@@ -519,6 +522,8 @@ export default function ReviewForm() {
               uploadStates={uploadStates}
               richiedenteRuolo={watch('richiedente_ruolo')}
               errors={errors}
+              allegaBolletta={allegaBolletta}
+              onAllegaBollettaChange={setAllegaBolletta}
             />
           </>
         )}

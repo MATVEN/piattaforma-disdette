@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       throw new ValidationError("Body JSON non valido o mancante");
     }
 
-    const { id } = body;
+    const { id, allegaBolletta = false } = body;
     if (!id || typeof id !== "number") {
       throw new ValidationError("Parametro 'id' mancante o non valido");
     }
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${session.access_token}`, // Token utente, non ANON_KEY!
       },
-      body: JSON.stringify({ id: id }),
+      body: JSON.stringify({ id: id, allegaBolletta }),
     });
 
     if (!response.ok) {

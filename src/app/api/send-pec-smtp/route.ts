@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { disdettaId, recipientEmail, subject, body, pdfPath, delegaPath } = await req.json()
+  const { disdettaId, recipientEmail, subject, body, pdfPath, delegaPath, bollettaPath } = await req.json()
 
   if (!disdettaId || !recipientEmail || !subject || !body) {
     return NextResponse.json({ error: 'Parametri mancanti' }, { status: 400 })
@@ -59,6 +59,21 @@ export async function POST(req: NextRequest) {
       })
     } else {
       console.warn('[send-pec-smtp] ⚠️ PDF delega non trovato su Storage:', delegaPath)
+    }
+  }
+
+  if (bollettaPath) {
+    const { data } = await supabase.storage
+      .from('documenti_utente')
+      .download(bollettaPath)
+    if (data) {
+      attachments.push({
+        filename: 'documento_fonitura.pdf',
+        content: Buffer.from(await data.arrayBuffer()),
+        contentType: 'application/pdf',
+      })
+    } else {
+      console.warn('[send-pec-smtp] ⚠️ Bolletta non trovata su Storage:', bollettaPath)
     }
   }
 

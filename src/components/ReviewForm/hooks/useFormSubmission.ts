@@ -112,7 +112,7 @@ interface UseFormSubmissionProps {
 
 export interface UseFormSubmissionReturn {
   onSubmit: (data: ReviewFormData, bypassDuplicate?: boolean, options?: { bypassOperatorCheck?: boolean }) => Promise<SubmissionResult>
-  sendPEC: (disdettaId: number) => Promise<boolean>
+  sendPEC: (disdettaId: number, allegaBolletta?: boolean) => Promise<boolean>
   loading: boolean
   progress: SubmissionProgress
 }
@@ -733,7 +733,7 @@ export function useFormSubmission({
 
   /* ---------- Separate PEC Sending ---------- */
 
-  const sendPEC = async (disdettaId: number): Promise<boolean> => {
+  const sendPEC = async (disdettaId: number, allegaBolletta = false): Promise<boolean> => {
     setLoadingSafe(true)
     setProgressSafe({
       step: 'sending',
@@ -745,7 +745,7 @@ export function useFormSubmission({
       const pecResponse = await fetch('/api/send-pec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: disdettaId }),
+        body: JSON.stringify({ id: disdettaId, allegaBolletta }),
       })
 
       if (!pecResponse.ok) {
